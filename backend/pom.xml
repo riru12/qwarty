@@ -87,6 +87,21 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>com.diffplug.spotless</groupId>
+				<artifactId>spotless-maven-plugin</artifactId>
+				<version>2.43.0</version>
+				<configuration>
+					<java>
+						<eclipse>
+							<file>${basedir}/config/spotless/formatter.xml</file>
+						</eclipse>
+						<includes>
+							<include>src/**/*.java</include>
+						</includes>
+					</java>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
