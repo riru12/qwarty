@@ -21,3 +21,6 @@
 # Editor directories and files
 .vscode
 .DS_Store
+
+# dotfiles
+.env
