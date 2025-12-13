@@ -1,0 +1,37 @@
+name: backend CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v5
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+      
+      - name: Check formatting
+        run: mvn spotless:check
+
+      - name: Run tests
+        run: mvn clean test
