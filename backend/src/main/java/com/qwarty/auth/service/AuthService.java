@@ -1,4 +1,4 @@
-package com.qwarty.auth;
+package com.qwarty.auth.service;
 
 import org.springframework.stereotype.Service;
 

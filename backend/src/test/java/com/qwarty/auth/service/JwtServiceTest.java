@@ -1,4 +1,4 @@
-package com.qwarty.auth;
+package com.qwarty.auth.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

@@ -1,4 +1,4 @@
-package com.qwarty.auth;
+package com.qwarty.auth.service;
 
 import java.util.Date;
 import java.util.HashMap;
