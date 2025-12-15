@@ -19,9 +19,9 @@ import io.jsonwebtoken.security.Keys;
 /**
  * JwtService public methods:
  * 
- * generateToken(UserDetails userDetails)
- * generateToken(UserDetails userDetails, Map<String, Object> customClaims)
- * isTokenValid(String token, UserDetails userDetails)
+ * generateToken(UserDetails userDetails) generateToken(UserDetails userDetails,
+ * Map<String, Object> customClaims) isTokenValid(String token, UserDetails
+ * userDetails)
  * 
  */
 @Service
@@ -29,10 +29,9 @@ public class JwtService {
 
     @Value("${security.jwt.secret-key}")
     private String secretKey;
-    
+
     @Value("${security.jwt.expiration-time}")
     private long expirationTime;
-
 
     /**
      * Generate a JWT with no additional custom claims
@@ -64,17 +63,11 @@ public class JwtService {
      * @return String JWT
      */
     private String buildToken(UserDetails userDetails, Map<String, Object> customClaims, long expiration) {
-        return Jwts.builder()
-            .claims()
-                .subject(userDetails.getUsername())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiration))
-                .add(customClaims)
-            .and()
-            .signWith(getSigningKey())
-            .compact();
+        return Jwts.builder().claims().subject(userDetails.getUsername()).issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiration)).add(customClaims).and()
+                .signWith(getSigningKey()).compact();
     }
-    
+
     /**
      * From the entire payload, retrieve and return a specific claim attribute
      * 
@@ -95,15 +88,12 @@ public class JwtService {
      * @return Claims object
      */
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-            .verifyWith(getSigningKey())
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
+        return Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
     }
 
     /**
-     * Checks if a JWT is valid. If the token is malformed, it is caught with an exception and returns false
+     * Checks if a JWT is valid. If the token is malformed, it is caught with an
+     * exception and returns false
      * 
      * @param token
      * @param userDetails
@@ -119,8 +109,8 @@ public class JwtService {
     }
 
     /**
-     * Checks if a JWT is expired, If the token is malformed, it is caught with an exception and returns true,
-     * to treat malformed tokens as expired by default
+     * Checks if a JWT is expired, If the token is malformed, it is caught with an
+     * exception and returns true, to treat malformed tokens as expired by default
      * 
      * @param token
      * @return boolean
@@ -132,7 +122,7 @@ public class JwtService {
             return true;
         }
     }
-    
+
     /**
      * Return SecretKey object decoded from `secretKey` variable
      * 
