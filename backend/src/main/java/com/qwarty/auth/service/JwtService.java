@@ -17,12 +17,10 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 /**
- * JwtService public methods:
- * 
- * generateToken(UserDetails userDetails) generateToken(UserDetails userDetails,
- * Map<String, Object> customClaims) isTokenValid(String token, UserDetails
- * userDetails)
- * 
+ * JwtService
+ * - generates JWT
+ * - extracts claims from a JWT
+ * - checks JWT validity
  */
 @Service
 public class JwtService {
@@ -63,9 +61,16 @@ public class JwtService {
      * @return String JWT
      */
     private String buildToken(UserDetails userDetails, Map<String, Object> customClaims, long expiration) {
-        return Jwts.builder().claims().subject(userDetails.getUsername()).issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiration)).add(customClaims).and()
-                .signWith(getSigningKey()).compact();
+        return Jwts
+            .builder()
+            .claims()
+            .subject(userDetails.getUsername())
+            .issuedAt(new Date(System.currentTimeMillis()))
+            .expiration(new Date(System.currentTimeMillis() + expiration))
+            .add(customClaims)
+            .and()
+            .signWith(getSigningKey())
+            .compact();
     }
 
     /**
@@ -88,7 +93,11 @@ public class JwtService {
      * @return Claims object
      */
     private Claims extractAllClaims(String token) {
-        return Jwts.parser().verifyWith(getSigningKey()).build().parseSignedClaims(token).getPayload();
+        return Jwts.parser()
+            .verifyWith(getSigningKey())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
     }
 
     /**

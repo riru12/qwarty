@@ -35,7 +35,8 @@ class JwtServiceTest {
     // Utility method to set private fields
     private void setField(Object target, String fieldName, Object value) {
         try {
-            var field = target.getClass().getDeclaredField(fieldName);
+            var field = target.getClass()
+                .getDeclaredField(fieldName);
             field.setAccessible(true);
             field.set(target, value);
         } catch (Exception e) {

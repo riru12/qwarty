@@ -128,7 +128,7 @@
 				<configuration>
 					<java>
 						<eclipse>
-							<file>${basedir}/config/spotless/formatter.xml</file>
+							<file>${basedir}/config/spotless/eclipse-formatter.xml</file>
 						</eclipse>
 						<includes>
 							<include>src/**/*.java</include>
