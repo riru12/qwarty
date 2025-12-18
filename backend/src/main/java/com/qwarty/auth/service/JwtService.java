@@ -60,7 +60,8 @@ public class JwtService {
      * @param expiration
      * @return String JWT
      */
-    private String buildToken(UserDetails userDetails, Map<String, Object> customClaims, long expiration) {
+    private String buildToken(UserDetails userDetails, Map<String, Object> customClaims,
+            long expiration) {
         return Jwts
             .builder()
             .claims()

@@ -6,8 +6,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.qwarty.auth.dto.LoginAuthRequestDTO;
+import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
-import com.qwarty.auth.model.User;
 import com.qwarty.auth.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,15 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<User> signup(@RequestBody SignupAuthRequestDTO requestDto) {
-        User user = authService.signup(requestDto);
-        return ResponseEntity.ok(user);
+    public ResponseEntity<Void> signup(@RequestBody SignupAuthRequestDTO requestDto) {
+        authService.signup(requestDto);
+        return ResponseEntity.ok()
+            .build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginAuthResponseDTO> login(@RequestBody LoginAuthRequestDTO requestDto) {
+        LoginAuthResponseDTO responseDto = authService.login(requestDto);
+        return ResponseEntity.ok(responseDto);
     }
 }
