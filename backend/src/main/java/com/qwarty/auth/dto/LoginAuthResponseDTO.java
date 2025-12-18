@@ -1,5 +1,3 @@
 package com.qwarty.auth.dto;
 
-public record LoginAuthResponseDTO(String token){
-
-}
+public record LoginAuthResponseDTO(String token) {}

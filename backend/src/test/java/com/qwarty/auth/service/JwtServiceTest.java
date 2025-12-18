@@ -3,9 +3,9 @@ package com.qwarty.auth.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
+import io.jsonwebtoken.Claims;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,8 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import io.jsonwebtoken.Claims;
 
 @SpringBootTest
 @ExtendWith(MockitoExtension.class)
@@ -35,8 +33,7 @@ class JwtServiceTest {
     // Utility method to set private fields
     private void setField(Object target, String fieldName, Object value) {
         try {
-            var field = target.getClass()
-                .getDeclaredField(fieldName);
+            var field = target.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
             field.set(target, value);
         } catch (Exception e) {

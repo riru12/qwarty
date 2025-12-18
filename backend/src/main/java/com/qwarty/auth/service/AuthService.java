@@ -1,17 +1,15 @@
 package com.qwarty.auth.service;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
 import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.UserRepository;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -23,9 +21,9 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     /**
-     * Registers a user after verifying that an existing account with the same
-     * username or email doesn't exist
-     * 
+     * Registers a user after verifying that an existing account with the same username or email
+     * doesn't exist
+     *
      * @param requestDto
      */
     public void signup(SignupAuthRequestDTO requestDto) {
@@ -34,10 +32,10 @@ public class AuthService {
         }
 
         User user = User.builder()
-            .username(requestDto.username())
-            .email(requestDto.email())
-            .passwordHash(passwordEncoder.encode(requestDto.password()))
-            .build();
+                .username(requestDto.username())
+                .email(requestDto.email())
+                .passwordHash(passwordEncoder.encode(requestDto.password()))
+                .build();
 
         userRepository.save(user);
 
@@ -46,7 +44,7 @@ public class AuthService {
 
     /**
      * Logs a user in and returns a JWT
-     * 
+     *
      * @param requestDto
      * @return JWT token in LoginAuthResponseDTO
      */
@@ -58,19 +56,16 @@ public class AuthService {
 
     public User authenticate(LoginAuthRequestDTO requestDto) {
         User user = userRepository
-            .findByUsername(requestDto.username())
-            .orElseThrow(() -> new RuntimeException("User not found"));
+                .findByUsername(requestDto.username())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (!user.isVerified()) {
             throw new RuntimeException("Account not verified. Please verify your account.");
         }
 
         authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        requestDto.username(),
-                        requestDto.password()));
+                new UsernamePasswordAuthenticationToken(requestDto.username(), requestDto.password()));
 
         return user;
     }
-
 }

@@ -1,13 +1,11 @@
 package com.qwarty.model;
 
-import java.time.Instant;
-import java.util.UUID;
-
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
+import java.time.Instant;
+import java.util.UUID;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 public class BaseModel {
     @CreationTimestamp

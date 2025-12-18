@@ -138,9 +138,7 @@
 				<version>3.1.0</version>
 				<configuration>
 					<java>
-						<eclipse>
-							<file>${basedir}/config/spotless/eclipse-formatter.xml</file>
-						</eclipse>
+						<palantirJavaFormat/>
 						<includes>
 							<include>src/**/*.java</include>
 						</includes>

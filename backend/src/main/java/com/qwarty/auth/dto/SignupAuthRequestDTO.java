@@ -1,5 +1,3 @@
 package com.qwarty.auth.dto;
 
-public record SignupAuthRequestDTO(String username,String email,String password){
-
-}
+public record SignupAuthRequestDTO(String username, String email, String password) {}

@@ -1,16 +1,14 @@
 package com.qwarty.auth.model;
 
+import com.qwarty.model.BaseModel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import com.qwarty.model.BaseModel;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table(name = "users")
