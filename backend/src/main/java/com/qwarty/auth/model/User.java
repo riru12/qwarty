@@ -1,56 +1,60 @@
 package com.qwarty.auth.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.time.Instant;
+import com.qwarty.model.BaseModel;
+
+import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(
-    name = "users",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "users_username_uk", columnNames = "username")
-    }
-)
+@Table(name = "users")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class User {
+public class User extends BaseModel implements UserDetails {
     @Id
+    @NotNull
     @GeneratedValue
     @Column(nullable = false, updatable = false)
     private UUID id;
 
-    @Column(nullable = false)
+    @NotNull
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @NotNull
+    @Column(unique = true, nullable = false)
     private String username;
 
+    @NotNull
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
     @Builder.Default
+    @NotNull
     @Column(nullable = false)
-    private boolean enabled = true;
+    private boolean disabled = false;
 
     @Builder.Default
+    @NotNull
     @Column(nullable = false)
     private boolean verified = false;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
 
-    @Column(name = "created_by")
-    private UUID createdBy;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
-
-    @Column(name = "updated_by")
-    private UUID updatedBy;
+    @Override
+    public String getPassword() {
+        return passwordHash;
+    }
 }

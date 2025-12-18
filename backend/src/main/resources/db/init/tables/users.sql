@@ -4,9 +4,10 @@
 
 CREATE TABLE users(
     id UUID NOT NULL DEFAULT gen_random_uuid(),
+    email TEXT NOT NULL,
     username TEXT NOT NULL,
     password_hash TEXT NOT NULL,
-    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    disabled BOOLEAN NOT NULL DEFAULT FALSE,
     verified BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     created_by UUID,
