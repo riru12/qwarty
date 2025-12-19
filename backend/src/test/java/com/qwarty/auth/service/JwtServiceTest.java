@@ -29,7 +29,8 @@ class JwtServiceTest {
         jwtService = new JwtService();
 
         // inject fake values using ReflectionTestUtils
-        ReflectionTestUtils.setField(jwtService, "secretKey", "abcdefghijklmnopqrstuvwxzy1234567890abcdefghijklmnopqrstuvwxzy1234567890");
+        ReflectionTestUtils.setField(
+                jwtService, "secretKey", "abcdefghijklmnopqrstuvwxzy1234567890abcdefghijklmnopqrstuvwxzy1234567890");
         ReflectionTestUtils.setField(jwtService, "expirationTime", 3600000L);
     }
 

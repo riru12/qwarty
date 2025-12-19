@@ -1,5 +1,11 @@
 package com.qwarty.auth.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
 import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
@@ -7,6 +13,7 @@ import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.UserRepository;
 import com.qwarty.exception.CustomException;
 import com.qwarty.exception.CustomExceptionCode;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,14 +23,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -59,14 +58,13 @@ class AuthServiceTest {
 
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
-        // Should not throw
+        // should not throw
         assertDoesNotThrow(() -> authService.signup(request));
 
-        verify(userRepository).save(argThat(user ->
-                user.getUsername().equals("newuser") &&
-                user.getEmail().equals("new@example.com") &&
-                user.getPasswordHash().equals("encodedPassword")
-        ));
+        verify(userRepository)
+                .save(argThat(user -> user.getUsername().equals("newuser")
+                        && user.getEmail().equals("new@example.com")
+                        && user.getPasswordHash().equals("encodedPassword")));
     }
 
     @Test
@@ -75,8 +73,7 @@ class AuthServiceTest {
 
         when(userRepository.existsByUsername("existing")).thenReturn(true);
 
-        CustomException exception = assertThrows(CustomException.class,
-                () -> authService.signup(request));
+        CustomException exception = assertThrows(CustomException.class, () -> authService.signup(request));
 
         assertEquals(CustomExceptionCode.USERNAME_ALREADY_REGISTERED, exception.getExceptionCode());
     }
@@ -88,8 +85,7 @@ class AuthServiceTest {
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
         when(userRepository.existsByEmail("existing@example.com")).thenReturn(true);
 
-        CustomException exception = assertThrows(CustomException.class,
-                () -> authService.signup(request));
+        CustomException exception = assertThrows(CustomException.class, () -> authService.signup(request));
 
         assertEquals(CustomExceptionCode.EMAIL_ALREADY_REGISTERED, exception.getExceptionCode());
     }
@@ -102,7 +98,7 @@ class AuthServiceTest {
                 .username("user")
                 .email("user@example.com")
                 .passwordHash("encoded")
-                .verified(true) 
+                .verified(true)
                 .build();
 
         when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
@@ -110,15 +106,14 @@ class AuthServiceTest {
 
         // authenticationManager.authenticate should not throw
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-            .thenReturn(null);
+                .thenReturn(null);
 
         LoginAuthResponseDTO response = authService.login(request);
 
         assertNotNull(response);
         assertEquals("jwt-token-123", response.token());
 
-        verify(authenticationManager).authenticate(
-                eq(new UsernamePasswordAuthenticationToken("user", "password")));
+        verify(authenticationManager).authenticate(eq(new UsernamePasswordAuthenticationToken("user", "password")));
     }
 
     @Test
@@ -127,8 +122,7 @@ class AuthServiceTest {
 
         when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
 
-        CustomException exception = assertThrows(CustomException.class,
-                () -> authService.login(request));
+        CustomException exception = assertThrows(CustomException.class, () -> authService.login(request));
 
         assertEquals(CustomExceptionCode.USER_NOT_FOUND, exception.getExceptionCode());
     }
@@ -137,15 +131,11 @@ class AuthServiceTest {
     void login_userNotVerified_throwsException() {
         LoginAuthRequestDTO request = new LoginAuthRequestDTO("unverified", "password");
 
-        User user = User.builder()
-                .username("unverified")
-                .verified(false)
-                .build();
+        User user = User.builder().username("unverified").verified(false).build();
 
         when(userRepository.findByUsername("unverified")).thenReturn(Optional.of(user));
 
-        CustomException exception = assertThrows(CustomException.class,
-                () -> authService.login(request));
+        CustomException exception = assertThrows(CustomException.class, () -> authService.login(request));
 
         assertEquals(CustomExceptionCode.USER_NOT_VERIFIED, exception.getExceptionCode());
 
@@ -157,18 +147,15 @@ class AuthServiceTest {
     void login_invalidCredentials_authenticationFails_throwsException() {
         LoginAuthRequestDTO request = new LoginAuthRequestDTO("user", "wrongpassword");
 
-        User user = User.builder()
-                .username("user")
-                .verified(true)
-                .build();
+        User user = User.builder().username("user").verified(true).build();
 
         when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
 
         doThrow(new org.springframework.security.authentication.BadCredentialsException("Bad credentials"))
-                .when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+                .when(authenticationManager)
+                .authenticate(any(UsernamePasswordAuthenticationToken.class));
 
-        // The authenticate method will throw the authentication exception, which bubbles up
-        assertThrows(AuthenticationException.class,
-                () -> authService.login(request));
+        // authenticate method will throw the authentication exception, which bubbles up
+        assertThrows(AuthenticationException.class, () -> authService.login(request));
     }
 }
