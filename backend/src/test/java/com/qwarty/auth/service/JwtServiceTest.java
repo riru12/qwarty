@@ -11,15 +11,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.util.ReflectionTestUtils;
 
-@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 class JwtServiceTest {
 
-    @Autowired
     private JwtService jwtService;
 
     @Mock
@@ -28,9 +25,15 @@ class JwtServiceTest {
     @BeforeEach
     void setUp() {
         when(userDetails.getUsername()).thenReturn("testuser");
+
+        jwtService = new JwtService();
+
+        // inject fake values using ReflectionTestUtils
+        ReflectionTestUtils.setField(jwtService, "secretKey", "abcdefghijklmnopqrstuvwxzy1234567890abcdefghijklmnopqrstuvwxzy1234567890");
+        ReflectionTestUtils.setField(jwtService, "expirationTime", 3600000L);
     }
 
-    // Utility method to set private fields
+    // utility method to set private fields
     private void setField(Object target, String fieldName, Object value) {
         try {
             var field = target.getClass().getDeclaredField(fieldName);
