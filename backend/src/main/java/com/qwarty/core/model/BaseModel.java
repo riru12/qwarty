@@ -1,4 +1,4 @@
-package com.qwarty.model;
+package com.qwarty.core.model;
 
 import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;

@@ -5,6 +5,8 @@ import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.UserRepository;
+import com.qwarty.exception.CustomException;
+import com.qwarty.exception.CustomExceptionCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,8 +29,10 @@ public class AuthService {
      * @param requestDto
      */
     public void signup(SignupAuthRequestDTO requestDto) {
-        if (userRepository.existsByUsernameOrEmail(requestDto.username(), requestDto.email())) {
-            throw new RuntimeException("Username or email already registered");
+        if (userRepository.existsByUsername(requestDto.username())) {
+            throw new CustomException(CustomExceptionCode.USERNAME_ALREADY_REGISTERED);
+        } else if (userRepository.existsByEmail(requestDto.email())) {
+            throw new CustomException(CustomExceptionCode.EMAIL_ALREADY_REGISTERED);
         }
 
         User user = User.builder()
@@ -57,10 +61,10 @@ public class AuthService {
     public User authenticate(LoginAuthRequestDTO requestDto) {
         User user = userRepository
                 .findByUsername(requestDto.username())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new CustomException(CustomExceptionCode.USER_NOT_FOUND));
 
         if (!user.isVerified()) {
-            throw new RuntimeException("Account not verified. Please verify your account.");
+            throw new CustomException(CustomExceptionCode.USER_NOT_VERIFIED);
         }
 
         authenticationManager.authenticate(

@@ -1,6 +1,6 @@
 package com.qwarty.auth.model;
 
-import com.qwarty.model.BaseModel;
+import com.qwarty.core.model.BaseModel;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
