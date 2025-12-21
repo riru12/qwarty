@@ -20,48 +20,72 @@ public class JwtService {
     @Value("${security.jwt.secret-key}")
     private String secretKey;
 
-    @Value("${security.jwt.expiration-time}")
-    private long expirationTime;
+    @Value("${security.jwt.access-expiration-time}")
+    private long accessExpirationTime;
 
-    /**
-     * Generate a JWT with no additional custom claims
-     *
-     * @param userDetails
-     * @return String JWT
-     */
-    public String generateToken(UserDetails userDetails) {
-        return buildToken(userDetails, new HashMap<>(), expirationTime);
+    @Value("${security.jwt.refresh-expiration-time}")
+    private long refreshExpirationTime;
+
+    private String ACCESS_TOKEN = "ACCESS";
+    private String REFRESH_TOKEN = "REFRESH";
+
+    public String generateAccessToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", ACCESS_TOKEN);
+        return buildToken(userDetails, claims, accessExpirationTime);
     }
 
-    /**
-     * Generate a JWT with custom claims
-     *
-     * @param userDetails
-     * @param customClaims
-     * @return String JWT
-     */
-    public String generateToken(UserDetails userDetails, Map<String, Object> customClaims) {
-        return buildToken(userDetails, customClaims, expirationTime);
+    public String generateRefreshToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", REFRESH_TOKEN);
+        return buildToken(userDetails, claims, refreshExpirationTime);
     }
 
     /**
      * Builds a JWT
      *
      * @param userDetails
-     * @param customClaims
+     * @param claims
      * @param expiration
      * @return String JWT
      */
-    private String buildToken(UserDetails userDetails, Map<String, Object> customClaims, long expiration) {
+    private String buildToken(UserDetails userDetails, Map<String, Object> claims, long expiration) {
         return Jwts.builder()
                 .claims()
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
-                .add(customClaims)
+                .add(claims)
                 .and()
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    /**
+     * Extracts username of user from token
+     * @param token
+     * @return String username
+     */
+    public String extractSubject(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    /**
+     * Extracts expiration time in claims
+     * @param token
+     * @return Date expiration
+     */
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    /**
+     * Extracts type field in claims, returns String equivalent to either "ACCESS" or "REFRESH"
+     * @param token
+     * @return String type
+     */
+    public String extractType(String token) {
+        return extractClaim(token, claims -> claims.get("type", String.class));
     }
 
     /**
@@ -72,7 +96,7 @@ public class JwtService {
      * @param claimsResolver
      * @return <T> Generic type
      */
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
@@ -92,17 +116,19 @@ public class JwtService {
     }
 
     /**
-     * Checks if a JWT is valid. If the token is malformed, it is caught with an exception and
-     * returns false
+     * Checks if a JWT is valid, also verifies that it's an access type.
+     *
+     * Used in JwtAuthFilter, to verify that requests from client use access token instead of the refresh token.
      *
      * @param token
      * @param userDetails
      * @return boolean
      */
-    public boolean isTokenValid(String token, UserDetails userDetails) {
+    public boolean isAccessTokenValid(String token, UserDetails userDetails) {
         try {
-            final String username = extractClaim(token, Claims::getSubject);
-            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+            final String username = extractSubject(token);
+            final String type = extractClaim(token, claims -> claims.get("type", String.class));
+            return (ACCESS_TOKEN.equals(type) && username.equals(userDetails.getUsername()) && !isTokenExpired(token));
         } catch (Exception e) {
             return false;
         }

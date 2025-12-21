@@ -2,6 +2,8 @@ package com.qwarty.auth.controller;
 
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
 import com.qwarty.auth.dto.LoginAuthResponseDTO;
+import com.qwarty.auth.dto.RefreshAuthRequestDTO;
+import com.qwarty.auth.dto.RefreshAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
 import com.qwarty.auth.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginAuthResponseDTO> login(@RequestBody LoginAuthRequestDTO requestDto) {
         LoginAuthResponseDTO responseDto = authService.login(requestDto);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<RefreshAuthResponseDTO> refresh(@RequestBody RefreshAuthRequestDTO requestDto) {
+        RefreshAuthResponseDTO responseDto = authService.refresh(requestDto);
         return ResponseEntity.ok(responseDto);
     }
 }

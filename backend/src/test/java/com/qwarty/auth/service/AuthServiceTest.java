@@ -10,9 +10,11 @@ import com.qwarty.auth.dto.LoginAuthRequestDTO;
 import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
 import com.qwarty.auth.model.User;
+import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
 import com.qwarty.exception.CustomException;
 import com.qwarty.exception.CustomExceptionCode;
+import java.util.Date;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +31,9 @@ class AuthServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Mock
     private JwtService jwtService;
@@ -101,8 +106,11 @@ class AuthServiceTest {
                 .verified(true)
                 .build();
 
+        Date refreshExpiration = new Date(System.currentTimeMillis() + 7200000);
         when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
-        when(jwtService.generateToken(user)).thenReturn("jwt-token-123");
+        when(jwtService.generateAccessToken(user)).thenReturn("access-token-123");
+        when(jwtService.generateRefreshToken(user)).thenReturn(("refresh-token-123"));
+        when(jwtService.extractExpiration("refresh-token-123")).thenReturn(refreshExpiration);
 
         // authenticationManager.authenticate should not throw
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
@@ -111,7 +119,8 @@ class AuthServiceTest {
         LoginAuthResponseDTO response = authService.login(request);
 
         assertNotNull(response);
-        assertEquals("jwt-token-123", response.token());
+        assertEquals("access-token-123", response.accessToken());
+        assertEquals("refresh-token-123", response.refreshToken());
 
         verify(authenticationManager).authenticate(eq(new UsernamePasswordAuthenticationToken("user", "password")));
     }

@@ -8,7 +8,11 @@ public enum CustomExceptionCode {
     USER_NOT_FOUND(10001, HttpStatus.NOT_FOUND, "User not found"),
     USERNAME_ALREADY_REGISTERED(10002, HttpStatus.CONFLICT, "Username already in use"),
     EMAIL_ALREADY_REGISTERED(10003, HttpStatus.CONFLICT, "Email already in use"),
-    USER_NOT_VERIFIED(10004, HttpStatus.FORBIDDEN, "User is not verified. Check your email for verification");
+    USER_NOT_VERIFIED(10004, HttpStatus.FORBIDDEN, "User is not verified. Check your email for verification"),
+    REFRESH_TOKEN_MISSING(100005, HttpStatus.BAD_REQUEST, "Refresh token is required"),
+    REFRESH_TOKEN_INVALID(10006, HttpStatus.NOT_FOUND, "Refresh token is invalid"),
+    REFRESH_TOKEN_EXPIRED(10007, HttpStatus.FORBIDDEN, "Refresh token has expired"),
+    REFRESH_TOKEN_REVOKED(10008, HttpStatus.FORBIDDEN, "Refresh token has been revoked");
 
     private final int code;
     private final HttpStatus httpStatus;
