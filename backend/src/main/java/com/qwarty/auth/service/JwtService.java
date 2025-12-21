@@ -32,13 +32,22 @@ public class JwtService {
     public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", ACCESS_TOKEN);
+        claims.put("guest", false);
         return buildToken(userDetails, claims, accessExpirationTime);
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", REFRESH_TOKEN);
+        claims.put("guest", false);
         return buildToken(userDetails, claims, refreshExpirationTime);
+    }
+
+    public String generateGuestToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", ACCESS_TOKEN);
+        claims.put("guest", true);
+        return buildToken(userDetails, claims, accessExpirationTime);
     }
 
     /**
