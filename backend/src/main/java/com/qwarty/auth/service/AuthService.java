@@ -10,9 +10,7 @@ import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
 import com.qwarty.exception.CustomException;
 import com.qwarty.exception.CustomExceptionCode;
-
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -21,7 +19,6 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -178,12 +175,12 @@ public class AuthService {
      */
     private void setRefreshCookie(String refreshToken, Instant refreshTokenExpiry, HttpServletResponse response) {
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
-            .httpOnly(true)
-            .secure(false)
-            .sameSite("Lax")
-            .path("/auth/refresh")
-            .maxAge(Duration.between(Instant.now(), refreshTokenExpiry))
-            .build();
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/auth/refresh")
+                .maxAge(Duration.between(Instant.now(), refreshTokenExpiry))
+                .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
     }

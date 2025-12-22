@@ -5,7 +5,6 @@ import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.RefreshAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
 import com.qwarty.auth.service.AuthService;
-
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -29,13 +28,15 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginAuthResponseDTO> login(@RequestBody LoginAuthRequestDTO requestDto, HttpServletResponse response) {
+    public ResponseEntity<LoginAuthResponseDTO> login(
+            @RequestBody LoginAuthRequestDTO requestDto, HttpServletResponse response) {
         LoginAuthResponseDTO responseDto = authService.login(requestDto, response);
         return ResponseEntity.ok(responseDto);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<RefreshAuthResponseDTO> refresh(@CookieValue(name = "refreshToken", required = true) String refreshToken, HttpServletResponse response) {
+    public ResponseEntity<RefreshAuthResponseDTO> refresh(
+            @CookieValue(name = "refreshToken", required = true) String refreshToken, HttpServletResponse response) {
         RefreshAuthResponseDTO responseDto = authService.refresh(refreshToken, response);
         return ResponseEntity.ok(responseDto);
     }

@@ -2,7 +2,6 @@ package com.qwarty.config;
 
 import com.qwarty.auth.filter.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

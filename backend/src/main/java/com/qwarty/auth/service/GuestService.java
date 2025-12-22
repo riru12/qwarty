@@ -1,14 +1,11 @@
 package com.qwarty.auth.service;
 
-import java.util.Random;
-
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
-
 import com.qwarty.auth.dto.GuestAuthResponseDTO;
 import com.qwarty.auth.model.User;
-
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -21,9 +18,7 @@ public class GuestService {
     public GuestAuthResponseDTO loginAsGuest() {
         String guestName = generateGuestName();
 
-        UserDetails guestDetails = User.builder()
-            .username(guestName)
-            .build();
+        UserDetails guestDetails = User.builder().username(guestName).build();
         String guestToken = jwtService.generateGuestToken(guestDetails);
         return new GuestAuthResponseDTO(guestToken);
     }
@@ -34,5 +29,4 @@ public class GuestService {
         int number = new Random().nextInt(1000);
         return adjective + noun + "#" + String.format("%03d", number);
     }
-
 }
