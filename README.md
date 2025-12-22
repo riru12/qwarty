@@ -25,8 +25,8 @@ JWT_ACCESS_EXPIRATION_TIME=   # Access token lifetime in milliseconds (e.g. 3600
 JWT_REFRESH_EXPIRATION_TIME=  # Refresh token lifetime in milliseconds (e.g. 604800000 = 7 days)
 
 # Backend configuration
-BACKEND_PORT=         # Port where the Spring Boot server will run (e.g. 8080)
-BACKEND_URL=          # Public backend URL (e.g. http://localhost:8080)
+BACKEND_PORT=              # Port where the Spring Boot server will run (e.g. 8080)
+VITE_BACKEND_URL=          # Public backend URL (e.g. http://localhost:8080)
 
 # Frontend configuration
 FRONTEND_URL=         # Frontend URL (e.g. http://localhost:5173)
