@@ -21,7 +21,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(
-                        auth -> auth.requestMatchers("/api/auth/**")
+                        auth -> auth.requestMatchers("/auth/**")
                                 .permitAll() // allow login/signup endpoints
                                 .anyRequest()
                                 .authenticated() // all other requests require authentication
