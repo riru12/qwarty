@@ -14,6 +14,9 @@ import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
 import com.qwarty.exception.CustomException;
 import com.qwarty.exception.CustomExceptionCode;
+
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.util.Date;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -98,6 +101,7 @@ class AuthServiceTest {
     @Test
     void login_successfulLogin_returnsJwt() {
         LoginAuthRequestDTO request = new LoginAuthRequestDTO("user", "password");
+        HttpServletResponse response = mock(HttpServletResponse.class);
 
         User user = User.builder()
                 .username("user")
@@ -116,11 +120,10 @@ class AuthServiceTest {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(null);
 
-        LoginAuthResponseDTO response = authService.login(request);
+        LoginAuthResponseDTO loginResponse = authService.login(request, response);
 
-        assertNotNull(response);
-        assertEquals("access-token-123", response.accessToken());
-        assertEquals("refresh-token-123", response.refreshToken());
+        assertNotNull(loginResponse);
+        assertEquals("access-token-123", loginResponse.accessToken());
 
         verify(authenticationManager).authenticate(eq(new UsernamePasswordAuthenticationToken("user", "password")));
     }
@@ -128,10 +131,11 @@ class AuthServiceTest {
     @Test
     void login_userNotFound_throwsException() {
         LoginAuthRequestDTO request = new LoginAuthRequestDTO("unknown", "password");
+        HttpServletResponse response = mock(HttpServletResponse.class);
 
         when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
 
-        CustomException exception = assertThrows(CustomException.class, () -> authService.login(request));
+        CustomException exception = assertThrows(CustomException.class, () -> authService.login(request, response));
 
         assertEquals(CustomExceptionCode.USER_NOT_FOUND, exception.getExceptionCode());
     }
@@ -139,12 +143,13 @@ class AuthServiceTest {
     @Test
     void login_userNotVerified_throwsException() {
         LoginAuthRequestDTO request = new LoginAuthRequestDTO("unverified", "password");
+        HttpServletResponse response = mock(HttpServletResponse.class);
 
         User user = User.builder().username("unverified").verified(false).build();
 
         when(userRepository.findByUsername("unverified")).thenReturn(Optional.of(user));
 
-        CustomException exception = assertThrows(CustomException.class, () -> authService.login(request));
+        CustomException exception = assertThrows(CustomException.class, () -> authService.login(request, response));
 
         assertEquals(CustomExceptionCode.USER_NOT_VERIFIED, exception.getExceptionCode());
 
@@ -155,6 +160,7 @@ class AuthServiceTest {
     @Test
     void login_invalidCredentials_authenticationFails_throwsException() {
         LoginAuthRequestDTO request = new LoginAuthRequestDTO("user", "wrongpassword");
+        HttpServletResponse response = mock(HttpServletResponse.class);
 
         User user = User.builder().username("user").verified(true).build();
 
@@ -165,6 +171,6 @@ class AuthServiceTest {
                 .authenticate(any(UsernamePasswordAuthenticationToken.class));
 
         // authenticate method will throw the authentication exception, which bubbles up
-        assertThrows(AuthenticationException.class, () -> authService.login(request));
+        assertThrows(AuthenticationException.class, () -> authService.login(request, response));
     }
 }

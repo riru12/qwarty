@@ -30,9 +30,9 @@ public class GuestService {
 
     private String generateGuestName() {
         String adjective = ADJECTIVES[new Random().nextInt(ADJECTIVES.length)];
-        String animal = NOUNS[new Random().nextInt(NOUNS.length)];
+        String noun = NOUNS[new Random().nextInt(NOUNS.length)];
         int number = new Random().nextInt(1000);
-        return adjective + animal + "#" + String.format("%03d", number);
+        return adjective + noun + "#" + String.format("%03d", number);
     }
 
 }

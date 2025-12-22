@@ -2,7 +2,6 @@ package com.qwarty.auth.service;
 
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
 import com.qwarty.auth.dto.LoginAuthResponseDTO;
-import com.qwarty.auth.dto.RefreshAuthRequestDTO;
 import com.qwarty.auth.dto.RefreshAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
 import com.qwarty.auth.model.RefreshToken;
@@ -11,13 +10,20 @@ import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
 import com.qwarty.exception.CustomException;
 import com.qwarty.exception.CustomExceptionCode;
+
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -66,63 +72,71 @@ public class AuthService {
      * @return JWT token in LoginAuthResponseDTO
      */
     @Transactional
-    public LoginAuthResponseDTO login(LoginAuthRequestDTO requestDto) {
+    public LoginAuthResponseDTO login(LoginAuthRequestDTO requestDto, HttpServletResponse response) {
         User user = authenticate(requestDto);
-        String accessJwt = jwtService.generateAccessToken(user);
-        String refreshJwt = jwtService.generateRefreshToken(user);
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+        Instant refreshExpiry =
+                jwtService.extractExpiration(refreshToken).toInstant(); // extract expiry for db and cookie
 
         // save the refresh token granted to db
-        RefreshToken refreshToken = RefreshToken.builder()
+        RefreshToken refreshTokenEntity = RefreshToken.builder()
                 .userId(user.getId())
-                .tokenHash(hashToken(refreshJwt))
-                .expiryDate(jwtService.extractExpiration(refreshJwt).toInstant())
+                .tokenHash(hashToken(refreshToken))
+                .expiryDate(refreshExpiry)
                 .build();
-        refreshTokenRepository.save(refreshToken);
+        refreshTokenRepository.save(refreshTokenEntity);
 
-        return new LoginAuthResponseDTO(accessJwt, refreshJwt);
+        setRefreshCookie(refreshToken, refreshExpiry, response);
+
+        return new LoginAuthResponseDTO(accessToken);
     }
 
     @Transactional
-    public RefreshAuthResponseDTO refresh(RefreshAuthRequestDTO requestDto) {
-        String refreshToken = requestDto.refreshToken();
-        if (refreshToken == null || refreshToken.isEmpty()) {
+    public RefreshAuthResponseDTO refresh(String refreshToken, HttpServletResponse response) {
+        if (refreshToken == null || refreshToken.isBlank()) {
             throw new CustomException(CustomExceptionCode.REFRESH_TOKEN_MISSING);
         }
 
         String hashedToken = hashToken(refreshToken); // hash the provided token from the client
 
-        RefreshToken storedToken = refreshTokenRepository
+        RefreshToken storedRefreshTokenEntity = refreshTokenRepository
                 .findByTokenHash(hashedToken)
                 .orElseThrow(() -> new CustomException(CustomExceptionCode.REFRESH_TOKEN_INVALID));
 
-        if (storedToken.getExpiryDate().isBefore(Instant.now())) {
-            refreshTokenRepository.delete(storedToken);
+        if (storedRefreshTokenEntity.getExpiryDate().isBefore(Instant.now())) {
+            refreshTokenRepository.delete(storedRefreshTokenEntity);
             throw new CustomException(CustomExceptionCode.REFRESH_TOKEN_EXPIRED);
         }
 
-        if (storedToken.isRevoked()) {
+        if (storedRefreshTokenEntity.isRevoked()) {
             throw new CustomException(CustomExceptionCode.REFRESH_TOKEN_REVOKED);
         }
 
         User user = userRepository
-                .findById(storedToken.getUserId())
+                .findById(storedRefreshTokenEntity.getUserId())
                 .orElseThrow(() -> new CustomException(CustomExceptionCode.USER_NOT_FOUND));
 
         // client-provided refresh token is valid, generate new access and refresh tokens, and revoke old refresh token
-        storedToken.setRevoked(true);
+        storedRefreshTokenEntity.setRevoked(true);
 
-        String accessJwt = jwtService.generateAccessToken(user); // new access token
-        String refreshJwt = jwtService.generateRefreshToken(user); // new refresh token
-        RefreshToken newRefreshToken = RefreshToken.builder()
+        String newAccessToken = jwtService.generateAccessToken(user); // new access token
+        String newRefreshToken = jwtService.generateRefreshToken(user); // new refresh token
+        Instant newRefreshExpiry =
+                jwtService.extractExpiration(newRefreshToken).toInstant(); // extract expiry for db and cookie
+
+        RefreshToken newRefreshTokenEntity = RefreshToken.builder()
                 .userId(user.getId())
-                .tokenHash(hashToken(refreshJwt))
-                .expiryDate(jwtService.extractExpiration(refreshJwt).toInstant())
+                .tokenHash(hashToken(newRefreshToken))
+                .expiryDate(newRefreshExpiry)
                 .build();
 
         refreshTokenRepository.saveAll(
-                List.of(storedToken, newRefreshToken)); // update revoked old token, save new token
+                List.of(storedRefreshTokenEntity, newRefreshTokenEntity)); // update revoked old token, save new token
 
-        return new RefreshAuthResponseDTO(accessJwt, refreshJwt);
+        setRefreshCookie(newRefreshToken, newRefreshExpiry, response);
+
+        return new RefreshAuthResponseDTO(newAccessToken);
     }
 
     private User authenticate(LoginAuthRequestDTO requestDto) {
@@ -153,5 +167,24 @@ public class AuthService {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-256 algorithm not available", e);
         }
+    }
+
+    /**
+     * Sets refreshToken cookie in the HTTP headers
+     *
+     * @param refreshToken
+     * @param refreshTokenExpiry
+     * @param response
+     */
+    private void setRefreshCookie(String refreshToken, Instant refreshTokenExpiry, HttpServletResponse response) {
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+            .httpOnly(true)
+            .secure(false)
+            .sameSite("Lax")
+            .path("/auth/refresh")
+            .maxAge(Duration.between(Instant.now(), refreshTokenExpiry))
+            .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
     }
 }
