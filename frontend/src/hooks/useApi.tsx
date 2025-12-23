@@ -1,6 +1,6 @@
 import { useAuth } from ".";
-import { apiService } from "../services/api/ApiService";
-import type { Endpoint, EndpointReq, EndpointRes } from "../services/api/endpoints/endpoint";
+import { apiService } from "@services/api/ApiService";
+import type { Endpoint, EndpointReq, EndpointRes } from "@services/api/endpoints/endpoint";
 
 const useApi = () => {                                      // hook to use api service
     const { accessToken } = useAuth();      // uses hook for auth context to be able to update app-wide accessToken

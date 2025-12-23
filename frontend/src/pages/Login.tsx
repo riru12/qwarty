@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Input, PasswordInput } from "../components";
-import { LoginEndpoint } from "../services/api/endpoints";
-import { useAuth, useApi } from "../hooks";
+import { Input, PasswordInput } from "@components";
+import { LoginEndpoint } from "@services/api/endpoints";
+import { useAuth, useApi } from "@hooks";
 
 function Login() {
     const [formUsername, setFormUsername] = useState('');

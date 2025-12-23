@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Input, PasswordInput } from "../components";
-import { SignupEndpoint } from "../services/api/endpoints";
-import { useApi } from "../hooks";
+import { Input, PasswordInput } from "@components";
+import { SignupEndpoint } from "@services/api/endpoints";
+import { useApi } from "@hooks";
 
 function Signup() {
     const [email, setEmail] = useState('');
