@@ -19,7 +19,6 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -180,7 +179,7 @@ public class AuthService {
      */
     private void setRefreshCookie(String refreshToken, Instant refreshTokenExpiry, HttpServletResponse response) {
         boolean isProd = "PROD".equals(environment);
-        
+
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(isProd ? true : false)
