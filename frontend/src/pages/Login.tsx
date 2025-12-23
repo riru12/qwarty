@@ -8,9 +8,7 @@ function Login() {
     const [formPassword, setFormPassword] = useState('');
     const api = useApi();
     
-    const { username, setUsername, accessToken } = useAuth();
-
-    console.log(accessToken);
+    const { username } = useAuth();
 
     async function requestLogin() {
         try {
@@ -19,8 +17,6 @@ function Login() {
                 password: formPassword
             });
 
-            // clear inputs after successful request
-            setUsername(formUsername);
             setFormUsername('');
             setFormPassword('');
         } catch (error) {

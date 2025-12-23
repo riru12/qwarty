@@ -90,7 +90,7 @@ public class AuthService {
 
         setRefreshCookie(refreshToken, refreshExpiry, response);
 
-        return new LoginAuthResponseDTO(accessToken);
+        return new LoginAuthResponseDTO(accessToken, user.getUsername());
     }
 
     @Transactional

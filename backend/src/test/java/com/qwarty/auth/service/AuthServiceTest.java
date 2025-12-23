@@ -122,6 +122,7 @@ class AuthServiceTest {
 
         assertNotNull(loginResponse);
         assertEquals("access-token-123", loginResponse.accessToken());
+        assertEquals("user", loginResponse.username());
 
         verify(authenticationManager).authenticate(eq(new UsernamePasswordAuthenticationToken("user", "password")));
     }
