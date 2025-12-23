@@ -1,37 +1,44 @@
 import { useState } from "react";
 import { Input, PasswordInput } from "../components";
 import { LoginEndpoint } from "../services/api/endpoints";
-import apiService from "../services/api/ApiService";
+import { useAuth, useApi } from "../hooks";
 
 function Login() {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [formUsername, setFormUsername] = useState('');
+    const [formPassword, setFormPassword] = useState('');
+    const api = useApi();
+    
+    const { username, setUsername, accessToken } = useAuth();
+
+    console.log(accessToken);
 
     async function requestLogin() {
         try {
-            await apiService.call(LoginEndpoint, {
-                username: username,
-                password: password
+            await api.call(LoginEndpoint, {
+                username: formUsername,
+                password: formPassword
             });
 
             // clear inputs after successful request
-            setUsername('');
-            setPassword('');
+            setUsername(formUsername);
+            setFormUsername('');
+            setFormPassword('');
         } catch (error) {
             alert("Sign up failed. Please try again.");
         }
     }
 
     return (
-        <>
+        <>  
+            <div>hello {username}</div>
             <Input 
-                value={username} 
-                setValue={setUsername} 
+                value={formUsername} 
+                setValue={setFormUsername} 
                 placeholder="Username"
             />
             <PasswordInput 
-                value={password} 
-                setValue={setPassword} 
+                value={formPassword} 
+                setValue={setFormPassword} 
                 placeholder="Password"
             />
             <button onClick={requestLogin}></button>

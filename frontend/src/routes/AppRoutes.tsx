@@ -1,7 +1,5 @@
 import { Routes, Route } from "react-router";
-
-import Signup from "../pages/Signup";
-import Login from "../pages/Login";
+import { Login, Signup } from "../pages";
 
 function AppRoutes() {
     return (
