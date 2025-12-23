@@ -19,6 +19,8 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,6 +38,9 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+
+    @Value("${environment}")
+    private String environment;
 
     /**
      * Registers a user after verifying that an existing account with the same username or email
@@ -174,10 +179,12 @@ public class AuthService {
      * @param response
      */
     private void setRefreshCookie(String refreshToken, Instant refreshTokenExpiry, HttpServletResponse response) {
+        boolean isProd = "PROD".equals(environment);
+        
         ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
-                .secure(false)
-                .sameSite("Lax")
+                .secure(isProd ? true : false)
+                .sameSite(isProd ? "Strict" : "Lax")
                 .path("/auth/refresh")
                 .maxAge(Duration.between(Instant.now(), refreshTokenExpiry))
                 .build();

@@ -22,6 +22,7 @@ JWT_REFRESH_EXPIRATION_TIME=    # Refresh token lifetime in milliseconds (e.g. 6
 BACKEND_PORT=                   # Port where the Spring Boot server will run (e.g. 8080)
 VITE_BACKEND_URL=               # Public backend URL (e.g. http://localhost:8080)
 FRONTEND_URL=                   # Frontend URL (e.g. http://localhost:5173)
+ENVIRONMENT=                    # Determines environment (e.g. DEV or PROD)
 ```
 
 ### Database
