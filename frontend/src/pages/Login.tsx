@@ -1,23 +1,20 @@
 import { useState } from "react";
 import { Input, PasswordInput } from "../components";
-import { SignupEndpoint } from "../services/api/endpoints";
+import { LoginEndpoint } from "../services/api/endpoints";
 import apiService from "../services/api/ApiService";
 
-function Signup() {
-    const [email, setEmail] = useState('');
+function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
 
-    async function requestSignUp() {
+    async function requestLogin() {
         try {
-            await apiService.call(SignupEndpoint, {
-                email: email,
+            await apiService.call(LoginEndpoint, {
                 username: username,
                 password: password
             });
 
             // clear inputs after successful request
-            setEmail('');
             setUsername('');
             setPassword('');
         } catch (error) {
@@ -28,11 +25,6 @@ function Signup() {
     return (
         <>
             <Input 
-                value={email} 
-                setValue={setEmail} 
-                placeholder="email@example.com"  
-            />
-            <Input 
                 value={username} 
                 setValue={setUsername} 
                 placeholder="Username"
@@ -42,9 +34,9 @@ function Signup() {
                 setValue={setPassword} 
                 placeholder="Password"
             />
-            <button onClick={requestSignUp}></button>
+            <button onClick={requestLogin}></button>
         </>
     )
 }
 
-export default Signup
+export default Login

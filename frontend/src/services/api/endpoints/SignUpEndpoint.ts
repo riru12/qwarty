@@ -1,12 +1,12 @@
 import type { Endpoint } from './endpoint';
 
-interface SignUpRequestDTO {
+interface SignupRequestDTO {
     email: string,
     username: string,
     password: string
 }
 
-export const SignUpEndpoint: Endpoint<SignUpRequestDTO, void> = {
+export const SignupEndpoint: Endpoint<SignupRequestDTO, void> = {
     route: "/auth/signup",
     method: "POST"
 };
