@@ -1,15 +1,23 @@
 package com.qwarty.auth.model;
 
+import com.qwarty.auth.lov.UserStatus;
 import com.qwarty.core.model.BaseModel;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import lombok.*;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -20,7 +28,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User extends BaseModel implements UserDetails {
+public class User implements UserDetails {
     @Id
     @GeneratedValue
     private UUID id;
@@ -36,11 +44,16 @@ public class User extends BaseModel implements UserDetails {
 
     @Builder.Default
     @NotNull
-    private boolean disabled = false;
+    @Enumerated(EnumType.STRING)
+    private UserStatus status = UserStatus.UNVERIFIED;
 
-    @Builder.Default
+    @CreationTimestamp
     @NotNull
-    private boolean verified = false;
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    @NotNull
+    private Instant updatedAt;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

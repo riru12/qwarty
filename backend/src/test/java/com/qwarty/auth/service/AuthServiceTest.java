@@ -9,6 +9,7 @@ import static org.mockito.Mockito.*;
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
 import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
+import com.qwarty.auth.lov.UserStatus;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
@@ -50,34 +51,42 @@ class AuthServiceTest {
 
     @Test
     void signup_successfulRegistration() {
-        SignupAuthRequestDTO request = new SignupAuthRequestDTO("newuser", "new@example.com", "password123");
+        String username = "newuser";
+        String email = "new@example.com";
+        String password = "password123";
+        String passwordHash = "encodedPassword";
 
-        when(userRepository.existsByUsername("newuser")).thenReturn(false);
-        when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
-        when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
+        SignupAuthRequestDTO request = new SignupAuthRequestDTO(username, email, password);
+
+        when(userRepository.existsByUsername(username)).thenReturn(false);
+        when(userRepository.existsByEmail(email)).thenReturn(false);
+        when(passwordEncoder.encode(password)).thenReturn(passwordHash);
 
         User savedUser = User.builder()
-                .username("newuser")
-                .email("new@example.com")
-                .passwordHash("encodedPassword")
+                .username(username)
+                .email(email)
+                .passwordHash(passwordHash)
                 .build();
 
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
-        // should not throw
         assertDoesNotThrow(() -> authService.signup(request));
 
         verify(userRepository)
-                .save(argThat(user -> user.getUsername().equals("newuser")
-                        && user.getEmail().equals("new@example.com")
-                        && user.getPasswordHash().equals("encodedPassword")));
+                .save(argThat(user -> user.getUsername().equals(username)
+                        && user.getEmail().equals(email)
+                        && user.getPasswordHash().equals(passwordHash)));
     }
 
     @Test
     void signup_usernameAlreadyExists_throwsException() {
-        SignupAuthRequestDTO request = new SignupAuthRequestDTO("existing", "new@example.com", "password");
+        String username = "existing";
+        String email = "new@example.com";
+        String password = "password123";
 
-        when(userRepository.existsByUsername("existing")).thenReturn(true);
+        SignupAuthRequestDTO request = new SignupAuthRequestDTO(username, email, password);
+
+        when(userRepository.existsByUsername(username)).thenReturn(true);
 
         CustomException exception = assertThrows(CustomException.class, () -> authService.signup(request));
 
@@ -86,10 +95,14 @@ class AuthServiceTest {
 
     @Test
     void signup_emailAlreadyExists_throwsException() {
-        SignupAuthRequestDTO request = new SignupAuthRequestDTO("newuser", "existing@example.com", "password");
+        String username = "newuser";
+        String email = "existing@example.com";
+        String password = "password123";
 
-        when(userRepository.existsByUsername("newuser")).thenReturn(false);
-        when(userRepository.existsByEmail("existing@example.com")).thenReturn(true);
+        SignupAuthRequestDTO request = new SignupAuthRequestDTO(username, email, password);
+
+        when(userRepository.existsByUsername(username)).thenReturn(false);
+        when(userRepository.existsByEmail(email)).thenReturn(true);
 
         CustomException exception = assertThrows(CustomException.class, () -> authService.signup(request));
 
@@ -98,21 +111,28 @@ class AuthServiceTest {
 
     @Test
     void login_successfulLogin_returnsJwt() {
-        LoginAuthRequestDTO request = new LoginAuthRequestDTO("user", "password");
+        String username = "user";
+        String email = "user@example.com";
+        String password = "password123";
+        String passwordHash = "encodedPassword";
+        String accessToken = "access-token-123";
+        String refreshToken = "refresh-token-123";
+        Date refreshExpiration = new Date(System.currentTimeMillis() + 7200000);
+
+        LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
         User user = User.builder()
-                .username("user")
-                .email("user@example.com")
-                .passwordHash("encoded")
-                .verified(true)
+                .username(username)
+                .email(email)
+                .passwordHash(passwordHash)
+                .status(UserStatus.ACTIVE)
                 .build();
 
-        Date refreshExpiration = new Date(System.currentTimeMillis() + 7200000);
-        when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
-        when(jwtService.generateAccessToken(user)).thenReturn("access-token-123");
-        when(jwtService.generateRefreshToken(user)).thenReturn(("refresh-token-123"));
-        when(jwtService.extractExpiration("refresh-token-123")).thenReturn(refreshExpiration);
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(jwtService.generateAccessToken(user)).thenReturn(accessToken);
+        when(jwtService.generateRefreshToken(user)).thenReturn((refreshToken));
+        when(jwtService.extractExpiration(refreshToken)).thenReturn(refreshExpiration);
 
         // authenticationManager.authenticate should not throw
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
@@ -121,18 +141,21 @@ class AuthServiceTest {
         LoginAuthResponseDTO loginResponse = authService.login(request, response);
 
         assertNotNull(loginResponse);
-        assertEquals("access-token-123", loginResponse.accessToken());
-        assertEquals("user", loginResponse.username());
+        assertEquals(accessToken, loginResponse.accessToken());
+        assertEquals(username, loginResponse.username());
 
-        verify(authenticationManager).authenticate(eq(new UsernamePasswordAuthenticationToken("user", "password")));
+        verify(authenticationManager).authenticate(eq(new UsernamePasswordAuthenticationToken(username, password)));
     }
 
     @Test
     void login_userNotFound_throwsException() {
-        LoginAuthRequestDTO request = new LoginAuthRequestDTO("unknown", "password");
+        String username = "unknown";
+        String password = "password123";
+
+        LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
+        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
 
         CustomException exception = assertThrows(CustomException.class, () -> authService.login(request, response));
 
@@ -141,12 +164,15 @@ class AuthServiceTest {
 
     @Test
     void login_userNotVerified_throwsException() {
-        LoginAuthRequestDTO request = new LoginAuthRequestDTO("unverified", "password");
+        String username = "unverified";
+        String password = "password123";
+
+        LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        User user = User.builder().username("unverified").verified(false).build();
+        User user = User.builder().username(username).status(UserStatus.UNVERIFIED).build();
 
-        when(userRepository.findByUsername("unverified")).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
         CustomException exception = assertThrows(CustomException.class, () -> authService.login(request, response));
 
@@ -158,12 +184,15 @@ class AuthServiceTest {
 
     @Test
     void login_invalidCredentials_authenticationFails_throwsException() {
-        LoginAuthRequestDTO request = new LoginAuthRequestDTO("user", "wrongpassword");
+        String username = "user";
+        String password = "wrongpassword";
+
+        LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        User user = User.builder().username("user").verified(true).build();
+        User user = User.builder().username(username).status(UserStatus.ACTIVE).build();
 
-        when(userRepository.findByUsername("user")).thenReturn(Optional.of(user));
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
         doThrow(new org.springframework.security.authentication.BadCredentialsException("Bad credentials"))
                 .when(authenticationManager)

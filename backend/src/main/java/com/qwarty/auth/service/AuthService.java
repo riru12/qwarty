@@ -4,6 +4,7 @@ import com.qwarty.auth.dto.LoginAuthRequestDTO;
 import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.RefreshAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
+import com.qwarty.auth.lov.UserStatus;
 import com.qwarty.auth.model.RefreshToken;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.RefreshTokenRepository;
@@ -44,8 +45,6 @@ public class AuthService {
     /**
      * Registers a user after verifying that an existing account with the same username or email
      * doesn't exist
-     *
-     * @param requestDto
      */
     @Transactional
     public void signup(SignupAuthRequestDTO requestDto) {
@@ -68,9 +67,6 @@ public class AuthService {
 
     /**
      * Logs a user in and returns a JWT
-     *
-     * @param requestDto
-     * @return JWT token in LoginAuthResponseDTO
      */
     @Transactional
     public LoginAuthResponseDTO login(LoginAuthRequestDTO requestDto, HttpServletResponse response) {
@@ -145,7 +141,7 @@ public class AuthService {
                 .findByUsername(requestDto.username())
                 .orElseThrow(() -> new CustomException(CustomExceptionCode.USER_NOT_FOUND));
 
-        if (!user.isVerified()) {
+        if (UserStatus.UNVERIFIED.equals(user.getStatus())) {
             throw new CustomException(CustomExceptionCode.USER_NOT_VERIFIED);
         }
 
@@ -157,8 +153,6 @@ public class AuthService {
 
     /**
      * Primarily used for hashing a refresh token using SHA-256 before saving it to the DB
-     * @param token
-     * @return hashed token
      */
     private String hashToken(String token) {
         try {
@@ -172,10 +166,6 @@ public class AuthService {
 
     /**
      * Sets refreshToken cookie in the HTTP headers
-     *
-     * @param refreshToken
-     * @param refreshTokenExpiry
-     * @param response
      */
     private void setRefreshCookie(String refreshToken, Instant refreshTokenExpiry, HttpServletResponse response) {
         boolean isProd = "PROD".equals(environment);

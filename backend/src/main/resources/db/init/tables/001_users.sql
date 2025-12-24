@@ -7,12 +7,12 @@ CREATE TABLE users(
     email TEXT NOT NULL,
     username TEXT NOT NULL,
     password_hash TEXT NOT NULL,
-    disabled BOOLEAN NOT NULL DEFAULT FALSE,
-    verified BOOLEAN NOT NULL DEFAULT FALSE,
+    status TEXT NOT NULL DEFAULT 'UNVERIFIED',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by UUID,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_by UUID,
     CONSTRAINT users_pk PRIMARY KEY (id),
-    CONSTRAINT users_username_uk UNIQUE (username)
+    CONSTRAINT users_email_uk UNIQUE (email),
+    CONSTRAINT users_username_uk UNIQUE (username),
+    CONSTRAINT users_status_chk CHECK (status IN ('UNVERIFIED', 'ACTIVE', 'DISABLED')),
+    CONSTRAINT users_email_chk CHECK (email ~* '[A-Z0-9._%-]+@[A-Z0-9._%-]+\.[A-Z]{2,4}')
 );

@@ -4,7 +4,7 @@ import { Eye, EyeClosed } from "lucide-react";
 import "./PasswordInput.css";
 
 type PasswordInputProps = {
-    value: any,
+    value: string,
     setValue: Dispatch<SetStateAction<string>>;
 } & InputHTMLAttributes<HTMLInputElement>;
 
@@ -15,7 +15,7 @@ function PasswordInput({ value, setValue, ...props }: PasswordInputProps) {
         setValue(event.target.value);
     }
 
-    function togglePassword() {
+    function togglePasswordVisibility() {
         setShowPassword(!showPassword);
     }
 
@@ -29,7 +29,7 @@ function PasswordInput({ value, setValue, ...props }: PasswordInputProps) {
                 className="password-input"
             />
             <button 
-                onClick={togglePassword}
+                onClick={togglePasswordVisibility}
                 className="password-toggle"
                 type="button"
             >

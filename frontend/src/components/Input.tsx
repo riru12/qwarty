@@ -2,7 +2,7 @@ import type { ChangeEvent, Dispatch, InputHTMLAttributes, SetStateAction } from 
 import "./Input.css";
 
 type InputProps = {
-    value: any,
+    value: string,
     setValue: Dispatch<SetStateAction<string>>;
 } & InputHTMLAttributes<HTMLInputElement>;
 
