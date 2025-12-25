@@ -35,7 +35,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         final String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ") || skipJwtFilter(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -59,5 +59,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             handlerExceptionResolver.resolveException(request, response, null, e);
         }
+    }
+
+    private boolean skipJwtFilter(String path) {
+        return path.startsWith("/api/auth/");
     }
 }
