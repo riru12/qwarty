@@ -150,8 +150,7 @@ class AuthServiceTest {
         LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        User user =
-                User.builder().username(username).verified(false).build();
+        User user = User.builder().username(username).verified(false).build();
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
