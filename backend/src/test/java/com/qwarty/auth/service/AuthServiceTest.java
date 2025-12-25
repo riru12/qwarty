@@ -122,7 +122,6 @@ class AuthServiceTest {
 
         LoginAuthResponseDTO loginResponse = authService.login(request, response);
 
-        assertNotNull(loginResponse);
         assertEquals(username, loginResponse.username());
 
         verify(authenticationManager).authenticate(eq(new UsernamePasswordAuthenticationToken(username, password)));
