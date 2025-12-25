@@ -11,8 +11,8 @@ class ApiService {
         payload?: EndpointReq<E>,
         accessToken?: string | null,
     ): Promise<EndpointRes<E>> {
-        
-        const url = new URL(`api/${endpoint.route}`, BASE_URL);
+        // regex ensures the endpoint route works correctly whether or not it starts with a `/`
+        const url = new URL(`api/${endpoint.route.replace(/^\/+/, "")}`, BASE_URL);
         const request = this.buildRequest(endpoint, accessToken, payload);
 
         let response = await fetch(url, request);
