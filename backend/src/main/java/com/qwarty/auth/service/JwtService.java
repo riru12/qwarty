@@ -1,5 +1,6 @@
 package com.qwarty.auth.service;
 
+import com.qwarty.auth.lov.JwtTokenType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -12,8 +13,6 @@ import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
-
-import com.qwarty.auth.lov.JwtTokenType;
 
 @Service
 public class JwtService {
@@ -80,8 +79,9 @@ public class JwtService {
     /**
      * Extracts type field in claims, returns String equivalent to either "ACCESS" or "REFRESH"
      */
-    public String extractType(String token) {
-        return extractClaim(token, claims -> claims.get("type", String.class));
+    public JwtTokenType extractType(String token) {
+        String typeString = extractClaim(token, claims -> claims.get("type", String.class));
+        return JwtTokenType.valueOf(typeString);
     }
 
     /**
@@ -109,8 +109,11 @@ public class JwtService {
     public boolean isAccessTokenValid(String token, UserDetails userDetails) {
         try {
             final String username = extractSubject(token);
-            final JwtTokenType type = JwtTokenType.valueOf(extractClaim(token, claims -> claims.get("type", String.class)));
-            return (JwtTokenType.ACCESS.equals(type) && username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+            final JwtTokenType type =
+                    JwtTokenType.valueOf(extractClaim(token, claims -> claims.get("type", String.class)));
+            return (JwtTokenType.ACCESS.equals(type)
+                    && username.equals(userDetails.getUsername())
+                    && !isTokenExpired(token));
         } catch (Exception e) {
             return false;
         }

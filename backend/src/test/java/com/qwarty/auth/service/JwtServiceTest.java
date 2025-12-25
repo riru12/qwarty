@@ -4,33 +4,33 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
+import com.qwarty.auth.lov.JwtTokenType;
+import java.lang.reflect.Field;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.test.util.ReflectionTestUtils;
 
+@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 class JwtServiceTest {
 
+    @Autowired
     private JwtService jwtService;
 
     @Mock
     private UserDetails userDetails;
 
+    private final String testUsername = "testuser";
+
     @BeforeEach
     void setUp() {
         // lenient because malformed token test doesn't get to call this due to exception thrown
-        lenient().when(userDetails.getUsername()).thenReturn("testuser");
-        jwtService = new JwtService();
-
-        // inject fake values using ReflectionTestUtils
-        ReflectionTestUtils.setField(
-                jwtService, "secretKey", "abcdefghijklmnopqrstuvwxzy1234567890abcdefghijklmnopqrstuvwxzy1234567890");
-        ReflectionTestUtils.setField(jwtService, "accessExpirationTime", 3600000L);
-        ReflectionTestUtils.setField(jwtService, "refreshExpirationTime", 7200000L);
+        lenient().when(userDetails.getUsername()).thenReturn(testUsername);
     }
 
     @Test
@@ -39,10 +39,10 @@ class JwtServiceTest {
 
         assertNotNull(token);
         String username = jwtService.extractSubject(token);
-        String type = jwtService.extractType(token);
+        JwtTokenType type = jwtService.extractType(token);
 
-        assertEquals("testuser", username);
-        assertEquals("ACCESS", type);
+        assertEquals(testUsername, username);
+        assertEquals(JwtTokenType.ACCESS, type);
     }
 
     @Test
@@ -51,10 +51,10 @@ class JwtServiceTest {
 
         assertNotNull(token);
         String username = jwtService.extractSubject(token);
-        String type = jwtService.extractType(token);
+        JwtTokenType type = jwtService.extractType(token);
 
-        assertEquals("testuser", username);
-        assertEquals("REFRESH", type);
+        assertEquals(testUsername, username);
+        assertEquals(JwtTokenType.REFRESH, type);
     }
 
     @Test
@@ -75,15 +75,24 @@ class JwtServiceTest {
 
     @Test
     void testIsAccessTokenValid_expiredToken() {
-        // generate expired token by using negative expiration
-        ReflectionTestUtils.setField(jwtService, "accessExpirationTime", -1L);
-        String token = jwtService.generateAccessToken(userDetails);
+        try {
+            // get original value of accessExpirationTime
+            Field accessField = JwtService.class.getDeclaredField("accessExpirationTime");
+            accessField.setAccessible(true);
+            Long originalExpiration = (Long) accessField.get(jwtService);
 
-        // reset to normal expiration
-        ReflectionTestUtils.setField(jwtService, "accessExpirationTime", 3600000L);
+            // temporarily set negative expiration to generate expired token
+            accessField.set(jwtService, -1L);
+            String token = jwtService.generateAccessToken(userDetails);
 
-        boolean valid = jwtService.isAccessTokenValid(token, userDetails);
-        assertFalse(valid, "Expired token should be invalid");
+            // restore original expiration injected by Spring
+            accessField.set(jwtService, originalExpiration);
+
+            boolean valid = jwtService.isAccessTokenValid(token, userDetails);
+            assertFalse(valid, "Expired token should be invalid");
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            fail("Failed to access or modify accessExpirationTime: " + e.getMessage());
+        }
     }
 
     @Test
@@ -108,14 +117,14 @@ class JwtServiceTest {
         String token = jwtService.generateAccessToken(userDetails);
         String username = jwtService.extractSubject(token);
 
-        assertEquals("testuser", username);
+        assertEquals(testUsername, username);
     }
 
     @Test
     void testExtractClaim_tokenType() {
         String accessToken = jwtService.generateAccessToken(userDetails);
-        String type = jwtService.extractType(accessToken);
+        JwtTokenType type = jwtService.extractType(accessToken);
 
-        assertEquals("ACCESS", type);
+        assertEquals(JwtTokenType.ACCESS, type);
     }
 }

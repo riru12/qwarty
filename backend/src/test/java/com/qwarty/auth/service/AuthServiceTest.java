@@ -1,9 +1,7 @@
 package com.qwarty.auth.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
@@ -16,38 +14,38 @@ import com.qwarty.auth.repository.UserRepository;
 import com.qwarty.exception.CustomException;
 import com.qwarty.exception.CustomExceptionCode;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Date;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
 class AuthServiceTest {
 
-    @Mock
-    private UserRepository userRepository;
+    @Autowired
+    private AuthService authService;
 
-    @Mock
-    private RefreshTokenRepository refreshTokenRepository;
-
-    @Mock
+    @SuppressWarnings("unused")
+    @Autowired // autowired to use injected values from application.properties
     private JwtService jwtService;
 
-    @Mock
+    @MockitoBean
+    private UserRepository userRepository;
+
+    @MockitoBean
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @MockitoBean
     private PasswordEncoder passwordEncoder;
 
-    @Mock
+    @MockitoBean
     private AuthenticationManager authenticationManager;
-
-    @InjectMocks
-    private AuthService authService;
 
     @Test
     void signup_successfulRegistration() {
@@ -89,7 +87,6 @@ class AuthServiceTest {
         when(userRepository.existsByUsername(username)).thenReturn(true);
 
         CustomException exception = assertThrows(CustomException.class, () -> authService.signup(request));
-
         assertEquals(CustomExceptionCode.USERNAME_ALREADY_REGISTERED, exception.getExceptionCode());
     }
 
@@ -105,43 +102,28 @@ class AuthServiceTest {
         when(userRepository.existsByEmail(email)).thenReturn(true);
 
         CustomException exception = assertThrows(CustomException.class, () -> authService.signup(request));
-
         assertEquals(CustomExceptionCode.EMAIL_ALREADY_REGISTERED, exception.getExceptionCode());
     }
 
     @Test
     void login_successfulLogin_returnsJwt() {
         String username = "user";
-        String email = "user@example.com";
         String password = "password123";
-        String passwordHash = "encodedPassword";
-        String accessToken = "access-token-123";
-        String refreshToken = "refresh-token-123";
-        Date refreshExpiration = new Date(System.currentTimeMillis() + 7200000);
 
         LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        User user = User.builder()
-                .username(username)
-                .email(email)
-                .passwordHash(passwordHash)
-                .status(UserStatus.ACTIVE)
-                .build();
+        User user = User.builder().username(username).status(UserStatus.ACTIVE).build();
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
-        when(jwtService.generateAccessToken(user)).thenReturn(accessToken);
-        when(jwtService.generateRefreshToken(user)).thenReturn((refreshToken));
-        when(jwtService.extractExpiration(refreshToken)).thenReturn(refreshExpiration);
 
-        // authenticationManager.authenticate should not throw
+        Authentication authentication = mock(Authentication.class);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(null);
+                .thenReturn(authentication);
 
         LoginAuthResponseDTO loginResponse = authService.login(request, response);
 
         assertNotNull(loginResponse);
-        assertEquals(accessToken, loginResponse.accessToken());
         assertEquals(username, loginResponse.username());
 
         verify(authenticationManager).authenticate(eq(new UsernamePasswordAuthenticationToken(username, password)));
@@ -158,7 +140,6 @@ class AuthServiceTest {
         when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
 
         CustomException exception = assertThrows(CustomException.class, () -> authService.login(request, response));
-
         assertEquals(CustomExceptionCode.USER_NOT_FOUND, exception.getExceptionCode());
     }
 
@@ -170,15 +151,14 @@ class AuthServiceTest {
         LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        User user = User.builder().username(username).status(UserStatus.UNVERIFIED).build();
+        User user =
+                User.builder().username(username).status(UserStatus.UNVERIFIED).build();
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
         CustomException exception = assertThrows(CustomException.class, () -> authService.login(request, response));
-
         assertEquals(CustomExceptionCode.USER_NOT_VERIFIED, exception.getExceptionCode());
 
-        // authenticationManager should not be called
         verify(authenticationManager, never()).authenticate(any());
     }
 
@@ -194,11 +174,9 @@ class AuthServiceTest {
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
-        doThrow(new org.springframework.security.authentication.BadCredentialsException("Bad credentials"))
-                .when(authenticationManager)
-                .authenticate(any(UsernamePasswordAuthenticationToken.class));
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new BadCredentialsException("Bad credentials"));
 
-        // authenticate method will throw the authentication exception, which bubbles up
-        assertThrows(AuthenticationException.class, () -> authService.login(request, response));
+        assertThrows(BadCredentialsException.class, () -> authService.login(request, response));
     }
 }

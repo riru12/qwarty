@@ -1,7 +1,6 @@
 package com.qwarty.auth.model;
 
 import com.qwarty.auth.lov.UserStatus;
-import com.qwarty.core.model.BaseModel;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -9,13 +8,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
-
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import lombok.*;
-
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
