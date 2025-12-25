@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
 import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
-import com.qwarty.auth.lov.UserStatus;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
@@ -113,7 +112,7 @@ class AuthServiceTest {
         LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        User user = User.builder().username(username).status(UserStatus.ACTIVE).build();
+        User user = User.builder().username(username).verified(true).build();
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
@@ -152,7 +151,7 @@ class AuthServiceTest {
         HttpServletResponse response = mock(HttpServletResponse.class);
 
         User user =
-                User.builder().username(username).status(UserStatus.UNVERIFIED).build();
+                User.builder().username(username).verified(false).build();
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
@@ -170,7 +169,7 @@ class AuthServiceTest {
         LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        User user = User.builder().username(username).status(UserStatus.ACTIVE).build();
+        User user = User.builder().username(username).verified(true).build();
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 

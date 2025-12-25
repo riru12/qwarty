@@ -41,8 +41,12 @@ public class User implements UserDetails {
 
     @Builder.Default
     @NotNull
+    private boolean verified = false;
+
+    @Builder.Default
+    @NotNull
     @Enumerated(EnumType.STRING)
-    private UserStatus status = UserStatus.UNVERIFIED;
+    private UserStatus status = UserStatus.ACTIVE;
 
     @CreationTimestamp
     @NotNull
