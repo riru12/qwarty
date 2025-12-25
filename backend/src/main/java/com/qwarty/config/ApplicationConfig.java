@@ -1,5 +1,6 @@
 package com.qwarty.config;
 
+import com.qwarty.auth.lov.UserStatus;
 import com.qwarty.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +23,7 @@ public class ApplicationConfig {
     @Bean
     UserDetailsService userDetailsService() {
         return username -> userRepository
-                .findByUsername(username)
+                .findByUsernameAndStatusNot(username, UserStatus.DELETED)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 

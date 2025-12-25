@@ -12,8 +12,14 @@ CREATE TABLE users(
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT users_pk PRIMARY KEY (id),
-    CONSTRAINT users_email_uk UNIQUE (email),
-    CONSTRAINT users_username_uk UNIQUE (username),
-    CONSTRAINT users_status_chk CHECK (status IN ('ACTIVE', 'DISABLED')),
+    CONSTRAINT users_status_chk CHECK (status IN ('ACTIVE', 'DELETED')),
     CONSTRAINT users_email_chk CHECK (email ~* '[A-Z0-9._%-]+@[A-Z0-9._%-]+\.[A-Z]{2,4}')
 );
+
+CREATE UNIQUE INDEX users_email_not_deleted_uk
+ON users (email)
+WHERE status <> 'DELETED';
+
+CREATE UNIQUE INDEX users_username_not_deleted_uk
+ON users (username)
+WHERE status <> 'DELETED';

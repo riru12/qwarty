@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
 import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
+import com.qwarty.auth.lov.UserStatus;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
@@ -55,8 +56,10 @@ class AuthServiceTest {
 
         SignupAuthRequestDTO request = new SignupAuthRequestDTO(username, email, password);
 
-        when(userRepository.existsByUsername(username)).thenReturn(false);
-        when(userRepository.existsByEmail(email)).thenReturn(false);
+        when(userRepository.existsByUsernameAndStatusNot(username, UserStatus.DELETED))
+                .thenReturn(false);
+        when(userRepository.existsByEmailAndStatusNot(email, UserStatus.DELETED))
+                .thenReturn(false);
         when(passwordEncoder.encode(password)).thenReturn(passwordHash);
 
         User savedUser = User.builder()
@@ -83,7 +86,8 @@ class AuthServiceTest {
 
         SignupAuthRequestDTO request = new SignupAuthRequestDTO(username, email, password);
 
-        when(userRepository.existsByUsername(username)).thenReturn(true);
+        when(userRepository.existsByUsernameAndStatusNot(username, UserStatus.DELETED))
+                .thenReturn(true);
 
         CustomException exception = assertThrows(CustomException.class, () -> authService.signup(request));
         assertEquals(CustomExceptionCode.USERNAME_ALREADY_REGISTERED, exception.getExceptionCode());
@@ -97,8 +101,10 @@ class AuthServiceTest {
 
         SignupAuthRequestDTO request = new SignupAuthRequestDTO(username, email, password);
 
-        when(userRepository.existsByUsername(username)).thenReturn(false);
-        when(userRepository.existsByEmail(email)).thenReturn(true);
+        when(userRepository.existsByUsernameAndStatusNot(username, UserStatus.DELETED))
+                .thenReturn(false);
+        when(userRepository.existsByEmailAndStatusNot(email, UserStatus.DELETED))
+                .thenReturn(true);
 
         CustomException exception = assertThrows(CustomException.class, () -> authService.signup(request));
         assertEquals(CustomExceptionCode.EMAIL_ALREADY_REGISTERED, exception.getExceptionCode());
@@ -114,7 +120,8 @@ class AuthServiceTest {
 
         User user = User.builder().username(username).verified(true).build();
 
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(userRepository.findByUsernameAndStatusNot(username, UserStatus.DELETED))
+                .thenReturn(Optional.of(user));
 
         Authentication authentication = mock(Authentication.class);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
@@ -135,7 +142,8 @@ class AuthServiceTest {
         LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+        when(userRepository.findByUsernameAndStatusNot(username, UserStatus.DELETED))
+                .thenReturn(Optional.empty());
 
         CustomException exception = assertThrows(CustomException.class, () -> authService.login(request, response));
         assertEquals(CustomExceptionCode.USER_NOT_FOUND, exception.getExceptionCode());
@@ -151,7 +159,8 @@ class AuthServiceTest {
 
         User user = User.builder().username(username).verified(false).build();
 
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(userRepository.findByUsernameAndStatusNot(username, UserStatus.DELETED))
+                .thenReturn(Optional.of(user));
 
         CustomException exception = assertThrows(CustomException.class, () -> authService.login(request, response));
         assertEquals(CustomExceptionCode.USER_NOT_VERIFIED, exception.getExceptionCode());
@@ -169,7 +178,8 @@ class AuthServiceTest {
 
         User user = User.builder().username(username).verified(true).build();
 
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+        when(userRepository.findByUsernameAndStatusNot(username, UserStatus.DELETED))
+                .thenReturn(Optional.of(user));
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new BadCredentialsException("Bad credentials"));

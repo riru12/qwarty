@@ -4,6 +4,7 @@ import com.qwarty.auth.dto.LoginAuthRequestDTO;
 import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.RefreshAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
+import com.qwarty.auth.lov.UserStatus;
 import com.qwarty.auth.model.RefreshToken;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.RefreshTokenRepository;
@@ -47,9 +48,9 @@ public class AuthService {
      */
     @Transactional
     public void signup(SignupAuthRequestDTO requestDto) {
-        if (userRepository.existsByUsername(requestDto.username())) {
+        if (userRepository.existsByUsernameAndStatusNot(requestDto.username(), UserStatus.DELETED)) {
             throw new CustomException(CustomExceptionCode.USERNAME_ALREADY_REGISTERED);
-        } else if (userRepository.existsByEmail(requestDto.email())) {
+        } else if (userRepository.existsByEmailAndStatusNot(requestDto.email(), UserStatus.DELETED)) {
             throw new CustomException(CustomExceptionCode.EMAIL_ALREADY_REGISTERED);
         }
 
@@ -137,7 +138,7 @@ public class AuthService {
 
     private User authenticate(LoginAuthRequestDTO requestDto) {
         User user = userRepository
-                .findByUsername(requestDto.username())
+                .findByUsernameAndStatusNot(requestDto.username(), UserStatus.DELETED)
                 .orElseThrow(() -> new CustomException(CustomExceptionCode.USER_NOT_FOUND));
 
         if (!user.isVerified()) {
