@@ -8,7 +8,7 @@ type PasswordInputProps = {
     setValue: Dispatch<SetStateAction<string>>;
 } & InputHTMLAttributes<HTMLInputElement>;
 
-function PasswordInput({ value, setValue, ...props }: PasswordInputProps) {
+export function PasswordInput({ value, setValue, ...props }: PasswordInputProps) {
     const [showPassword, setShowPassword] = useState(false);
     
     function updateValue(event: ChangeEvent<HTMLInputElement>) {
@@ -38,5 +38,3 @@ function PasswordInput({ value, setValue, ...props }: PasswordInputProps) {
         </div>
     );
 }
-
-export default PasswordInput;

@@ -3,7 +3,7 @@ import { apiService } from "@services/api/ApiService";
 import { LoginEndpoint } from "@/services/api/endpoints";
 import type { Endpoint, EndpointReq, EndpointRes } from "@services/api/endpoints/endpoint";
 
-const useApi = () => {                                     // hook to use api service
+export const useApi = () => {                                     // hook to use api service
     const { accessToken, setAuthStates } = useAuth();      // uses hook for auth context to be able to update app-wide accessToken
 
     const call = async <E extends Endpoint<any, any>>(
@@ -21,5 +21,3 @@ const useApi = () => {                                     // hook to use api se
 
     return { call };
 };
-
-export default useApi;

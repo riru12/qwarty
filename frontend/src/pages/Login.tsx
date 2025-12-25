@@ -3,7 +3,7 @@ import { Input, PasswordInput } from "@components";
 import { LoginEndpoint } from "@services/api/endpoints";
 import { useAuth, useApi } from "@hooks";
 
-function Login() {
+export function Login() {
     const [formUsername, setFormUsername] = useState('');
     const [formPassword, setFormPassword] = useState('');
     const api = useApi();
@@ -41,5 +41,3 @@ function Login() {
         </>
     )
 }
-
-export default Login

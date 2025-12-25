@@ -6,7 +6,7 @@ type InputProps = {
     setValue: Dispatch<SetStateAction<string>>;
 } & InputHTMLAttributes<HTMLInputElement>;
 
-function Input({ value, setValue, ...props }: InputProps) {
+export function Input({ value, setValue, ...props }: InputProps) {
     
     function updateValue(event: ChangeEvent<HTMLInputElement>) {
         setValue(event.target.value);
@@ -21,5 +21,3 @@ function Input({ value, setValue, ...props }: InputProps) {
         />
     );
 }
-
-export default Input;
