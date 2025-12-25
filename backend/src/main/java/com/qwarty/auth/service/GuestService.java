@@ -15,7 +15,7 @@ public class GuestService {
     private static final String[] ADJECTIVES = {"Speedy", "Sluggish", "Chill"};
     private static final String[] NOUNS = {"Turtle", "Rabbit", "Capybara"};
 
-    public GuestAuthResponseDTO loginAsGuest() {
+    public GuestAuthResponseDTO continueAsGuest() {
         String guestName = generateGuestName();
 
         UserDetails guestDetails = User.builder().username(guestName).build();
