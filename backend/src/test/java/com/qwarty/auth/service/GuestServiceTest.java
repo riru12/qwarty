@@ -26,7 +26,7 @@ public class GuestServiceTest {
         GuestAuthResponseDTO response = guestService.continueAsGuest();
 
         assertTrue(
-                response.username().matches("[A-Za-z]+[A-Za-z]+#\\d{3}"),
+                response.username().matches("([A-Z][a-z]+){2}#\\d{3}"),
                 "Guest name should match pattern 'AdjectiveNoun#Num'");
 
         verify(jwtService, times(1)).generateGuestToken(any(UserDetails.class));

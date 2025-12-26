@@ -13,26 +13,17 @@ public class ExceptionHttpStatusMapper {
 
     public HttpStatus map(Exception ex) {
 
-        if (ex instanceof MethodArgumentNotValidException) {
-            return HttpStatus.BAD_REQUEST;
-        }
+        return switch (ex) {
+            case MethodArgumentNotValidException _,
+                    HttpMessageNotReadableException _,
+                    MissingRequestCookieException _ -> HttpStatus.BAD_REQUEST;
 
-        if (ex instanceof HttpMessageNotReadableException) {
-            return HttpStatus.BAD_REQUEST;
-        }
+            case ResponseStatusException exception ->
+                HttpStatus.valueOf(exception.getStatusCode().value());
 
-        if (ex instanceof MissingRequestCookieException) {
-            return HttpStatus.BAD_REQUEST;
-        }
+            case AccessDeniedException _ -> HttpStatus.FORBIDDEN;
 
-        if (ex instanceof ResponseStatusException rse) {
-            return HttpStatus.valueOf(rse.getStatusCode().value());
-        }
-
-        if (ex instanceof AccessDeniedException) {
-            return HttpStatus.FORBIDDEN;
-        }
-
-        return HttpStatus.INTERNAL_SERVER_ERROR;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
     }
 }
