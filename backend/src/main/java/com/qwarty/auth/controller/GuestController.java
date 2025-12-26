@@ -17,7 +17,7 @@ public class GuestController {
 
     @GetMapping("/guest")
     public ResponseEntity<GuestAuthResponseDTO> guest() {
-        GuestAuthResponseDTO responseDto = guestService.loginAsGuest();
+        GuestAuthResponseDTO responseDto = guestService.continueAsGuest();
         return ResponseEntity.ok(responseDto);
     }
 }

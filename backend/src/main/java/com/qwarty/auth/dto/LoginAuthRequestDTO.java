@@ -1,3 +1,6 @@
 package com.qwarty.auth.dto;
 
-public record LoginAuthRequestDTO(String username, String password) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record LoginAuthRequestDTO(
+        @NotBlank String username, @NotBlank String password) {}
