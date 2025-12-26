@@ -1,3 +1,8 @@
 package com.qwarty.auth.dto;
 
-public record SignupAuthRequestDTO(String username, String email, String password) {}
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record SignupAuthRequestDTO(
+        @JsonProperty(required = true) String username,
+        @JsonProperty(required = true) String email,
+        @JsonProperty(required = true) String password) {}
