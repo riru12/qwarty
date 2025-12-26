@@ -1,5 +1,6 @@
 package com.qwarty.exception;
 
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -7,9 +8,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private final ExceptionHttpStatusMapper exceptionHttpStatusMapper;
 
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorResponse> handleCustomExceptions(CustomException error) {
@@ -22,7 +25,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAllExceptions(Exception error) {
         String message = error.getMessage() != null ? error.getMessage() : "Unexpected internal server error";
         ErrorResponse responseBody = buildErrorResponse(error, 5000, message);
-        return ResponseEntity.internalServerError().body(responseBody);
+        return ResponseEntity.status(exceptionHttpStatusMapper.map(error)).body(responseBody);
     }
 
     /**

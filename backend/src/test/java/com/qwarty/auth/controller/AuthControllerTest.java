@@ -108,4 +108,46 @@ class AuthControllerTest {
 
         verify(authService, times(1)).refresh(eq(refreshToken), any(HttpServletResponse.class));
     }
+
+    @Test
+    void signup_ShouldReturnBadRequest_WhenFieldIsMissing() throws Exception {
+        SignupAuthRequestDTO[] testCases = {
+            new SignupAuthRequestDTO(null, email, password),
+            new SignupAuthRequestDTO(username, null, password),
+            new SignupAuthRequestDTO(username, email, null)
+        };
+
+        for (SignupAuthRequestDTO requestDto : testCases) {
+            mockMvc.perform(post("/auth/signup")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(requestDto)))
+                    .andExpect(status().isBadRequest());
+
+            verify(authService, times(0)).signup(any());
+        }
+    }
+
+    @Test
+    void login_ShouldReturnBadRequest_WhenFieldIsMissing() throws Exception {
+        LoginAuthRequestDTO[] testCases = {
+            new LoginAuthRequestDTO(null, password), new LoginAuthRequestDTO(username, null)
+        };
+
+        for (LoginAuthRequestDTO requestDto : testCases) {
+            mockMvc.perform(post("/auth/login")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(requestDto)))
+                    .andExpect(status().isBadRequest());
+
+            verify(authService, times(0)).login(any(LoginAuthRequestDTO.class), any(HttpServletResponse.class));
+        }
+    }
+
+    @Test
+    void refresh_ShouldReturnBadRequest_WhenCookieMissing() throws Exception {
+        mockMvc.perform(get("/auth/refresh")) // no cookie
+                .andExpect(status().isBadRequest());
+
+        verify(authService, times(0)).refresh(any(), any(HttpServletResponse.class));
+    }
 }
