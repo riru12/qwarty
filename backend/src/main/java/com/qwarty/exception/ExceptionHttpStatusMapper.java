@@ -25,8 +25,8 @@ public class ExceptionHttpStatusMapper {
             return HttpStatus.BAD_REQUEST;
         }
 
-        if (ex instanceof ResponseStatusException exception) {
-            return HttpStatus.valueOf(exception.getStatusCode().value());
+        if (ex instanceof ResponseStatusException rse) {
+            return HttpStatus.valueOf(rse.getStatusCode().value());
         }
 
         if (ex instanceof AccessDeniedException) {
