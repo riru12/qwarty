@@ -1,9 +1,15 @@
 import AppRoutes from "./routes/AppRoutes"
 import "./App.css";
+import { NavBar } from "./components/NavBar";
 
 function App() {
     return (
-        <AppRoutes />
+        <>
+            <NavBar />
+            <main className="app-content">
+                <AppRoutes />
+            </main>
+        </>
     )
 }
 
