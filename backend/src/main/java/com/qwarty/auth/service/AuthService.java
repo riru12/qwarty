@@ -9,14 +9,17 @@ import com.qwarty.auth.model.RefreshToken;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
-import com.qwarty.exception.CustomException;
-import com.qwarty.exception.CustomExceptionCode;
+import com.qwarty.exception.code.AppExceptionCode;
+import com.qwarty.exception.code.FieldValidationExceptionCode;
+import com.qwarty.exception.type.AppException;
+import com.qwarty.exception.type.FieldValidationException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -48,10 +51,15 @@ public class AuthService {
      */
     @Transactional
     public void signup(SignupAuthRequestDTO requestDto) {
+        List<FieldValidationExceptionCode> validationErrors = new ArrayList<>();
         if (userRepository.existsByUsernameAndStatusNot(requestDto.username(), UserStatus.DELETED)) {
-            throw new CustomException(CustomExceptionCode.USERNAME_ALREADY_REGISTERED);
-        } else if (userRepository.existsByEmailAndStatusNot(requestDto.email(), UserStatus.DELETED)) {
-            throw new CustomException(CustomExceptionCode.EMAIL_ALREADY_REGISTERED);
+            validationErrors.add(FieldValidationExceptionCode.USERNAME_ALREADY_REGISTERED);
+        }
+        if (userRepository.existsByEmailAndStatusNot(requestDto.email(), UserStatus.DELETED)) {
+            validationErrors.add(FieldValidationExceptionCode.EMAIL_ALREADY_REGISTERED);
+        }
+        if (!validationErrors.isEmpty()) {
+            throw new FieldValidationException(validationErrors);
         }
 
         User user = User.builder()
@@ -92,27 +100,27 @@ public class AuthService {
     @Transactional
     public RefreshAuthResponseDTO refresh(String refreshToken, HttpServletResponse response) {
         if (refreshToken == null || refreshToken.isBlank()) {
-            throw new CustomException(CustomExceptionCode.REFRESH_TOKEN_MISSING);
+            throw new AppException(AppExceptionCode.REFRESH_TOKEN_MISSING);
         }
 
         String hashedToken = hashToken(refreshToken); // hash the provided token from the client
 
         RefreshToken storedRefreshTokenEntity = refreshTokenRepository
                 .findByTokenHash(hashedToken)
-                .orElseThrow(() -> new CustomException(CustomExceptionCode.REFRESH_TOKEN_INVALID));
+                .orElseThrow(() -> new AppException(AppExceptionCode.REFRESH_TOKEN_INVALID));
 
         if (storedRefreshTokenEntity.getExpiryDate().isBefore(Instant.now())) {
             refreshTokenRepository.delete(storedRefreshTokenEntity);
-            throw new CustomException(CustomExceptionCode.REFRESH_TOKEN_EXPIRED);
+            throw new AppException(AppExceptionCode.REFRESH_TOKEN_EXPIRED);
         }
 
         if (storedRefreshTokenEntity.isRevoked()) {
-            throw new CustomException(CustomExceptionCode.REFRESH_TOKEN_REVOKED);
+            throw new AppException(AppExceptionCode.REFRESH_TOKEN_REVOKED);
         }
 
         User user = userRepository
                 .findById(storedRefreshTokenEntity.getUserId())
-                .orElseThrow(() -> new CustomException(CustomExceptionCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AppException(AppExceptionCode.USER_NOT_FOUND));
 
         // client-provided refresh token is valid, generate new access and refresh tokens, and revoke old refresh token
         storedRefreshTokenEntity.setRevoked(true);
@@ -139,10 +147,10 @@ public class AuthService {
     private User authenticate(LoginAuthRequestDTO requestDto) {
         User user = userRepository
                 .findByUsernameAndStatusNot(requestDto.username(), UserStatus.DELETED)
-                .orElseThrow(() -> new CustomException(CustomExceptionCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new AppException(AppExceptionCode.USER_NOT_FOUND));
 
         if (!user.isVerified()) {
-            throw new CustomException(CustomExceptionCode.USER_NOT_VERIFIED);
+            throw new AppException(AppExceptionCode.USER_NOT_VERIFIED);
         }
 
         authenticationManager.authenticate(
