@@ -11,9 +11,14 @@ import com.qwarty.auth.lov.UserStatus;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
-import com.qwarty.exception.CustomException;
-import com.qwarty.exception.CustomExceptionCode;
+import com.qwarty.exception.code.AppExceptionCode;
+import com.qwarty.exception.code.FieldValidationExceptionCode;
+import com.qwarty.exception.type.AppException;
+import com.qwarty.exception.type.FieldValidationException;
+
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,7 +84,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void signup_usernameAlreadyExists_throwsException() {
+    void signup_usernameAlreadyExists_throwsFieldValidationException() {
         String username = "existing";
         String email = "new@example.com";
         String password = "password123";
@@ -89,12 +94,15 @@ class AuthServiceTest {
         when(userRepository.existsByUsernameAndStatusNot(username, UserStatus.DELETED))
                 .thenReturn(true);
 
-        CustomException exception = assertThrows(CustomException.class, () -> authService.signup(request));
-        assertEquals(CustomExceptionCode.USERNAME_ALREADY_REGISTERED, exception.getExceptionCode());
+        FieldValidationException exception = assertThrows(FieldValidationException.class, () -> authService.signup(request));
+
+        List<FieldValidationExceptionCode> fieldErrors = exception.getFieldErrors();
+        assertEquals(1, fieldErrors.size());
+        assertTrue(fieldErrors.contains(FieldValidationExceptionCode.USERNAME_ALREADY_REGISTERED));
     }
 
     @Test
-    void signup_emailAlreadyExists_throwsException() {
+    void signup_emailAlreadyExists_throwsFieldValidationException() {
         String username = "newuser";
         String email = "existing@example.com";
         String password = "password123";
@@ -106,8 +114,11 @@ class AuthServiceTest {
         when(userRepository.existsByEmailAndStatusNot(email, UserStatus.DELETED))
                 .thenReturn(true);
 
-        CustomException exception = assertThrows(CustomException.class, () -> authService.signup(request));
-        assertEquals(CustomExceptionCode.EMAIL_ALREADY_REGISTERED, exception.getExceptionCode());
+        FieldValidationException exception = assertThrows(FieldValidationException.class, () -> authService.signup(request));
+
+        List<FieldValidationExceptionCode> fieldErrors = exception.getFieldErrors();
+        assertEquals(1, fieldErrors.size());
+        assertTrue(fieldErrors.contains(FieldValidationExceptionCode.EMAIL_ALREADY_REGISTERED));
     }
 
     @Test
@@ -145,8 +156,8 @@ class AuthServiceTest {
         when(userRepository.findByUsernameAndStatusNot(username, UserStatus.DELETED))
                 .thenReturn(Optional.empty());
 
-        CustomException exception = assertThrows(CustomException.class, () -> authService.login(request, response));
-        assertEquals(CustomExceptionCode.USER_NOT_FOUND, exception.getExceptionCode());
+        AppException exception = assertThrows(AppException.class, () -> authService.login(request, response));
+        assertEquals(AppExceptionCode.USER_NOT_FOUND, exception.getExceptionCode());
     }
 
     @Test
@@ -162,8 +173,8 @@ class AuthServiceTest {
         when(userRepository.findByUsernameAndStatusNot(username, UserStatus.DELETED))
                 .thenReturn(Optional.of(user));
 
-        CustomException exception = assertThrows(CustomException.class, () -> authService.login(request, response));
-        assertEquals(CustomExceptionCode.USER_NOT_VERIFIED, exception.getExceptionCode());
+        AppException exception = assertThrows(AppException.class, () -> authService.login(request, response));
+        assertEquals(AppExceptionCode.USER_NOT_VERIFIED, exception.getExceptionCode());
 
         verify(authenticationManager, never()).authenticate(any());
     }
