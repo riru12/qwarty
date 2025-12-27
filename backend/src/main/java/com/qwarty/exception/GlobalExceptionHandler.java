@@ -25,18 +25,20 @@ public class GlobalExceptionHandler {
      * Default title and detail for {@link #MethodArgumentNotValidException} and {@link #FieldValidationException}
      * Used by {@link #handleMethodArgumentNotValidExceptions()} and {@link #handleFieldValidationExceptions()}
      */
-    private final String FIELD_VALIDATION_ERROR_TITLE = "Validation failed";
-
-    private final String FIELD_VALIDATION_ERROR_DETAIL = "One or more fields are invalid.";
+    private final String FIELD_VALIDATION_ERROR_TITLE = "Validation failed",
+            FIELD_VALIDATION_ERROR_DETAIL = "One or more fields are invalid.";
 
     /**
      * Default title and detail for general exceptions.
      * Used by {@link #handleAllExceptions()}.
      */
-    private final String INTERNAL_ERROR_TITLE = "Internal server error";
+    private final String INTERNAL_ERROR_TITLE = "Internal server error",
+            INTERNAL_ERROR_DETAIL = "An unexpected error occurred. Please try again later.";
 
-    private final String INTERNAL_ERROR_DETAIL = "An unexpected error occurred. Please try again later.";
-
+    /**
+     * Handles {@link #MethodArgumentNotValidException}, thrown when a method argument
+     * annotated with {@code @Valid} fails Jakarta Bean Validation checks.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ProblemDetail> handleMethodArgumentNotValidExceptions(
             MethodArgumentNotValidException exception) {
@@ -90,9 +92,11 @@ public class GlobalExceptionHandler {
 
     /**
      * Creates a RFC 9457-compliant ProblemDetail to be returned by exception handlers and log the exception stack trace
-     * 
+     *
      * @param errors an optional list of multiple errors (e.g., for validation failures);
      * each map should contain keys like "field" and "message"; can be null
+     *
+     * See: https://www.rfc-editor.org/rfc/rfc9457.html
      */
     private ProblemDetail buildProblemDetail(
             Exception exception, HttpStatus status, String title, String detail, List<Map<String, String>> errors) {

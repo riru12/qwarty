@@ -15,9 +15,7 @@ import com.qwarty.exception.code.AppExceptionCode;
 import com.qwarty.exception.code.FieldValidationExceptionCode;
 import com.qwarty.exception.type.AppException;
 import com.qwarty.exception.type.FieldValidationException;
-
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -94,7 +92,8 @@ class AuthServiceTest {
         when(userRepository.existsByUsernameAndStatusNot(username, UserStatus.DELETED))
                 .thenReturn(true);
 
-        FieldValidationException exception = assertThrows(FieldValidationException.class, () -> authService.signup(request));
+        FieldValidationException exception =
+                assertThrows(FieldValidationException.class, () -> authService.signup(request));
 
         List<FieldValidationExceptionCode> fieldErrors = exception.getFieldErrors();
         assertEquals(1, fieldErrors.size());
@@ -114,7 +113,8 @@ class AuthServiceTest {
         when(userRepository.existsByEmailAndStatusNot(email, UserStatus.DELETED))
                 .thenReturn(true);
 
-        FieldValidationException exception = assertThrows(FieldValidationException.class, () -> authService.signup(request));
+        FieldValidationException exception =
+                assertThrows(FieldValidationException.class, () -> authService.signup(request));
 
         List<FieldValidationExceptionCode> fieldErrors = exception.getFieldErrors();
         assertEquals(1, fieldErrors.size());
