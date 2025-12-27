@@ -1,14 +1,15 @@
 package com.qwarty.auth.controller;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.qwarty.auth.dto.GuestAuthResponseDTO;
 import com.qwarty.auth.service.GuestService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,18 +28,20 @@ public class GuestControllerTest {
     private GuestService guestService;
 
     @Test
-    void guest_ShouldReturnOkAndGuestDto() throws Exception {
+    void guest_ShouldReturnOkWithGuestCookie() throws Exception {
         String guestToken = "guest-token";
-        String username = "RandomUsername#100";
 
-        GuestAuthResponseDTO responseDto = new GuestAuthResponseDTO(guestToken, username);
+        // Mock the service to set the guest token cookie
+        doAnswer(invocation -> {
+                    HttpServletResponse response = invocation.getArgument(0);
+                    response.addHeader("Set-Cookie", "accessToken=" + guestToken + "; HttpOnly; Path=/");
+                    return null;
+                })
+                .when(guestService)
+                .continueAsGuest(any(HttpServletResponse.class));
 
-        when(guestService.continueAsGuest()).thenReturn(responseDto);
+        mockMvc.perform(get("/auth/guest")).andExpect(status().isOk()).andExpect(cookie().exists("accessToken"));
 
-        mockMvc.perform(get("/auth/guest"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value(guestToken));
-
-        verify(guestService, times(1)).continueAsGuest();
+        verify(guestService, times(1)).continueAsGuest(any(HttpServletResponse.class));
     }
 }

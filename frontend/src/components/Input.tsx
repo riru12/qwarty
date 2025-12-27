@@ -1,23 +1,23 @@
-import type { ChangeEvent, Dispatch, InputHTMLAttributes, SetStateAction } from "react";
+import type { InputHTMLAttributes } from "react";
+import { X } from "lucide-react";
 import "./Input.css";
 
-type InputProps = {
-    value: string,
-    setValue: Dispatch<SetStateAction<string>>;
-} & InputHTMLAttributes<HTMLInputElement>;
+type InputProps = InputHTMLAttributes<HTMLInputElement> & {
+    error?: string;
+};
 
-export function Input({ value, setValue, ...props }: InputProps) {
-    
-    function updateValue(event: ChangeEvent<HTMLInputElement>) {
-        setValue(event.target.value);
-    }
-
+export function Input({ error, ...props }: InputProps) {
     return (
-        <input 
-            value={value} 
-            onChange={updateValue}
-            {...props}
-            className="input"
-        />
+        <div className="input-container">
+            <input {...props} className="input" />
+            <div className="icons">
+                {error && (
+                    <div className="error-tooltip">
+                        <X className="error" />
+                        <span className="error-text">{error}</span>
+                    </div>
+                )}
+            </div>
+        </div>
     );
 }

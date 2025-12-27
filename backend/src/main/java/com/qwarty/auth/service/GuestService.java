@@ -1,7 +1,9 @@
 package com.qwarty.auth.service;
 
-import com.qwarty.auth.dto.GuestAuthResponseDTO;
 import com.qwarty.auth.model.User;
+import com.qwarty.auth.util.CookieUtil;
+import jakarta.servlet.http.HttpServletResponse;
+import java.time.Instant;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,15 +14,18 @@ import org.springframework.stereotype.Service;
 public class GuestService {
 
     private final JwtService jwtService;
+    private final CookieUtil cookieUtil;
     private static final String[] ADJECTIVES = {"Speedy", "Sluggish", "Chill"};
     private static final String[] NOUNS = {"Turtle", "Rabbit", "Capybara"};
 
-    public GuestAuthResponseDTO continueAsGuest() {
+    public void continueAsGuest(HttpServletResponse response) {
         String guestName = generateGuestName();
 
         UserDetails guestDetails = User.builder().username(guestName).build();
         String guestToken = jwtService.generateGuestToken(guestDetails);
-        return new GuestAuthResponseDTO(guestToken, guestName);
+        Instant guestExpiry = jwtService.extractExpiration(guestToken).toInstant();
+
+        cookieUtil.setAccessCookie(guestToken, guestExpiry, response);
     }
 
     private String generateGuestName() {

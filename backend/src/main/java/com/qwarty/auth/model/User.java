@@ -49,11 +49,9 @@ public class User implements UserDetails {
     private UserStatus status = UserStatus.ACTIVE;
 
     @CreationTimestamp
-    @NotNull
     private Instant createdAt;
 
     @UpdateTimestamp
-    @NotNull
     private Instant updatedAt;
 
     @Override

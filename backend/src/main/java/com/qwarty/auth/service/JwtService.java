@@ -37,6 +37,7 @@ public class JwtService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", JwtTokenType.REFRESH.name());
         claims.put("guest", false);
+        claims.put("jti", java.util.UUID.randomUUID().toString());
         return buildToken(userDetails, claims, refreshExpirationTime);
     }
 
@@ -84,6 +85,11 @@ public class JwtService {
         return JwtTokenType.valueOf(typeString);
     }
 
+    public boolean isGuestToken(String token) {
+        boolean guestBoolean = extractClaim(token, claims -> claims.get("guest", Boolean.class));
+        return Boolean.TRUE.equals(guestBoolean);
+    }
+
     /**
      * From the entire payload, retrieve and return a specific claim attribute
      */
@@ -103,16 +109,29 @@ public class JwtService {
                 .getPayload();
     }
 
+    public boolean isGuestAccessTokenValid(String token) {
+        try {
+            final boolean isGuest = isGuestToken(token);
+            final JwtTokenType type = extractType(token);
+
+            return JwtTokenType.ACCESS.equals(type) && isGuest && !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     /**
      * Checks if a JWT is valid, also verifies that it's an access type.
      */
-    public boolean isAccessTokenValid(String token, UserDetails userDetails) {
+    public boolean isUserAccessTokenValid(String token, UserDetails userDetails) {
         try {
             final String username = extractSubject(token);
-            final JwtTokenType type =
-                    JwtTokenType.valueOf(extractClaim(token, claims -> claims.get("type", String.class)));
+            final boolean isGuest = isGuestToken(token);
+            final JwtTokenType type = extractType(token);
+
             return (JwtTokenType.ACCESS.equals(type)
                     && username.equals(userDetails.getUsername())
+                    && !isGuest
                     && !isTokenExpired(token));
         } catch (Exception e) {
             return false;

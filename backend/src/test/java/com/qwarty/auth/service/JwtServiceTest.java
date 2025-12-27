@@ -60,7 +60,7 @@ class JwtServiceTest {
     @Test
     void testIsAccessTokenValid_validAccessToken() {
         String token = jwtService.generateAccessToken(userDetails);
-        boolean valid = jwtService.isAccessTokenValid(token, userDetails);
+        boolean valid = jwtService.isUserAccessTokenValid(token, userDetails);
 
         assertTrue(valid, "Access token should be valid for the user it was generated for");
     }
@@ -68,7 +68,7 @@ class JwtServiceTest {
     @Test
     void testIsAccessTokenValid_refreshTokenShouldBeInvalid() {
         String refreshToken = jwtService.generateRefreshToken(userDetails);
-        boolean valid = jwtService.isAccessTokenValid(refreshToken, userDetails);
+        boolean valid = jwtService.isUserAccessTokenValid(refreshToken, userDetails);
 
         assertFalse(valid, "Refresh token should not be valid when checking for access token");
     }
@@ -88,7 +88,7 @@ class JwtServiceTest {
             // restore original expiration injected by Spring
             accessField.set(jwtService, originalExpiration);
 
-            boolean valid = jwtService.isAccessTokenValid(token, userDetails);
+            boolean valid = jwtService.isUserAccessTokenValid(token, userDetails);
             assertFalse(valid, "Expired token should be invalid");
         } catch (NoSuchFieldException | IllegalAccessException e) {
             fail("Failed to access or modify accessExpirationTime: " + e.getMessage());
@@ -102,13 +102,13 @@ class JwtServiceTest {
         UserDetails differentUser = org.mockito.Mockito.mock(UserDetails.class);
         when(differentUser.getUsername()).thenReturn("differentuser");
 
-        boolean valid = jwtService.isAccessTokenValid(token, differentUser);
+        boolean valid = jwtService.isUserAccessTokenValid(token, differentUser);
         assertFalse(valid, "Token should be invalid for a different user");
     }
 
     @Test
     void testIsAccessTokenValid_malformedToken() {
-        boolean valid = jwtService.isAccessTokenValid("malformed.token.here", userDetails);
+        boolean valid = jwtService.isUserAccessTokenValid("malformed.token.here", userDetails);
         assertFalse(valid, "Malformed token should be invalid");
     }
 

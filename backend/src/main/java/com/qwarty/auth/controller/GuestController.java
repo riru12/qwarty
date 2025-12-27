@@ -1,7 +1,7 @@
 package com.qwarty.auth.controller;
 
-import com.qwarty.auth.dto.GuestAuthResponseDTO;
 import com.qwarty.auth.service.GuestService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,8 +16,8 @@ public class GuestController {
     private final GuestService guestService;
 
     @GetMapping("/guest")
-    public ResponseEntity<GuestAuthResponseDTO> guest() {
-        GuestAuthResponseDTO responseDto = guestService.continueAsGuest();
-        return ResponseEntity.ok(responseDto);
+    public ResponseEntity<Void> guest(HttpServletResponse response) {
+        guestService.continueAsGuest(response);
+        return ResponseEntity.ok().build();
     }
 }

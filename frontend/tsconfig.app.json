@@ -23,18 +23,17 @@
         "erasableSyntaxOnly": true,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true,
-        
+
         "baseUrl": "./src",
         "paths": {
             "@/*": ["./*"],
             "@components": ["components"],
+            "@config/*": ["config/*"],
             "@contexts/*": ["contexts/*"],
             "@hooks": ["hooks"],
             "@pages": ["pages"],
             "@services/*": ["services/*"]
         }
-
-        
     },
     "include": ["src"]
 }

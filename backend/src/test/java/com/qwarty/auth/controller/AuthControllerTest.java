@@ -2,19 +2,16 @@ package com.qwarty.auth.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
-import com.qwarty.auth.dto.LoginAuthResponseDTO;
-import com.qwarty.auth.dto.RefreshAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
 import com.qwarty.auth.service.AuthService;
 import jakarta.servlet.http.Cookie;
@@ -48,8 +45,6 @@ class AuthControllerTest {
     private final String refreshToken = "refresh-token";
     private final String newAccessToken = "new-access-token";
     private final String newRefreshToken = "new-refresh-token";
-    private final String refreshCookieName = "refreshToken";
-    private final String refreshCookiePath = "/auth/refresh";
 
     @Test
     void signup_ShouldReturnOk_WhenValidRequest() throws Exception {
@@ -65,46 +60,46 @@ class AuthControllerTest {
     }
 
     @Test
-    void login_ShouldReturnOkWithAccessTokenAndCookie_WhenValidRequest() throws Exception {
+    void login_ShouldReturnOkWithCookie_WhenValidRequest() throws Exception {
         LoginAuthRequestDTO requestDto = new LoginAuthRequestDTO(username, password);
-        LoginAuthResponseDTO responseDto = new LoginAuthResponseDTO(accessToken, username);
 
-        when(authService.login(any(LoginAuthRequestDTO.class), any(HttpServletResponse.class)))
-                .thenAnswer(invocation -> {
+        // Simulate authService setting cookies
+        doAnswer(invocation -> {
                     HttpServletResponse response = invocation.getArgument(1);
+                    response.addHeader("Set-Cookie", "accessToken=" + accessToken + "; HttpOnly; Path=/api");
                     response.addHeader(
-                            "Set-Cookie",
-                            refreshCookieName + "=" + refreshToken + "; HttpOnly; Path=" + refreshCookiePath);
-                    return responseDto;
-                });
+                            "Set-Cookie", "refreshToken=" + refreshToken + "; HttpOnly; Path=/api/auth/refresh");
+                    return null;
+                })
+                .when(authService)
+                .login(any(LoginAuthRequestDTO.class), any(HttpServletResponse.class));
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value(accessToken))
-                .andExpect(cookie().exists(refreshCookieName));
+                .andExpect(cookie().exists("accessToken"))
+                .andExpect(cookie().exists("refreshToken"));
 
         verify(authService, times(1)).login(any(LoginAuthRequestDTO.class), any(HttpServletResponse.class));
     }
 
     @Test
-    void refresh_ShouldReturnOkWithNewAccessTokenAndCookie_WhenValidToken() throws Exception {
-        RefreshAuthResponseDTO responseDto = new RefreshAuthResponseDTO(newAccessToken);
-
-        when(authService.refresh(eq(refreshToken), any(HttpServletResponse.class)))
-                .thenAnswer(invocation -> {
+    void refresh_ShouldReturnOkWithNewCookie_WhenValidToken() throws Exception {
+        doAnswer(invocation -> {
                     HttpServletResponse response = invocation.getArgument(1);
+                    response.addHeader("Set-Cookie", "accessToken=" + newAccessToken + "; HttpOnly; Path=/api");
                     response.addHeader(
-                            "Set-Cookie",
-                            refreshCookieName + "=" + newRefreshToken + "; HttpOnly; Path=" + refreshCookiePath);
-                    return responseDto;
-                });
+                            "Set-Cookie", "refreshToken=" + newRefreshToken + "; HttpOnly; Path=/api/auth/refresh");
+                    return null;
+                })
+                .when(authService)
+                .refresh(eq(refreshToken), any(HttpServletResponse.class));
 
-        mockMvc.perform(get("/auth/refresh").cookie(new Cookie(refreshCookieName, refreshToken)))
+        mockMvc.perform(get("/auth/session/refresh").cookie(new Cookie("refreshToken", refreshToken)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value(newAccessToken))
-                .andExpect(cookie().exists(refreshCookieName));
+                .andExpect(cookie().exists("accessToken"))
+                .andExpect(cookie().exists("refreshToken"));
 
         verify(authService, times(1)).refresh(eq(refreshToken), any(HttpServletResponse.class));
     }
@@ -145,9 +140,26 @@ class AuthControllerTest {
 
     @Test
     void refresh_ShouldReturnBadRequest_WhenCookieMissing() throws Exception {
-        mockMvc.perform(get("/auth/refresh")) // no cookie
+        mockMvc.perform(get("/auth/session/refresh")) // no cookie
                 .andExpect(status().isBadRequest());
 
         verify(authService, times(0)).refresh(any(), any(HttpServletResponse.class));
+    }
+
+    @Test
+    void logout_ShouldReturnOk_WhenValidToken() throws Exception {
+        doNothing().when(authService).logout(eq(refreshToken), any(HttpServletResponse.class));
+
+        mockMvc.perform(post("/auth/session/logout").cookie(new Cookie("refreshToken", refreshToken)))
+                .andExpect(status().isOk());
+
+        verify(authService, times(1)).logout(eq(refreshToken), any(HttpServletResponse.class));
+    }
+
+    @Test
+    void logout_ShouldReturnBadRequest_WhenCookieMissing() throws Exception {
+        mockMvc.perform(post("/auth/session/logout")).andExpect(status().isBadRequest());
+
+        verify(authService, times(0)).logout(any(), any(HttpServletResponse.class));
     }
 }

@@ -1,9 +1,9 @@
-import type { Endpoint } from './endpoint';
+import type { Endpoint } from "./endpoint";
 
 interface SignupRequestDTO {
-    email: string,
-    username: string,
-    password: string
+    email: string;
+    username: string;
+    password: string;
 }
 
 export const SignupEndpoint: Endpoint<SignupRequestDTO, void> = {

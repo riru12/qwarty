@@ -1,15 +1,16 @@
 package com.qwarty.auth.service;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.qwarty.auth.dto.GuestAuthResponseDTO;
+import com.qwarty.auth.util.CookieUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
 @SpringBootTest
@@ -21,14 +22,16 @@ public class GuestServiceTest {
     @MockitoSpyBean
     private JwtService jwtService;
 
-    @Test
-    void continueAsGuest_successful() {
-        GuestAuthResponseDTO response = guestService.continueAsGuest();
+    @MockitoBean
+    private CookieUtil cookieUtil;
 
-        assertTrue(
-                response.username().matches("([A-Z][a-z]+){2}#\\d{3}"),
-                "Guest name should match pattern 'AdjectiveNoun#Num'");
+    @Test
+    void continueAsGuest_shouldGenerateGuestTokenAndSetCookie() {
+        HttpServletResponse response = org.mockito.Mockito.mock(HttpServletResponse.class);
+
+        guestService.continueAsGuest(response);
 
         verify(jwtService, times(1)).generateGuestToken(any(UserDetails.class));
+        verify(cookieUtil, times(1)).setAccessCookie(any(String.class), any(), any(HttpServletResponse.class));
     }
 }

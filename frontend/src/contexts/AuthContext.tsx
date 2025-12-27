@@ -1,36 +1,53 @@
 import { createContext, useState } from "react";
+import type { EndpointRes } from "@/services/api/endpoints/endpoint";
+import type { IdentityEndpoint } from "@/services/api/endpoints/IdentityEndpoint";
 
 interface AuthContextType {
-    accessToken: string | null;
     username: string | null;
-    setAuthStates: (token: string | null, username: string | null) => void;
+    isGuest: boolean;
+    setAuthState: (
+        identity: EndpointRes<typeof IdentityEndpoint> | null
+    ) => void;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+    undefined
+);
 
-export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
-    const [accessToken, setAccessToken] = useState<string | null>(() => localStorage.getItem("accessToken"));
-    const [username, setUsername] = useState<string | null>(() => localStorage.getItem("username"));
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    const [username, setUsername] = useState<string | null>(null);
+    const [isGuest, setIsGuest] = useState<boolean>(true);
 
-    const setAuthStates = (accessToken: string | null, username: string | null) => {
-        setAccessToken(accessToken);
-        setUsername(username);
+    const clearAuthState = () => {
+        setUsername(null);
+        setIsGuest(true);
+    };
 
-        if (accessToken) localStorage.setItem("accessToken", accessToken);
-        else localStorage.removeItem("accessToken");
+    const updateAuthState = (user: string, guest: boolean) => {
+        setUsername(user);
+        setIsGuest(guest);
+    };
 
-        if (username) localStorage.setItem("username", username);
-        else localStorage.removeItem("username");
+    const setAuthState = (
+        identity: EndpointRes<typeof IdentityEndpoint> | null
+    ) => {
+        if (identity === null) {
+            clearAuthState();
+            return;
+        }
+
+        updateAuthState(identity.username, identity.isGuest);
     };
 
     return (
-        <AuthContext.Provider 
-            value = {{ 
-                accessToken,
+        <AuthContext.Provider
+            value={{
                 username,
-                setAuthStates
-            }}>
-            { children }
+                isGuest,
+                setAuthState
+            }}
+        >
+            {children}
         </AuthContext.Provider>
-    )
-}
+    );
+};

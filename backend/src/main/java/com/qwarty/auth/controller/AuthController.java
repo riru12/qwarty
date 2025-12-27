@@ -1,8 +1,6 @@
 package com.qwarty.auth.controller;
 
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
-import com.qwarty.auth.dto.LoginAuthResponseDTO;
-import com.qwarty.auth.dto.RefreshAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
 import com.qwarty.auth.service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,7 +8,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,16 +27,23 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginAuthResponseDTO> login(
+    public ResponseEntity<Void> login(
             @Valid @RequestBody LoginAuthRequestDTO requestDto, HttpServletResponse response) {
-        LoginAuthResponseDTO responseDto = authService.login(requestDto, response);
-        return ResponseEntity.ok(responseDto);
+        authService.login(requestDto, response);
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/refresh")
-    public ResponseEntity<RefreshAuthResponseDTO> refresh(
+    @PostMapping("/session/refresh")
+    public ResponseEntity<Void> refresh(
             @CookieValue(name = "refreshToken", required = true) String refreshToken, HttpServletResponse response) {
-        RefreshAuthResponseDTO responseDto = authService.refresh(refreshToken, response);
-        return ResponseEntity.ok(responseDto);
+        authService.refresh(refreshToken, response);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/session/logout")
+    public ResponseEntity<Void> logout(
+            @CookieValue(name = "refreshToken", required = true) String refreshToken, HttpServletResponse response) {
+        authService.logout(refreshToken, response);
+        return ResponseEntity.ok().build();
     }
 }

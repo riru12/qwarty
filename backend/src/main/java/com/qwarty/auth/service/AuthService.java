@@ -1,28 +1,28 @@
 package com.qwarty.auth.service;
 
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
-import com.qwarty.auth.dto.LoginAuthResponseDTO;
-import com.qwarty.auth.dto.RefreshAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
 import com.qwarty.auth.lov.UserStatus;
 import com.qwarty.auth.model.RefreshToken;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
-import com.qwarty.exception.CustomException;
-import com.qwarty.exception.CustomExceptionCode;
+import com.qwarty.auth.util.CookieUtil;
+import com.qwarty.exception.code.AppExceptionCode;
+import com.qwarty.exception.code.FieldValidationExceptionCode;
+import com.qwarty.exception.type.AppException;
+import com.qwarty.exception.type.FieldValidationException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,9 +38,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-
-    @Value("${environment}")
-    private String environment;
+    private final CookieUtil cookieUtil;
 
     /**
      * Registers a user after verifying that an existing account with the same username or email
@@ -48,11 +46,7 @@ public class AuthService {
      */
     @Transactional
     public void signup(SignupAuthRequestDTO requestDto) {
-        if (userRepository.existsByUsernameAndStatusNot(requestDto.username(), UserStatus.DELETED)) {
-            throw new CustomException(CustomExceptionCode.USERNAME_ALREADY_REGISTERED);
-        } else if (userRepository.existsByEmailAndStatusNot(requestDto.email(), UserStatus.DELETED)) {
-            throw new CustomException(CustomExceptionCode.EMAIL_ALREADY_REGISTERED);
-        }
+        validateSignup(requestDto);
 
         User user = User.builder()
                 .username(requestDto.username())
@@ -69,10 +63,11 @@ public class AuthService {
      * Logs a user in and returns a JWT
      */
     @Transactional
-    public LoginAuthResponseDTO login(LoginAuthRequestDTO requestDto, HttpServletResponse response) {
+    public void login(LoginAuthRequestDTO requestDto, HttpServletResponse response) {
         User user = authenticate(requestDto);
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
+        Instant accessExpiry = jwtService.extractExpiration(accessToken).toInstant();
         Instant refreshExpiry =
                 jwtService.extractExpiration(refreshToken).toInstant(); // extract expiry for db and cookie
 
@@ -84,41 +79,21 @@ public class AuthService {
                 .build();
         refreshTokenRepository.save(refreshTokenEntity);
 
-        setRefreshCookie(refreshToken, refreshExpiry, response);
-
-        return new LoginAuthResponseDTO(accessToken, user.getUsername());
+        cookieUtil.setAccessCookie(accessToken, accessExpiry, response);
+        cookieUtil.setRefreshCookie(refreshToken, refreshExpiry, response);
     }
 
     @Transactional
-    public RefreshAuthResponseDTO refresh(String refreshToken, HttpServletResponse response) {
-        if (refreshToken == null || refreshToken.isBlank()) {
-            throw new CustomException(CustomExceptionCode.REFRESH_TOKEN_MISSING);
-        }
-
-        String hashedToken = hashToken(refreshToken); // hash the provided token from the client
-
-        RefreshToken storedRefreshTokenEntity = refreshTokenRepository
-                .findByTokenHash(hashedToken)
-                .orElseThrow(() -> new CustomException(CustomExceptionCode.REFRESH_TOKEN_INVALID));
-
-        if (storedRefreshTokenEntity.getExpiryDate().isBefore(Instant.now())) {
-            refreshTokenRepository.delete(storedRefreshTokenEntity);
-            throw new CustomException(CustomExceptionCode.REFRESH_TOKEN_EXPIRED);
-        }
-
-        if (storedRefreshTokenEntity.isRevoked()) {
-            throw new CustomException(CustomExceptionCode.REFRESH_TOKEN_REVOKED);
-        }
-
-        User user = userRepository
-                .findById(storedRefreshTokenEntity.getUserId())
-                .orElseThrow(() -> new CustomException(CustomExceptionCode.USER_NOT_FOUND));
+    public void refresh(String refreshToken, HttpServletResponse response) {
+        RefreshToken storedRefreshTokenEntity = validateRefresh(refreshToken);
+        User user = validateUserById(storedRefreshTokenEntity.getUserId());
 
         // client-provided refresh token is valid, generate new access and refresh tokens, and revoke old refresh token
         storedRefreshTokenEntity.setRevoked(true);
 
         String newAccessToken = jwtService.generateAccessToken(user); // new access token
         String newRefreshToken = jwtService.generateRefreshToken(user); // new refresh token
+        Instant newAccessExpiry = jwtService.extractExpiration(newAccessToken).toInstant();
         Instant newRefreshExpiry =
                 jwtService.extractExpiration(newRefreshToken).toInstant(); // extract expiry for db and cookie
 
@@ -131,18 +106,33 @@ public class AuthService {
         refreshTokenRepository.saveAll(
                 List.of(storedRefreshTokenEntity, newRefreshTokenEntity)); // update revoked old token, save new token
 
-        setRefreshCookie(newRefreshToken, newRefreshExpiry, response);
+        cookieUtil.setAccessCookie(newAccessToken, newAccessExpiry, response);
+        cookieUtil.setRefreshCookie(newRefreshToken, newRefreshExpiry, response);
+    }
 
-        return new RefreshAuthResponseDTO(newAccessToken);
+    @Transactional
+    public void logout(String refreshToken, HttpServletResponse response) {
+        cookieUtil.clearAccessCookie(response);
+        cookieUtil.clearRefreshCookie(response);
+
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return;
+        }
+
+        String hashedToken = hashToken(refreshToken);
+        Optional<RefreshToken> tokenOptional = refreshTokenRepository.findByTokenHash(hashedToken);
+        if (tokenOptional.isEmpty()) {
+            return;
+        }
+
+        refreshTokenRepository.delete(tokenOptional.get());
     }
 
     private User authenticate(LoginAuthRequestDTO requestDto) {
-        User user = userRepository
-                .findByUsernameAndStatusNot(requestDto.username(), UserStatus.DELETED)
-                .orElseThrow(() -> new CustomException(CustomExceptionCode.USER_NOT_FOUND));
+        User user = validateUserByUsername(requestDto.username());
 
         if (!user.isVerified()) {
-            throw new CustomException(CustomExceptionCode.USER_NOT_VERIFIED);
+            throw new AppException(AppExceptionCode.USER_NOT_VERIFIED);
         }
 
         authenticationManager.authenticate(
@@ -164,20 +154,55 @@ public class AuthService {
         }
     }
 
-    /**
-     * Sets refreshToken cookie in the HTTP headers
-     */
-    private void setRefreshCookie(String refreshToken, Instant refreshTokenExpiry, HttpServletResponse response) {
-        boolean isProd = "PROD".equals(environment);
+    private void validateSignup(SignupAuthRequestDTO requestDto) {
+        List<FieldValidationExceptionCode> validationErrors = new ArrayList<>();
+        if (userRepository.existsByUsernameAndStatusNot(requestDto.username(), UserStatus.DELETED)) {
+            validationErrors.add(FieldValidationExceptionCode.USERNAME_ALREADY_REGISTERED);
+        }
+        if (userRepository.existsByEmailAndStatusNot(requestDto.email(), UserStatus.DELETED)) {
+            validationErrors.add(FieldValidationExceptionCode.EMAIL_ALREADY_REGISTERED);
+        }
+        if (!validationErrors.isEmpty()) {
+            throw new FieldValidationException(validationErrors);
+        }
+    }
 
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(isProd ? true : false)
-                .sameSite(isProd ? "Strict" : "Lax")
-                .path("/auth/refresh")
-                .maxAge(Duration.between(Instant.now(), refreshTokenExpiry))
-                .build();
+    private RefreshToken validateRefresh(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new AppException(AppExceptionCode.REFRESH_TOKEN_MISSING);
+        }
 
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+        String hashedToken = hashToken(refreshToken); // hash the provided token from the client
+
+        RefreshToken storedRefreshTokenEntity = refreshTokenRepository
+                .findByTokenHash(hashedToken)
+                .orElseThrow(() -> new AppException(AppExceptionCode.REFRESH_TOKEN_INVALID));
+
+        if (storedRefreshTokenEntity.getExpiryDate().isBefore(Instant.now())) {
+            refreshTokenRepository.delete(storedRefreshTokenEntity);
+            throw new AppException(AppExceptionCode.REFRESH_TOKEN_EXPIRED);
+        }
+
+        if (storedRefreshTokenEntity.isRevoked()) {
+            throw new AppException(AppExceptionCode.REFRESH_TOKEN_REVOKED);
+        }
+
+        return storedRefreshTokenEntity;
+    }
+
+    private User validateUserById(UUID userId) {
+        User user = userRepository
+                .findByIdAndStatusNot(userId, UserStatus.DELETED)
+                .orElseThrow(() -> new AppException(AppExceptionCode.USER_NOT_FOUND));
+
+        return user;
+    }
+
+    private User validateUserByUsername(String username) {
+        User user = userRepository
+                .findByUsernameAndStatusNot(username, UserStatus.DELETED)
+                .orElseThrow(() -> new AppException(AppExceptionCode.USER_NOT_FOUND));
+
+        return user;
     }
 }

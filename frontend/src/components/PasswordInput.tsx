@@ -1,40 +1,42 @@
 import { useState } from "react";
-import type { ChangeEvent, Dispatch, InputHTMLAttributes, SetStateAction } from "react";
-import { Eye, EyeClosed } from "lucide-react";
+import type { InputHTMLAttributes } from "react";
+import { Eye, EyeClosed, X } from "lucide-react";
+import "./Input.css";
 import "./PasswordInput.css";
 
-type PasswordInputProps = {
-    value: string,
-    setValue: Dispatch<SetStateAction<string>>;
-} & InputHTMLAttributes<HTMLInputElement>;
+type PasswordInputProps = InputHTMLAttributes<HTMLInputElement> & {
+    error?: string;
+};
 
-export function PasswordInput({ value, setValue, ...props }: PasswordInputProps) {
+export function PasswordInput({ error, ...props }: PasswordInputProps) {
     const [showPassword, setShowPassword] = useState(false);
-    
-    function updateValue(event: ChangeEvent<HTMLInputElement>) {
-        setValue(event.target.value);
-    }
 
     function togglePasswordVisibility() {
-        setShowPassword(!showPassword);
+        setShowPassword((prev) => !prev);
     }
 
     return (
-        <div className="password-input-container">
-            <input 
-                value={value} 
-                onChange={updateValue}
-                type={showPassword ? "text" : "password"}
+        <div className="input-container">
+            <input
                 {...props}
-                className="password-input"
+                type={showPassword ? "text" : "password"}
+                className="input password-input"
             />
-            <button 
-                onClick={togglePasswordVisibility}
-                className="password-toggle"
-                type="button"
-            >
-                { showPassword ? <EyeClosed /> : <Eye /> }
-            </button>
+            <div className="icons">
+                {error && (
+                    <div className="error-tooltip">
+                        <X className="error" />
+                        <span className="error-text">{error}</span>
+                    </div>
+                )}
+                <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="password-toggle"
+                >
+                    {showPassword ? <EyeClosed /> : <Eye />}
+                </button>
+            </div>
         </div>
     );
 }

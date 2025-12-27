@@ -4,7 +4,7 @@ import path from "path";
 
 // https://vite.dev/config/
 export default defineConfig({
-    envDir: '../',
+    envDir: "../",
     plugins: [
         react({
             babel: {
@@ -16,6 +16,7 @@ export default defineConfig({
         alias: {
             "@": path.resolve(__dirname, "./src"),
             "@components": path.resolve(__dirname, "./src/components"),
+            "@config": path.resolve(__dirname, "./src/config"),
             "@contexts": path.resolve(__dirname, "./src/contexts"),
             "@hooks": path.resolve(__dirname, "./src/hooks"),
             "@pages": path.resolve(__dirname, "./src/pages"),
