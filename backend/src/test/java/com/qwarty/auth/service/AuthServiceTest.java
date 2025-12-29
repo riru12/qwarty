@@ -17,7 +17,6 @@ import com.qwarty.exception.code.FieldValidationExceptionCode;
 import com.qwarty.exception.type.AppException;
 import com.qwarty.exception.type.FieldValidationException;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
@@ -25,7 +24,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -217,9 +215,7 @@ class AuthServiceTest {
     @Test
     void refresh_successful_returnsNewAccessToken_andIssuesNewRefreshToken() throws Exception {
         UUID userId = UUID.randomUUID();
-        User user = User.builder()
-                .id(userId)
-                .build();
+        User user = User.builder().id(userId).build();
 
         String oldRefreshToken = jwtService.generateRefreshToken(user);
         String hashedOldToken = hashTokenForTest(oldRefreshToken);
@@ -231,24 +227,22 @@ class AuthServiceTest {
                 .build();
 
         HttpServletResponse response = mock(HttpServletResponse.class);
-        
-        when(refreshTokenRepository.findByTokenHash(hashedOldToken))
-                .thenReturn(Optional.of(storedOldToken));
-        when(userRepository.findByIdAndStatusNot(userId, UserStatus.DELETED))
-                .thenReturn(Optional.of(user));
+
+        when(refreshTokenRepository.findByTokenHash(hashedOldToken)).thenReturn(Optional.of(storedOldToken));
+        when(userRepository.findByIdAndStatusNot(userId, UserStatus.DELETED)).thenReturn(Optional.of(user));
 
         authService.refresh(oldRefreshToken, response);
 
         verify(refreshTokenRepository).saveAll(argThat(list -> {
             List<RefreshToken> tokens = (List<RefreshToken>) list;
-            return tokens.size() == 2 &&
-                tokens.stream().anyMatch(t -> ((RefreshToken) t).isRevoked()) &&
-                tokens.stream().anyMatch(t -> !((RefreshToken) t).isRevoked());
+            return tokens.size() == 2
+                    && tokens.stream().anyMatch(t -> ((RefreshToken) t).isRevoked())
+                    && tokens.stream().anyMatch(t -> !((RefreshToken) t).isRevoked());
         }));
 
         ArgumentCaptor<String> cookieCaptor = ArgumentCaptor.forClass(String.class);
         verify(response).addHeader(eq(HttpHeaders.SET_COOKIE), cookieCaptor.capture());
-        
+
         String cookieHeader = cookieCaptor.getValue();
         assertTrue(cookieHeader.contains("refreshToken="));
         assertTrue(cookieHeader.contains("Path=/auth/refresh"));
@@ -274,8 +268,7 @@ class AuthServiceTest {
         String fakeToken = "someInvalidToken";
         String hashedFakeToken = hashTokenForTest(fakeToken);
 
-        when(refreshTokenRepository.findByTokenHash(hashedFakeToken))
-                .thenReturn(Optional.empty());
+        when(refreshTokenRepository.findByTokenHash(hashedFakeToken)).thenReturn(Optional.empty());
 
         AppException exception = assertThrows(AppException.class, () -> authService.refresh(fakeToken, response));
         assertEquals(AppExceptionCode.REFRESH_TOKEN_INVALID, exception.getExceptionCode());
@@ -295,8 +288,7 @@ class AuthServiceTest {
                 .revoked(false)
                 .build();
 
-        when(refreshTokenRepository.findByTokenHash(hashedToken))
-                .thenReturn(Optional.of(expiredToken));
+        when(refreshTokenRepository.findByTokenHash(hashedToken)).thenReturn(Optional.of(expiredToken));
 
         AppException exception = assertThrows(AppException.class, () -> authService.refresh(oldToken, response));
         assertEquals(AppExceptionCode.REFRESH_TOKEN_EXPIRED, exception.getExceptionCode());
@@ -317,11 +309,9 @@ class AuthServiceTest {
                 .revoked(true)
                 .build();
 
-        when(refreshTokenRepository.findByTokenHash(hashedToken))
-                .thenReturn(Optional.of(revokedToken));
+        when(refreshTokenRepository.findByTokenHash(hashedToken)).thenReturn(Optional.of(revokedToken));
 
         AppException exception = assertThrows(AppException.class, () -> authService.refresh(oldToken, response));
         assertEquals(AppExceptionCode.REFRESH_TOKEN_REVOKED, exception.getExceptionCode());
     }
-
 }

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
-
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -200,7 +199,7 @@ public class AuthService {
         User user = userRepository
                 .findByIdAndStatusNot(userId, UserStatus.DELETED)
                 .orElseThrow(() -> new AppException(AppExceptionCode.USER_NOT_FOUND));
-        
+
         return user;
     }
 
