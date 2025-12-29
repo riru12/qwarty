@@ -22,11 +22,10 @@ public class GlobalExceptionHandler {
     private final ExceptionHttpStatusMapper exceptionHttpStatusMapper;
 
     /**
-     * Default title and detail for {@link #MethodArgumentNotValidException} and {@link #FieldValidationException}
+     * Default title for {@link #MethodArgumentNotValidException} and {@link #FieldValidationException}
      * Used by {@link #handleMethodArgumentNotValidExceptions()} and {@link #handleFieldValidationExceptions()}
      */
-    private final String FIELD_VALIDATION_ERROR_TITLE = "Validation failed",
-            FIELD_VALIDATION_ERROR_DETAIL = "One or more fields are invalid.";
+    private final String FIELD_VALIDATION_ERROR_TITLE = "Request validation failed";
 
     /**
      * Default title and detail for general exceptions.
@@ -44,14 +43,11 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException exception) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         String title = FIELD_VALIDATION_ERROR_TITLE;
-        String detail = FIELD_VALIDATION_ERROR_DETAIL;
         List<Map<String, String>> errors = exception.getBindingResult().getFieldErrors().stream()
-                .map(error -> Map.of(
-                        "field", error.getField(),
-                        "message", error.getDefaultMessage()))
+                .map(error -> Map.of("detail", String.format("%s %s", error.getField(), error.getDefaultMessage())))
                 .toList();
 
-        ProblemDetail responseBody = buildProblemDetail(exception, status, title, detail, errors);
+        ProblemDetail responseBody = buildMultiErrorProblemDetail(exception, status, title, errors);
         return ResponseEntity.status(status).body(responseBody);
     }
 
@@ -59,14 +55,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ProblemDetail> handleFieldValidationExceptions(FieldValidationException exception) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         String title = FIELD_VALIDATION_ERROR_TITLE;
-        String detail = FIELD_VALIDATION_ERROR_DETAIL;
         List<Map<String, String>> errors = exception.getFieldErrors().stream()
-                .map(error -> java.util.Map.of(
-                        "field", error.getField(),
-                        "message", error.getMessage()))
+                .map(error -> java.util.Map.of("detail", error.getMessage()))
                 .toList();
 
-        ProblemDetail responseBody = buildProblemDetail(exception, status, title, detail, errors);
+        ProblemDetail responseBody = buildMultiErrorProblemDetail(exception, status, title, errors);
         return ResponseEntity.status(status).body(responseBody);
     }
 
@@ -76,7 +69,7 @@ public class GlobalExceptionHandler {
         String title = exception.getExceptionCode().getTitle();
         String detail = exception.getExceptionCode().getDetail();
 
-        ProblemDetail responseBody = buildProblemDetail(exception, status, title, detail, null);
+        ProblemDetail responseBody = buildProblemDetail(exception, status, title, detail);
         return ResponseEntity.status(status).body(responseBody);
     }
 
@@ -86,28 +79,34 @@ public class GlobalExceptionHandler {
         String title = INTERNAL_ERROR_TITLE;
         String detail = INTERNAL_ERROR_DETAIL;
 
-        ProblemDetail responseBody = buildProblemDetail(exception, status, title, detail, null);
+        ProblemDetail responseBody = buildProblemDetail(exception, status, title, detail);
         return ResponseEntity.status(status).body(responseBody);
     }
 
     /**
-     * Creates a RFC 9457-compliant ProblemDetail to be returned by exception handlers and log the exception stack trace
-     *
-     * @param errors an optional list of multiple errors (e.g., for validation failures);
-     * each map should contain keys like "field" and "message"; can be null
+     * Creates an RFC 9457-compliant ProblemDetail to be returned by exception handlers and log the exception stack trace
      *
      * See: https://www.rfc-editor.org/rfc/rfc9457.html
      */
-    private ProblemDetail buildProblemDetail(
-            Exception exception, HttpStatus status, String title, String detail, List<Map<String, String>> errors) {
+    private ProblemDetail buildProblemDetail(Exception exception, HttpStatus status, String title, String detail) {
         logger.warn("Exception occurred: {} - {}", exception.getClass().getSimpleName(), exception.getMessage());
         ProblemDetail problemDetail = ProblemDetail.forStatus(status);
         problemDetail.setTitle(title);
         problemDetail.setDetail(detail);
 
-        if (errors != null && !errors.isEmpty()) {
-            problemDetail.setProperty("errors", errors);
-        }
+        return problemDetail;
+    }
+
+    /**
+     * Builds a variant of ProblemDetail that contains multiple errors
+     */
+    private ProblemDetail buildMultiErrorProblemDetail(
+            Exception exception, HttpStatus status, String title, List<Map<String, String>> errors) {
+        logger.warn("Exception occurred: {} - {}", exception.getClass().getSimpleName(), exception.getMessage());
+        ProblemDetail problemDetail = ProblemDetail.forStatus(status);
+        problemDetail.setTitle(title);
+        problemDetail.setProperty("errors", errors);
+
         return problemDetail;
     }
 }
