@@ -22,6 +22,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -51,16 +53,7 @@ public class AuthService {
      */
     @Transactional
     public void signup(SignupAuthRequestDTO requestDto) {
-        List<FieldValidationExceptionCode> validationErrors = new ArrayList<>();
-        if (userRepository.existsByUsernameAndStatusNot(requestDto.username(), UserStatus.DELETED)) {
-            validationErrors.add(FieldValidationExceptionCode.USERNAME_ALREADY_REGISTERED);
-        }
-        if (userRepository.existsByEmailAndStatusNot(requestDto.email(), UserStatus.DELETED)) {
-            validationErrors.add(FieldValidationExceptionCode.EMAIL_ALREADY_REGISTERED);
-        }
-        if (!validationErrors.isEmpty()) {
-            throw new FieldValidationException(validationErrors);
-        }
+        validateSignup(requestDto);
 
         User user = User.builder()
                 .username(requestDto.username())
@@ -99,28 +92,8 @@ public class AuthService {
 
     @Transactional
     public RefreshAuthResponseDTO refresh(String refreshToken, HttpServletResponse response) {
-        if (refreshToken == null || refreshToken.isBlank()) {
-            throw new AppException(AppExceptionCode.REFRESH_TOKEN_MISSING);
-        }
-
-        String hashedToken = hashToken(refreshToken); // hash the provided token from the client
-
-        RefreshToken storedRefreshTokenEntity = refreshTokenRepository
-                .findByTokenHash(hashedToken)
-                .orElseThrow(() -> new AppException(AppExceptionCode.REFRESH_TOKEN_INVALID));
-
-        if (storedRefreshTokenEntity.getExpiryDate().isBefore(Instant.now())) {
-            refreshTokenRepository.delete(storedRefreshTokenEntity);
-            throw new AppException(AppExceptionCode.REFRESH_TOKEN_EXPIRED);
-        }
-
-        if (storedRefreshTokenEntity.isRevoked()) {
-            throw new AppException(AppExceptionCode.REFRESH_TOKEN_REVOKED);
-        }
-
-        User user = userRepository
-                .findById(storedRefreshTokenEntity.getUserId())
-                .orElseThrow(() -> new AppException(AppExceptionCode.USER_NOT_FOUND));
+        RefreshToken storedRefreshTokenEntity = validateRefresh(refreshToken);
+        User user = validateUserById(storedRefreshTokenEntity.getUserId());
 
         // client-provided refresh token is valid, generate new access and refresh tokens, and revoke old refresh token
         storedRefreshTokenEntity.setRevoked(true);
@@ -145,9 +118,7 @@ public class AuthService {
     }
 
     private User authenticate(LoginAuthRequestDTO requestDto) {
-        User user = userRepository
-                .findByUsernameAndStatusNot(requestDto.username(), UserStatus.DELETED)
-                .orElseThrow(() -> new AppException(AppExceptionCode.USER_NOT_FOUND));
+        User user = validateUserByUsername(requestDto.username());
 
         if (!user.isVerified()) {
             throw new AppException(AppExceptionCode.USER_NOT_VERIFIED);
@@ -187,5 +158,57 @@ public class AuthService {
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+    }
+
+    private void validateSignup(SignupAuthRequestDTO requestDto) {
+        List<FieldValidationExceptionCode> validationErrors = new ArrayList<>();
+        if (userRepository.existsByUsernameAndStatusNot(requestDto.username(), UserStatus.DELETED)) {
+            validationErrors.add(FieldValidationExceptionCode.USERNAME_ALREADY_REGISTERED);
+        }
+        if (userRepository.existsByEmailAndStatusNot(requestDto.email(), UserStatus.DELETED)) {
+            validationErrors.add(FieldValidationExceptionCode.EMAIL_ALREADY_REGISTERED);
+        }
+        if (!validationErrors.isEmpty()) {
+            throw new FieldValidationException(validationErrors);
+        }
+    }
+
+    private RefreshToken validateRefresh(String refreshToken) {
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new AppException(AppExceptionCode.REFRESH_TOKEN_MISSING);
+        }
+
+        String hashedToken = hashToken(refreshToken); // hash the provided token from the client
+
+        RefreshToken storedRefreshTokenEntity = refreshTokenRepository
+                .findByTokenHash(hashedToken)
+                .orElseThrow(() -> new AppException(AppExceptionCode.REFRESH_TOKEN_INVALID));
+
+        if (storedRefreshTokenEntity.getExpiryDate().isBefore(Instant.now())) {
+            refreshTokenRepository.delete(storedRefreshTokenEntity);
+            throw new AppException(AppExceptionCode.REFRESH_TOKEN_EXPIRED);
+        }
+
+        if (storedRefreshTokenEntity.isRevoked()) {
+            throw new AppException(AppExceptionCode.REFRESH_TOKEN_REVOKED);
+        }
+
+        return storedRefreshTokenEntity;
+    }
+
+    private User validateUserById(UUID userId) {
+        User user = userRepository
+                .findByIdAndStatusNot(userId, UserStatus.DELETED)
+                .orElseThrow(() -> new AppException(AppExceptionCode.USER_NOT_FOUND));
+        
+        return user;
+    }
+
+    private User validateUserByUsername(String username) {
+        User user = userRepository
+                .findByUsernameAndStatusNot(username, UserStatus.DELETED)
+                .orElseThrow(() -> new AppException(AppExceptionCode.USER_NOT_FOUND));
+
+        return user;
     }
 }

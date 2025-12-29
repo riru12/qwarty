@@ -8,6 +8,7 @@ import com.qwarty.auth.dto.LoginAuthRequestDTO;
 import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
 import com.qwarty.auth.lov.UserStatus;
+import com.qwarty.auth.model.RefreshToken;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
@@ -16,11 +17,20 @@ import com.qwarty.exception.code.FieldValidationExceptionCode;
 import com.qwarty.exception.type.AppException;
 import com.qwarty.exception.type.FieldValidationException;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.Instant;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -49,6 +59,12 @@ class AuthServiceTest {
 
     @MockitoBean
     private AuthenticationManager authenticationManager;
+
+    // Helper to compute the same hash the service uses
+    private String hashTokenForTest(String token) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        return Base64.getEncoder().encodeToString(digest.digest(token.getBytes(StandardCharsets.UTF_8)));
+    }
 
     @Test
     void signup_successfulRegistration() {
@@ -197,4 +213,48 @@ class AuthServiceTest {
 
         assertThrows(BadCredentialsException.class, () -> authService.login(request, response));
     }
+
+    @Test
+    void refresh_successful_returnsNewAccessToken_andIssuesNewRefreshToken() throws Exception {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder()
+                .id(userId)
+                .build();
+
+        String oldRefreshToken = jwtService.generateRefreshToken(user);
+        String hashedOldToken = hashTokenForTest(oldRefreshToken);
+        RefreshToken storedOldToken = RefreshToken.builder()
+                .userId(userId)
+                .tokenHash(hashedOldToken)
+                .expiryDate(Instant.now().plusSeconds(7 * 24 * 3600))
+                .revoked(false)
+                .build();
+
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        
+        when(refreshTokenRepository.findByTokenHash(hashedOldToken))
+                .thenReturn(Optional.of(storedOldToken));
+        when(userRepository.findByIdAndStatusNot(userId, UserStatus.DELETED))
+                .thenReturn(Optional.of(user));
+
+        authService.refresh(oldRefreshToken, response);
+
+        verify(refreshTokenRepository).saveAll(argThat(list -> {
+            List<RefreshToken> tokens = (List<RefreshToken>) list;
+            return tokens.size() == 2 &&
+                tokens.stream().anyMatch(t -> ((RefreshToken) t).isRevoked()) &&
+                tokens.stream().anyMatch(t -> !((RefreshToken) t).isRevoked());
+        }));
+
+        ArgumentCaptor<String> cookieCaptor = ArgumentCaptor.forClass(String.class);
+        verify(response).addHeader(eq(HttpHeaders.SET_COOKIE), cookieCaptor.capture());
+        
+        String cookieHeader = cookieCaptor.getValue();
+        assertTrue(cookieHeader.contains("refreshToken="));
+        assertTrue(cookieHeader.contains("Path=/auth/refresh"));
+        assertTrue(cookieHeader.contains("HttpOnly"));
+        assertTrue(cookieHeader.contains("Max-Age="));
+        assertFalse(cookieHeader.contains(oldRefreshToken));
+    }
+
 }
