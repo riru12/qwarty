@@ -257,4 +257,71 @@ class AuthServiceTest {
         assertFalse(cookieHeader.contains(oldRefreshToken));
     }
 
+    @Test
+    void refresh_missingToken_throwsAppException() {
+        HttpServletResponse response = mock(HttpServletResponse.class);
+
+        AppException exception = assertThrows(AppException.class, () -> authService.refresh(null, response));
+        assertEquals(AppExceptionCode.REFRESH_TOKEN_MISSING, exception.getExceptionCode());
+
+        exception = assertThrows(AppException.class, () -> authService.refresh("   ", response));
+        assertEquals(AppExceptionCode.REFRESH_TOKEN_MISSING, exception.getExceptionCode());
+    }
+
+    @Test
+    void refresh_invalidToken_throwsAppException() throws Exception {
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        String fakeToken = "someInvalidToken";
+        String hashedFakeToken = hashTokenForTest(fakeToken);
+
+        when(refreshTokenRepository.findByTokenHash(hashedFakeToken))
+                .thenReturn(Optional.empty());
+
+        AppException exception = assertThrows(AppException.class, () -> authService.refresh(fakeToken, response));
+        assertEquals(AppExceptionCode.REFRESH_TOKEN_INVALID, exception.getExceptionCode());
+    }
+
+    @Test
+    void refresh_expiredToken_throwsAppException() throws Exception {
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        UUID userId = UUID.randomUUID();
+        String oldToken = "expiredToken";
+        String hashedToken = hashTokenForTest(oldToken);
+
+        RefreshToken expiredToken = RefreshToken.builder()
+                .userId(userId)
+                .tokenHash(hashedToken)
+                .expiryDate(Instant.now().minusSeconds(10))
+                .revoked(false)
+                .build();
+
+        when(refreshTokenRepository.findByTokenHash(hashedToken))
+                .thenReturn(Optional.of(expiredToken));
+
+        AppException exception = assertThrows(AppException.class, () -> authService.refresh(oldToken, response));
+        assertEquals(AppExceptionCode.REFRESH_TOKEN_EXPIRED, exception.getExceptionCode());
+        verify(refreshTokenRepository).delete(expiredToken);
+    }
+
+    @Test
+    void refresh_revokedToken_throwsAppException() throws Exception {
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        UUID userId = UUID.randomUUID();
+        String oldToken = "revokedToken";
+        String hashedToken = hashTokenForTest(oldToken);
+
+        RefreshToken revokedToken = RefreshToken.builder()
+                .userId(userId)
+                .tokenHash(hashedToken)
+                .expiryDate(Instant.now().plusSeconds(1000))
+                .revoked(true)
+                .build();
+
+        when(refreshTokenRepository.findByTokenHash(hashedToken))
+                .thenReturn(Optional.of(revokedToken));
+
+        AppException exception = assertThrows(AppException.class, () -> authService.refresh(oldToken, response));
+        assertEquals(AppExceptionCode.REFRESH_TOKEN_REVOKED, exception.getExceptionCode());
+    }
+
 }
