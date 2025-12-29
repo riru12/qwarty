@@ -16,7 +16,7 @@ import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 @RequiredArgsConstructor
-public class SecurityConfig {
+public class SecurityFilterConfig {
 
     @Value("${allowed.origin}")
     private String allowedOrigin;
