@@ -28,6 +28,7 @@
         "paths": {
             "@/*": ["./*"],
             "@components": ["components"],
+            "@config/*": ["config/*"],
             "@contexts/*": ["contexts/*"],
             "@hooks": ["hooks"],
             "@pages": ["pages"],

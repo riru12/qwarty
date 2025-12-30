@@ -1,6 +1,6 @@
-import AppRoutes from "./routes/AppRoutes"
+import AppRoutes from "./routes/AppRoutes";
 import "./App.css";
-import { NavBar } from "./components/NavBar";
+import { NavBar } from "@/components";
 
 function App() {
     return (
@@ -10,7 +10,7 @@ function App() {
                 <AppRoutes />
             </main>
         </>
-    )
+    );
 }
 
 export default App;

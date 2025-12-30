@@ -1,14 +1,16 @@
+import "@config/i18n";
 import { useState } from "react";
-import { Input, PasswordInput } from "@components";
+import { useApi } from "@hooks";
+import { useTranslation } from "react-i18next";
+import { Button, Input, PasswordInput } from "@/components";
 import { LoginEndpoint } from "@services/api/endpoints";
-import { useAuth, useApi } from "@hooks";
+import "./Login.css";
 
 export function Login() {
     const [formUsername, setFormUsername] = useState("");
     const [formPassword, setFormPassword] = useState("");
+    const { t } = useTranslation(["login"]);
     const api = useApi();
-
-    const { username } = useAuth();
 
     async function requestLogin() {
         try {
@@ -20,24 +22,24 @@ export function Login() {
             setFormUsername("");
             setFormPassword("");
         } catch (error) {
-            alert("Sign up failed. Please try again.");
+            alert("Log in failed. Please try again.");
         }
     }
 
     return (
-        <>
-            <div>hello {username}</div>
+        <div className="login-container">
+            <h1>{t("login")}</h1>
             <Input
                 value={formUsername}
                 setValue={setFormUsername}
-                placeholder="Username"
+                placeholder={t("username")}
             />
             <PasswordInput
                 value={formPassword}
                 setValue={setFormPassword}
-                placeholder="Password"
+                placeholder={t("password")}
             />
-            <button onClick={requestLogin}></button>
-        </>
+            <Button label={t("login")} onClick={requestLogin} />
+        </div>
     );
 }

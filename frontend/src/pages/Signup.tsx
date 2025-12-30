@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Input, PasswordInput } from "@components";
+import { Input, PasswordInput } from "@/components";
 import { SignupEndpoint } from "@services/api/endpoints";
 import { useApi } from "@hooks";
 
