@@ -55,7 +55,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(FieldValidationException.class)
-    public ResponseEntity<ProblemDetail> handleFieldValidationExceptions(FieldValidationException exception, Locale locale) {
+    public ResponseEntity<ProblemDetail> handleFieldValidationExceptions(
+            FieldValidationException exception, Locale locale) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         String title = messageSource.getMessage(FIELD_VALIDATION_ERROR_TITLE, null, locale);
         List<Map<String, String>> errors = exception.getFieldErrors().stream()
