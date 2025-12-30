@@ -21,7 +21,6 @@ public class I18nConfig {
 
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         var resources = resolver.getResources("classpath:i18n/**/*.properties");
-
         Set<String> basenames = new HashSet<>();
         for (var resource : resources) {
             try {
