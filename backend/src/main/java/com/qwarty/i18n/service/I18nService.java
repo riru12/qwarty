@@ -3,13 +3,13 @@ package com.qwarty.i18n.service;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -32,7 +32,7 @@ public class I18nService {
 
         Set<String> keys = loadKeys("i18n/messages", locale);
 
-        Map<String, String> result = new TreeMap<>();
+        Map<String, String> result = new HashMap<>();
         for (String key : keys) {
             result.put(key, messageSource.getMessage(key, null, locale));
         }
@@ -49,7 +49,7 @@ public class I18nService {
         Set<String> keys = new HashSet<>();
         keys.addAll(loadKeys("i18n/screens/" + screen, locale));
 
-        Map<String, String> result = new TreeMap<>();
+        Map<String, String> result = new HashMap<>();
         for (String key : keys) {
             result.put(key, messageSource.getMessage(key, null, locale));
         }
