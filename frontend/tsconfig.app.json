@@ -23,7 +23,7 @@
         "erasableSyntaxOnly": true,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true,
-        
+
         "baseUrl": "./src",
         "paths": {
             "@/*": ["./*"],
@@ -33,8 +33,6 @@
             "@pages": ["pages"],
             "@services/*": ["services/*"]
         }
-
-        
     },
     "include": ["src"]
 }

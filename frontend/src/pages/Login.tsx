@@ -4,10 +4,10 @@ import { LoginEndpoint } from "@services/api/endpoints";
 import { useAuth, useApi } from "@hooks";
 
 export function Login() {
-    const [formUsername, setFormUsername] = useState('');
-    const [formPassword, setFormPassword] = useState('');
+    const [formUsername, setFormUsername] = useState("");
+    const [formPassword, setFormPassword] = useState("");
     const api = useApi();
-    
+
     const { username } = useAuth();
 
     async function requestLogin() {
@@ -17,27 +17,27 @@ export function Login() {
                 password: formPassword
             });
 
-            setFormUsername('');
-            setFormPassword('');
+            setFormUsername("");
+            setFormPassword("");
         } catch (error) {
             alert("Sign up failed. Please try again.");
         }
     }
 
     return (
-        <>  
+        <>
             <div>hello {username}</div>
-            <Input 
-                value={formUsername} 
-                setValue={setFormUsername} 
+            <Input
+                value={formUsername}
+                setValue={setFormUsername}
                 placeholder="Username"
             />
-            <PasswordInput 
-                value={formPassword} 
-                setValue={setFormPassword} 
+            <PasswordInput
+                value={formPassword}
+                setValue={setFormPassword}
                 placeholder="Password"
             />
             <button onClick={requestLogin}></button>
         </>
-    )
+    );
 }

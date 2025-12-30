@@ -9,10 +9,13 @@ class ApiService {
     public async call<E extends Endpoint<any, any>>(
         endpoint: E,
         payload?: EndpointReq<E>,
-        accessToken?: string | null,
+        accessToken?: string | null
     ): Promise<EndpointRes<E>> {
         // regex ensures the endpoint route works correctly whether or not it starts with a `/`
-        const url = new URL(`api/${endpoint.route.replace(/^\/+/, "")}`, BASE_URL);
+        const url = new URL(
+            `api/${endpoint.route.replace(/^\/+/, "")}`,
+            BASE_URL
+        );
         const request = this.buildRequest(endpoint, accessToken, payload);
 
         let response = await fetch(url, request);
@@ -21,7 +24,7 @@ class ApiService {
             throw new Error(`Request failed with status ${response.status}`);
         }
 
-        const parsedResponse = await response.json() as EndpointRes<E>;
+        const parsedResponse = (await response.json()) as EndpointRes<E>;
 
         return parsedResponse;
     }
@@ -36,7 +39,7 @@ class ApiService {
     ): RequestInit {
         const headers: Record<string, string> = {};
 
-        if (accessToken && accessToken !== '') {
+        if (accessToken && accessToken !== "") {
             headers["Authorization"] = `Bearer ${accessToken}`;
         }
 
@@ -46,7 +49,7 @@ class ApiService {
 
         return {
             method: endpoint.method,
-            credentials: 'include',
+            credentials: "include",
             headers,
             body: JSON.stringify(payload)
         };

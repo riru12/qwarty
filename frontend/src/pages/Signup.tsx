@@ -4,9 +4,9 @@ import { SignupEndpoint } from "@services/api/endpoints";
 import { useApi } from "@hooks";
 
 export function Signup() {
-    const [email, setEmail] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
     const api = useApi();
 
     async function requestSignUp() {
@@ -18,9 +18,9 @@ export function Signup() {
             });
 
             // clear inputs after successful request
-            setEmail('');
-            setUsername('');
-            setPassword('');
+            setEmail("");
+            setUsername("");
+            setPassword("");
         } catch (error) {
             alert("Sign up failed. Please try again.");
         }
@@ -28,22 +28,22 @@ export function Signup() {
 
     return (
         <>
-            <Input 
-                value={email} 
-                setValue={setEmail} 
-                placeholder="email@example.com"  
+            <Input
+                value={email}
+                setValue={setEmail}
+                placeholder="email@example.com"
             />
-            <Input 
-                value={username} 
-                setValue={setUsername} 
+            <Input
+                value={username}
+                setValue={setUsername}
                 placeholder="Username"
             />
-            <PasswordInput 
-                value={password} 
-                setValue={setPassword} 
+            <PasswordInput
+                value={password}
+                setValue={setPassword}
                 placeholder="Password"
             />
             <button onClick={requestSignUp}></button>
         </>
-    )
+    );
 }

@@ -6,13 +6,22 @@ interface AuthContextType {
     setAuthStates: (token: string | null, username: string | null) => void;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+    undefined
+);
 
-export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
-    const [accessToken, setAccessToken] = useState<string | null>(() => localStorage.getItem("accessToken"));
-    const [username, setUsername] = useState<string | null>(() => localStorage.getItem("username"));
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    const [accessToken, setAccessToken] = useState<string | null>(() =>
+        localStorage.getItem("accessToken")
+    );
+    const [username, setUsername] = useState<string | null>(() =>
+        localStorage.getItem("username")
+    );
 
-    const setAuthStates = (accessToken: string | null, username: string | null) => {
+    const setAuthStates = (
+        accessToken: string | null,
+        username: string | null
+    ) => {
         setAccessToken(accessToken);
         setUsername(username);
 
@@ -24,13 +33,14 @@ export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider 
-            value = {{ 
+        <AuthContext.Provider
+            value={{
                 accessToken,
                 username,
                 setAuthStates
-            }}>
-            { children }
+            }}
+        >
+            {children}
         </AuthContext.Provider>
-    )
-}
+    );
+};

@@ -9,12 +9,16 @@ export function NavBar() {
         <div className="navbar">
             <div className="navbar-inner">
                 <div className="navbar-left">
-                    <Link className="link" to="/">qwarty</Link>
+                    <Link className="link" to="/">
+                        qwarty
+                    </Link>
                 </div>
                 <div className="navbar-right">
-                    <Link className="link" to="/login">log in</Link>
+                    <Link className="link" to="/login">
+                        log in
+                    </Link>
                 </div>
             </div>
         </div>
-    )
+    );
 }

@@ -1,10 +1,10 @@
 .navbar {
-    display:flex;
+    display: flex;
     position: absolute;
     top: 0;
-    width:100vw;
-    height:2.5em;
-    background-color: #373035;
+    width: 100vw;
+    height: 2.5em;
+    background-color: #1e1e1e;
     z-index: 10;
 }
 
