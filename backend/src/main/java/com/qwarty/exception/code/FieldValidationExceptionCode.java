@@ -4,8 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum FieldValidationExceptionCode {
-    USERNAME_ALREADY_REGISTERED("Username already in use"),
-    EMAIL_ALREADY_REGISTERED("Email already in use");
+    USERNAME_ALREADY_REGISTERED("username.already.registered"),
+    EMAIL_ALREADY_REGISTERED("email.already.registered");
 
     private final String message;
 

@@ -5,23 +5,12 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public enum AppExceptionCode {
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not found", "The user with the given identifier does not exist."),
-    USER_NOT_VERIFIED(
-            HttpStatus.FORBIDDEN,
-            "User is not verified",
-            "The user has not verified their account. Check the email for verification instructions."),
-    REFRESH_TOKEN_MISSING(
-            HttpStatus.UNAUTHORIZED, "Refresh token is required", "A refresh token must be provided to continue."),
-    REFRESH_TOKEN_INVALID(
-            HttpStatus.UNAUTHORIZED, "Refresh token is invalid", "The provided refresh token is invalid."),
-    REFRESH_TOKEN_EXPIRED(
-            HttpStatus.UNAUTHORIZED,
-            "Refresh token has expired",
-            "The provided refresh token has expired and cannot be used."),
-    REFRESH_TOKEN_REVOKED(
-            HttpStatus.UNAUTHORIZED,
-            "Refresh token has been revoked",
-            "The provided refresh token has been revoked and is no longer valid.");
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "user.not.found.title", "user.not.found.detail"),
+    USER_NOT_VERIFIED(HttpStatus.FORBIDDEN, "user.not.verified.title", "user.not.verified.detail"),
+    REFRESH_TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "refresh.token.missing.title", "refresh.token.missing.detail"),
+    REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "refresh.token.invalid.title", "refresh.token.invalid.detail"),
+    REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "refresh.token.expired.title", "refresh.token.expired.detail"),
+    REFRESH_TOKEN_REVOKED(HttpStatus.UNAUTHORIZED, "refresh.token.revoked.title", "refresh.token.revoked.detail");
 
     private final HttpStatus httpStatus;
     private final String title;
