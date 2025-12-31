@@ -313,4 +313,38 @@ class AuthServiceTest {
         AppException exception = assertThrows(AppException.class, () -> authService.refresh(oldToken, response));
         assertEquals(AppExceptionCode.REFRESH_TOKEN_REVOKED, exception.getExceptionCode());
     }
+
+    @Test
+    void logout_validToken_deletesTokenAndClearsCookie() throws Exception {
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        String token = "validRefreshToken";
+        String hashedToken = hashTokenForTest(token);
+
+        UUID userId = UUID.randomUUID();
+        RefreshToken storedToken = RefreshToken.builder()
+                .userId(userId)
+                .tokenHash(hashedToken)
+                .expiryDate(Instant.now().plusSeconds(3600))
+                .revoked(false)
+                .build();
+
+        // Mock repository to return our stored token
+        when(refreshTokenRepository.findByTokenHash(hashedToken)).thenReturn(Optional.of(storedToken));
+
+        // Call logout
+        authService.logout(token, response);
+
+        // Verify token is deleted
+        verify(refreshTokenRepository).delete(storedToken);
+
+        // Verify cookie is cleared
+        ArgumentCaptor<String> cookieCaptor = ArgumentCaptor.forClass(String.class);
+        verify(response).addHeader(eq(HttpHeaders.SET_COOKIE), cookieCaptor.capture());
+
+        String cookieHeader = cookieCaptor.getValue();
+        assertTrue(cookieHeader.contains("refreshToken="));
+        assertTrue(cookieHeader.contains("Path=/api/auth/session"));
+        assertTrue(cookieHeader.contains("HttpOnly"));
+        assertTrue(cookieHeader.contains("Max-Age=0"));
+    }
 }

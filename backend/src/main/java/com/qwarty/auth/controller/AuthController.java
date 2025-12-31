@@ -36,10 +36,17 @@ public class AuthController {
         return ResponseEntity.ok(responseDto);
     }
 
-    @GetMapping("/refresh")
+    @GetMapping("/session/refresh")
     public ResponseEntity<RefreshAuthResponseDTO> refresh(
             @CookieValue(name = "refreshToken", required = true) String refreshToken, HttpServletResponse response) {
         RefreshAuthResponseDTO responseDto = authService.refresh(refreshToken, response);
         return ResponseEntity.ok(responseDto);
+    }
+
+    @PostMapping("/session/logout")
+    public ResponseEntity<Void> logout(
+            @CookieValue(name = "refreshToken", required = true) String refreshToken, HttpServletResponse response) {
+        authService.logout(refreshToken, response);
+        return ResponseEntity.ok().build();
     }
 }

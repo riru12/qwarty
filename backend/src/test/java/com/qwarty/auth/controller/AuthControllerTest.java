@@ -150,4 +150,21 @@ class AuthControllerTest {
 
         verify(authService, times(0)).refresh(any(), any(HttpServletResponse.class));
     }
+
+    @Test
+    void logout_ShouldReturnOk_WhenValidToken() throws Exception {
+        doNothing().when(authService).logout(eq(refreshToken), any(HttpServletResponse.class));
+
+        mockMvc.perform(post("/auth/session/logout").cookie(new Cookie(refreshCookieName, refreshToken)))
+                .andExpect(status().isOk());
+
+        verify(authService, times(1)).logout(eq(refreshToken), any(HttpServletResponse.class));
+    }
+
+    @Test
+    void logout_ShouldReturnBadRequest_WhenCookieMissing() throws Exception {
+        mockMvc.perform(post("/auth/session/logout")).andExpect(status().isBadRequest());
+
+        verify(authService, times(0)).logout(any(), any(HttpServletResponse.class));
+    }
 }

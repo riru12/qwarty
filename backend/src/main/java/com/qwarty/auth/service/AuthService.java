@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -116,6 +117,23 @@ public class AuthService {
         return new RefreshAuthResponseDTO(newAccessToken);
     }
 
+    @Transactional
+    public void logout(String refreshToken, HttpServletResponse response) {
+        clearRefreshCookie(response);
+
+        if (refreshToken == null || refreshToken.isBlank()) {
+            return;
+        }
+
+        String hashedToken = hashToken(refreshToken);
+        Optional<RefreshToken> tokenOptional = refreshTokenRepository.findByTokenHash(hashedToken);
+        if (tokenOptional.isEmpty()) {
+            return;
+        }
+
+        refreshTokenRepository.delete(tokenOptional.get());
+    }
+
     private User authenticate(LoginAuthRequestDTO requestDto) {
         User user = validateUserByUsername(requestDto.username());
 
@@ -152,8 +170,25 @@ public class AuthService {
                 .httpOnly(true)
                 .secure(isProd ? true : false)
                 .sameSite(isProd ? "Strict" : "Lax")
-                .path("/api/auth/refresh")
+                .path("/api/auth/session")
                 .maxAge(Duration.between(Instant.now(), refreshTokenExpiry))
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+    }
+
+    /**
+     * Clears refreshToken cookie in the HTTP headers
+     */
+    private void clearRefreshCookie(HttpServletResponse response) {
+        boolean isProd = "PROD".equals(environment);
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(isProd ? true : false)
+                .sameSite(isProd ? "Strict" : "Lax")
+                .path("/api/auth/session")
+                .maxAge(0)
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
