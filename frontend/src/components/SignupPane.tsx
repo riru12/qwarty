@@ -6,18 +6,22 @@ import { Button, Input, PasswordInput } from "@components";
 import { SignupEndpoint } from "@/services/api/endpoints";
 
 type SignupFormState = {
-    email: string;
     username: string;
+    email: string;
+    verifyEmail: string;
     password: string;
+    verifyPassword: string;
 };
 
 export function SignupPane() {
     const { t } = useTranslation(["login"]);
     const api = useApi();
     const [form, setForm] = useState<SignupFormState>({
-        email: "",
         username: "",
-        password: ""
+        email: "",
+        verifyEmail: "",
+        password: "",
+        verifyPassword: ""
     });
 
     function updateField<K extends keyof SignupFormState>(key: K, value: SignupFormState[K]) {
@@ -30,7 +34,11 @@ export function SignupPane() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         try {
-            await api.call(SignupEndpoint, form);
+            await api.call(SignupEndpoint, {
+                username: form.username,
+                email: form.email,
+                password: form.password
+            });
         } catch (error) {
             alert("Log in failed. Please try again.");
         }
@@ -40,19 +48,29 @@ export function SignupPane() {
         <form onSubmit={handleSubmit}>
             <h2>{t("register")}</h2>
             <Input
+                value={form.username}
+                onChange={(e) => updateField("username", e.target.value)}
+                placeholder={t("username")}
+            />
+            <Input
                 value={form.email}
                 onChange={(e) => updateField("email", e.target.value)}
                 placeholder={t("email")}
             />
             <Input
-                value={form.username}
-                onChange={(e) => updateField("username", e.target.value)}
-                placeholder={t("username")}
+                value={form.verifyEmail}
+                onChange={(e) => updateField("verifyEmail", e.target.value)}
+                placeholder={t("verify.email")}
             />
             <PasswordInput
                 value={form.password}
                 onChange={(e) => updateField("password", e.target.value)}
                 placeholder={t("password")}
+            />
+            <PasswordInput
+                value={form.verifyPassword}
+                onChange={(e) => updateField("verifyPassword", e.target.value)}
+                placeholder={t("verify.password")}
             />
             <Button type="submit" label={t("signup")}/>
         </form>
