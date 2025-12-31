@@ -1,9 +1,9 @@
-// import { useAuth } from "@/hooks";
+import { useAuth } from "@/hooks";
 import { Link } from "react-router-dom";
 import "./NavBar.css";
 
 export function NavBar() {
-    // const { username } = useAuth();
+    const { username } = useAuth();
 
     return (
         <div className="navbar">
@@ -14,9 +14,10 @@ export function NavBar() {
                     </Link>
                 </div>
                 <div className="navbar-right">
-                    <Link className="link" to="/login">
+                    { username }
+                    {!username && <Link className="link" to="/login">
                         log in
-                    </Link>
+                    </Link>}
                 </div>
             </div>
         </div>
