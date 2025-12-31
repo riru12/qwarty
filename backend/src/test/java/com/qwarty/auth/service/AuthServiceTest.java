@@ -42,7 +42,6 @@ class AuthServiceTest {
     @Autowired
     private AuthService authService;
 
-    @SuppressWarnings("unused")
     @Autowired // autowired to use injected values from application.properties
     private JwtService jwtService;
 
