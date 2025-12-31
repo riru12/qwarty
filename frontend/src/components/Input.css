@@ -4,12 +4,14 @@
 }
 
 .input {
+    width:20em;
     padding: 0.75em 3em 0.75em 1em;
     border: 0;
     font-size: 1em;
     font-family: monospace;
     background-color: #09090b;
-    color: #ffffff66;
+    color: #6a6a6a;
+    box-sizing: border-box;
 }
 
 .icons {
@@ -32,7 +34,6 @@
 }
 
 .error-text {
-    max-width: 200px;
     width: max-content;
     background-color: #ff4d4f;
     color: white;
