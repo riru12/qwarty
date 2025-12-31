@@ -4,7 +4,8 @@ import { apiService } from "@services/api/ApiService";
 import {
     LoginEndpoint,
     RefreshEndpoint,
-    SignupEndpoint
+    SignupEndpoint,
+    LogoutEndpoint
 } from "@/services/api/endpoints";
 import type { EndpointReq } from "@/services/api/endpoints/endpoint";
 
@@ -29,9 +30,13 @@ export const useAuth = () => {
 
     const refresh = async () => {
         const response = await apiService.call(RefreshEndpoint);
-        console.log(response.accessToken);
         ctx.setAuthStates(response.accessToken, ctx.username);
     };
 
-    return { ...ctx, login, signup, refresh };
+    const logout = async() => {
+        await apiService.call(LogoutEndpoint);
+        ctx.setAuthStates(null, null);
+    }
+
+    return { ...ctx, login, signup, refresh, logout };
 };

@@ -24,9 +24,12 @@ class ApiService {
             throw new Error(`Request failed with status ${response.status}`);
         }
 
-        const parsedResponse = (await response.json()) as EndpointRes<E>;
+        let parsedResponse: EndpointRes<E> | undefined;
 
-        return parsedResponse;
+        const responseText = await response.text();
+        parsedResponse = responseText ? JSON.parse(responseText) : undefined;
+        return parsedResponse as EndpointRes<E>;
+
     }
 
     /**
