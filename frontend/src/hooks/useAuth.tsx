@@ -1,7 +1,11 @@
 import { useContext } from "react";
 import { AuthContext } from "@contexts/AuthContext";
 import { apiService } from "@services/api/ApiService";
-import { LoginEndpoint, RefreshEndpoint, SignupEndpoint } from "@/services/api/endpoints";
+import {
+    LoginEndpoint,
+    RefreshEndpoint,
+    SignupEndpoint
+} from "@/services/api/endpoints";
 import type { EndpointReq } from "@/services/api/endpoints/endpoint";
 
 export const useAuth = () => {
@@ -15,27 +19,19 @@ export const useAuth = () => {
      * content's AuthStates upon successful login
      */
     const login = async (payload: EndpointReq<typeof LoginEndpoint>) => {
-        const response = await apiService.call(
-            LoginEndpoint, 
-            payload
-        );
+        const response = await apiService.call(LoginEndpoint, payload);
         ctx.setAuthStates(response.accessToken, response.username);
     };
-    
-    const signup = async (payload: EndpointReq<typeof SignupEndpoint>) => {
-        await apiService.call(
-            SignupEndpoint,
-            payload
-        )
-    }
 
-    const refresh = async() => {
-        const response = await apiService.call(
-            RefreshEndpoint
-        )
+    const signup = async (payload: EndpointReq<typeof SignupEndpoint>) => {
+        await apiService.call(SignupEndpoint, payload);
+    };
+
+    const refresh = async () => {
+        const response = await apiService.call(RefreshEndpoint);
         console.log(response.accessToken);
         ctx.setAuthStates(response.accessToken, ctx.username);
-    }
-    
+    };
+
     return { ...ctx, login, signup, refresh };
 };

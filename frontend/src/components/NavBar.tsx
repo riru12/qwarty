@@ -14,10 +14,12 @@ export function NavBar() {
                     </Link>
                 </div>
                 <div className="navbar-right">
-                    { username }
-                    {!username && <Link className="link" to="/login">
-                        log in
-                    </Link>}
+                    {username}
+                    {!username && (
+                        <Link className="link" to="/login">
+                            log in
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>

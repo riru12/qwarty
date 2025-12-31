@@ -6,9 +6,9 @@ import type {
     EndpointRes
 } from "@services/api/endpoints/endpoint";
 
+// hook to use api service
 export const useApi = () => {
-    // hook to use api service
-    const { accessToken } = useAuth(); // uses hook for auth context to be able to update app-wide accessToken
+    const { accessToken } = useAuth(); // uses hook for auth context to retrieve and use accessToken in requests
 
     const call = async <E extends Endpoint<any, any>>(
         endpoint: E,
