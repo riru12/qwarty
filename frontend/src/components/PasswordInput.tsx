@@ -8,11 +8,11 @@ type PasswordInputProps = InputHTMLAttributes<HTMLInputElement> & {
     error?: string;
 };
 
-export function PasswordInput({error, ...props}: PasswordInputProps) {
+export function PasswordInput({ error, ...props }: PasswordInputProps) {
     const [showPassword, setShowPassword] = useState(false);
 
     function togglePasswordVisibility() {
-        setShowPassword(prev => !prev);
+        setShowPassword((prev) => !prev);
     }
 
     return (
@@ -20,9 +20,9 @@ export function PasswordInput({error, ...props}: PasswordInputProps) {
             <input
                 {...props}
                 type={showPassword ? "text" : "password"}
-                className="password-input"
+                className="input password-input"
             />
-            <div className ="icons">
+            <div className="icons">
                 {error && (
                     <div className="error-tooltip">
                         <X className="error" />

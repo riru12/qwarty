@@ -4,7 +4,7 @@
 }
 
 .input {
-    width:20em;
+    width: 20em;
     padding: 0.75em 3em 0.75em 1em;
     border: 0;
     font-size: 1em;
@@ -12,6 +12,12 @@
     background-color: #09090b;
     color: #6a6a6a;
     box-sizing: border-box;
+}
+
+.input:focus {
+    outline: none;
+    border: none;
+    box-shadow: 0 0 0 1px white;
 }
 
 .icons {

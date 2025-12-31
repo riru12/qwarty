@@ -6,7 +6,7 @@ type InputProps = InputHTMLAttributes<HTMLInputElement> & {
     error?: string;
 };
 
-export function Input({error, ...props}: InputProps) {
+export function Input({ error, ...props }: InputProps) {
     return (
         <div className="input-container">
             <input {...props} className="input" />
