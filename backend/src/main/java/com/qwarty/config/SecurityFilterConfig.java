@@ -28,8 +28,8 @@ public class SecurityFilterConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(
-                        auth -> auth.requestMatchers("/auth/**")
-                                .permitAll() // allow login/signup endpoints
+                        auth -> auth.requestMatchers("/auth/**", "/i18n/**")
+                                .permitAll() // allow auth and i18n endpoints
                                 .anyRequest()
                                 .authenticated() // all other requests require authentication
                         )

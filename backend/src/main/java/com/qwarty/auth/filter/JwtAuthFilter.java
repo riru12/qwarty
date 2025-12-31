@@ -62,6 +62,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private boolean skipJwtFilter(String path) {
-        return path.startsWith("/api/auth/");
+        return path.startsWith("/api/auth/") || path.startsWith("/api/i18n");
     }
 }

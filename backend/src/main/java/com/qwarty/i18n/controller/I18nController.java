@@ -16,7 +16,7 @@ public class I18nController {
 
     private final I18nService i18nService;
 
-    @GetMapping
+    @GetMapping("/global")
     public ResponseEntity<Map<String, String>> getGlobalTranslations() {
         Map<String, String> translations = i18nService.getGlobalI18n();
         return ResponseEntity.ok(translations);
