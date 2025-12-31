@@ -244,7 +244,7 @@ class AuthServiceTest {
 
         String cookieHeader = cookieCaptor.getValue();
         assertTrue(cookieHeader.contains("refreshToken="));
-        assertTrue(cookieHeader.contains("Path=/api/auth/refresh"));
+        assertTrue(cookieHeader.contains("Path=/api/auth/session"));
         assertTrue(cookieHeader.contains("HttpOnly"));
         assertTrue(cookieHeader.contains("Max-Age="));
         assertFalse(cookieHeader.contains(oldRefreshToken));

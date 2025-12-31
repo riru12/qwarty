@@ -101,7 +101,7 @@ class AuthControllerTest {
                     return responseDto;
                 });
 
-        mockMvc.perform(get("/auth/refresh").cookie(new Cookie(refreshCookieName, refreshToken)))
+        mockMvc.perform(get("/auth/session/refresh").cookie(new Cookie(refreshCookieName, refreshToken)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").value(newAccessToken))
                 .andExpect(cookie().exists(refreshCookieName));
@@ -145,7 +145,7 @@ class AuthControllerTest {
 
     @Test
     void refresh_ShouldReturnBadRequest_WhenCookieMissing() throws Exception {
-        mockMvc.perform(get("/auth/refresh")) // no cookie
+        mockMvc.perform(get("/auth/session/refresh")) // no cookie
                 .andExpect(status().isBadRequest());
 
         verify(authService, times(0)).refresh(any(), any(HttpServletResponse.class));
