@@ -3,7 +3,8 @@ import { createContext, useState } from "react";
 interface AuthContextType {
     accessToken: string | null;
     username: string | null;
-    setAuthStates: (token: string | null, username: string | null) => void;
+    isGuest: boolean;
+    setAuthState: (token: string | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -17,19 +18,54 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [username, setUsername] = useState<string | null>(() =>
         localStorage.getItem("username")
     );
+    const [isGuest, setIsGuest] = useState<boolean>(() =>
+        localStorage.getItem("isGuest") === "true"
+    );
 
-    const setAuthStates = (
-        accessToken: string | null,
-        username: string | null
+    const parseJwt = (token: string) => {
+        var base64Url = token.split('.')[1];
+        var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+
+        return JSON.parse(jsonPayload);
+    }
+
+    const clearAuthState = () => {
+        setAccessToken(null);
+        setUsername(null);
+        setIsGuest(true);
+
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("username");
+        localStorage.removeItem("isGuest");
+    };
+
+    const updateAuthState = (token: string, user: string, guest: boolean) => {
+        setAccessToken(token);
+        setUsername(user);
+        setIsGuest(guest);
+
+        localStorage.setItem("accessToken", token);
+        localStorage.setItem("username", user);
+        localStorage.setItem("isGuest", String(guest));
+    };
+
+    const setAuthState = (
+        accessToken: string | null
     ) => {
-        setAccessToken(accessToken);
-        setUsername(username);
+        if (accessToken === null) {
+            clearAuthState();
+            return;
+        }
 
-        if (accessToken) localStorage.setItem("accessToken", accessToken);
-        else localStorage.removeItem("accessToken");
-
-        if (username) localStorage.setItem("username", username);
-        else localStorage.removeItem("username");
+        try {
+            const parsedJwt = parseJwt(accessToken);
+            updateAuthState(accessToken, parsedJwt.sub, Boolean(parsedJwt.guest));
+        } catch (error) {
+            clearAuthState();
+        }
     };
 
     return (
@@ -37,7 +73,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             value={{
                 accessToken,
                 username,
-                setAuthStates
+                isGuest,
+                setAuthState
             }}
         >
             {children}
