@@ -51,6 +51,7 @@ export function SignupPane() {
                 value={form.username}
                 onChange={(e) => updateField("username", e.target.value)}
                 placeholder={t("username")}
+                error="test"
             />
             <Input
                 value={form.email}
