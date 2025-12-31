@@ -1,4 +1,5 @@
 import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "@contexts/AuthContext";
 import { apiService } from "@services/api/ApiService";
 import {
@@ -11,6 +12,8 @@ import type { EndpointReq } from "@/services/api/endpoints/endpoint";
 
 export const useAuth = () => {
     const ctx = useContext(AuthContext);
+    const navigate = useNavigate();
+
     if (!ctx) {
         throw new Error("useAuth must be used within an AuthProvider");
     }
@@ -22,6 +25,7 @@ export const useAuth = () => {
     const login = async (payload: EndpointReq<typeof LoginEndpoint>) => {
         const response = await apiService.call(LoginEndpoint, payload);
         ctx.setAuthStates(response.accessToken, response.username);
+        navigate("/");
     };
 
     const signup = async (payload: EndpointReq<typeof SignupEndpoint>) => {
@@ -36,6 +40,7 @@ export const useAuth = () => {
     const logout = async() => {
         await apiService.call(LogoutEndpoint);
         ctx.setAuthStates(null, null);
+        navigate("/");
     }
 
     return { ...ctx, login, signup, refresh, logout };
