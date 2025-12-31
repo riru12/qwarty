@@ -152,7 +152,7 @@ public class AuthService {
                 .httpOnly(true)
                 .secure(isProd ? true : false)
                 .sameSite(isProd ? "Strict" : "Lax")
-                .path("/auth/refresh")
+                .path("/api/auth/refresh")
                 .maxAge(Duration.between(Instant.now(), refreshTokenExpiry))
                 .build();
 
