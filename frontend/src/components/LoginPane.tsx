@@ -1,9 +1,8 @@
 import "@config/i18n";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useApi } from "@/hooks";
+import { useAuth } from "@/hooks";
 import { Button, Input, PasswordInput } from "@components";
-import { LoginEndpoint } from "@/services/api/endpoints";
 import "./LoginPane.css";
 
 type LoginFormState = {
@@ -13,7 +12,7 @@ type LoginFormState = {
 
 export function LoginPane() {
     const { t } = useTranslation(["login"]);
-    const api = useApi();
+    const { login } = useAuth();
     const [form, setForm] = useState<LoginFormState>({
         username: "",
         password: ""
@@ -32,7 +31,7 @@ export function LoginPane() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         try {
-            await api.call(LoginEndpoint, form);
+            await login(form);
         } catch (error) {
             alert("Log in failed. Please try again.");
         }

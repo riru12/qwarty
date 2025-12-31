@@ -7,6 +7,7 @@ interface LoginRequestDTO {
 
 interface LoginResponseDTO {
     accessToken: string;
+    username: string;
 }
 
 export const LoginEndpoint: Endpoint<LoginRequestDTO, LoginResponseDTO> = {
