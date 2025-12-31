@@ -38,16 +38,16 @@ export const useAuth = () => {
         ctx.setAuthState(response.accessToken);
     };
 
-    const logout = async() => {
+    const logout = async () => {
         await apiService.call(LogoutEndpoint);
         ctx.setAuthState(null);
         navigate("/");
     };
 
-    const guest = async() => {
+    const guest = async () => {
         const response = await apiService.call(GuestEndpoint);
         ctx.setAuthState(response.accessToken);
-    }
+    };
 
     return { ...ctx, login, signup, refresh, logout, guest };
 };

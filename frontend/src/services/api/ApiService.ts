@@ -29,7 +29,6 @@ class ApiService {
         const responseText = await response.text();
         parsedResponse = responseText ? JSON.parse(responseText) : undefined;
         return parsedResponse as EndpointRes<E>;
-
     }
 
     /**

@@ -18,19 +18,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [username, setUsername] = useState<string | null>(() =>
         localStorage.getItem("username")
     );
-    const [isGuest, setIsGuest] = useState<boolean>(() =>
-        localStorage.getItem("isGuest") === "true"
+    const [isGuest, setIsGuest] = useState<boolean>(
+        () => localStorage.getItem("isGuest") === "true"
     );
 
     const parseJwt = (token: string) => {
-        var base64Url = token.split('.')[1];
-        var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
+        var base64Url = token.split(".")[1];
+        var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        var jsonPayload = decodeURIComponent(
+            window
+                .atob(base64)
+                .split("")
+                .map(function (c) {
+                    return (
+                        "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
+                    );
+                })
+                .join("")
+        );
 
         return JSON.parse(jsonPayload);
-    }
+    };
 
     const clearAuthState = () => {
         setAccessToken(null);
@@ -52,9 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         localStorage.setItem("isGuest", String(guest));
     };
 
-    const setAuthState = (
-        accessToken: string | null
-    ) => {
+    const setAuthState = (accessToken: string | null) => {
         if (accessToken === null) {
             clearAuthState();
             return;
@@ -62,7 +68,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         try {
             const parsedJwt = parseJwt(accessToken);
-            updateAuthState(accessToken, parsedJwt.sub, Boolean(parsedJwt.guest));
+            updateAuthState(
+                accessToken,
+                parsedJwt.sub,
+                Boolean(parsedJwt.guest)
+            );
         } catch (error) {
             clearAuthState();
         }
