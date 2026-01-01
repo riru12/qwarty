@@ -10,12 +10,10 @@ function App() {
     // on render, hydrate the auth state
     useEffect(() => {
         const initAuth = async () => {
-            if (!auth.isGuest) { // if the user was previously logged in, try to get a new accessToken
-                try {
-                    await auth.refresh();
-                } catch {
-                    auth.setAuthState(null);
-                }
+            try {
+                await auth.refresh();
+            } catch {
+                auth.setAuthState(null);
             }
         };
         initAuth();
