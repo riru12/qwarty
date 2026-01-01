@@ -13,13 +13,8 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const accessToken = useRef<string | null>(null);
-    const [username, setUsername] = useState<string | null>(() =>
-        localStorage.getItem("username")
-    );
-    const [isGuest, setIsGuest] = useState<boolean>(() => {
-        const storedIsGuest = localStorage.getItem("isGuest");
-        return storedIsGuest === null ? true : storedIsGuest === "true";
-    });
+    const [username, setUsername] = useState<string | null>(null);
+    const [isGuest, setIsGuest] = useState<boolean>(true);
 
     const parseJwt = (token: string) => {
         var base64Url = token.split(".")[1];
@@ -43,18 +38,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         accessToken.current = null;
         setUsername(null);
         setIsGuest(true);
-
-        localStorage.removeItem("username");
-        localStorage.removeItem("isGuest");
     };
 
     const updateAuthState = (token: string, user: string, guest: boolean) => {
         accessToken.current = token;
         setUsername(user);
         setIsGuest(guest);
-
-        localStorage.setItem("username", user);
-        localStorage.setItem("isGuest", String(guest));
     };
 
     const setAuthState = (accessToken: string | null) => {
