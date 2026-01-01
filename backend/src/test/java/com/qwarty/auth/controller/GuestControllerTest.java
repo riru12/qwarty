@@ -29,9 +29,8 @@ public class GuestControllerTest {
     @Test
     void guest_ShouldReturnOkAndGuestDto() throws Exception {
         String guestToken = "guest-token";
-        String username = "RandomUsername#100";
 
-        GuestAuthResponseDTO responseDto = new GuestAuthResponseDTO(guestToken, username);
+        GuestAuthResponseDTO responseDto = new GuestAuthResponseDTO(guestToken);
 
         when(guestService.continueAsGuest()).thenReturn(responseDto);
 

@@ -67,7 +67,7 @@ class AuthControllerTest {
     @Test
     void login_ShouldReturnOkWithAccessTokenAndCookie_WhenValidRequest() throws Exception {
         LoginAuthRequestDTO requestDto = new LoginAuthRequestDTO(username, password);
-        LoginAuthResponseDTO responseDto = new LoginAuthResponseDTO(accessToken, username);
+        LoginAuthResponseDTO responseDto = new LoginAuthResponseDTO(accessToken);
 
         when(authService.login(any(LoginAuthRequestDTO.class), any(HttpServletResponse.class)))
                 .thenAnswer(invocation -> {

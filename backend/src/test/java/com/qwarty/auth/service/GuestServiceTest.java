@@ -1,11 +1,9 @@
 package com.qwarty.auth.service;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.qwarty.auth.dto.GuestAuthResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,11 +21,7 @@ public class GuestServiceTest {
 
     @Test
     void continueAsGuest_successful() {
-        GuestAuthResponseDTO response = guestService.continueAsGuest();
-
-        assertTrue(
-                response.username().matches("([A-Z][a-z]+){2}#\\d{3}"),
-                "Guest name should match pattern 'AdjectiveNoun#Num'");
+        guestService.continueAsGuest();
 
         verify(jwtService, times(1)).generateGuestToken(any(UserDetails.class));
     }

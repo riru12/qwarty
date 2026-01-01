@@ -5,7 +5,6 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
-import com.qwarty.auth.dto.LoginAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
 import com.qwarty.auth.lov.UserStatus;
 import com.qwarty.auth.model.RefreshToken;
@@ -151,9 +150,7 @@ class AuthServiceTest {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
 
-        LoginAuthResponseDTO loginResponse = authService.login(request, response);
-
-        assertEquals(username, loginResponse.username());
+        authService.login(request, response);
 
         verify(authenticationManager).authenticate(eq(new UsernamePasswordAuthenticationToken(username, password)));
     }

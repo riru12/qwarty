@@ -20,7 +20,7 @@ public class GuestService {
 
         UserDetails guestDetails = User.builder().username(guestName).build();
         String guestToken = jwtService.generateGuestToken(guestDetails);
-        return new GuestAuthResponseDTO(guestToken, guestName);
+        return new GuestAuthResponseDTO(guestToken);
     }
 
     private String generateGuestName() {
