@@ -1,6 +1,8 @@
 package com.qwarty.auth.filter;
 
 import com.qwarty.auth.service.JwtService;
+import com.qwarty.auth.util.CookieUtil;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,6 +28,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
+    private final CookieUtil cookieUtil;
     private final HandlerExceptionResolver handlerExceptionResolver;
 
     @Override
@@ -41,12 +44,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         try {
-            String jwt = getAccessTokenFromCookies(request);
-            if (jwt == null) {
+            String accessToken = cookieUtil.getAccessTokenFromCookies(request);
+            if (accessToken == null) {
                 filterChain.doFilter(request, response);
                 return;
             }
-            String username = jwtService.extractSubject(jwt);
+            String username = jwtService.extractSubject(accessToken);
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -56,7 +59,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
             // Check if provided token is a valid guest token
-            if (jwtService.isGuestAccessTokenValid(jwt)) {
+            if (jwtService.isGuestAccessTokenValid(accessToken)) {
                 UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(username, null, List.of());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -66,7 +69,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (jwtService.isUserAccessTokenValid(jwt, userDetails)) {
+            if (jwtService.isUserAccessTokenValid(accessToken, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -83,16 +86,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private boolean skipJwtFilter(String path) {
         return path.startsWith("/api/auth/") || path.startsWith("/api/i18n");
-    }
-
-    private String getAccessTokenFromCookies(HttpServletRequest request) {
-        if (request.getCookies() == null) return null;
-        for (var cookie : request.getCookies()) {
-            if ("accessToken".equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-        }
-        return null;
     }
 
 }
