@@ -1,14 +1,13 @@
 package com.qwarty.auth.service;
 
 import com.qwarty.auth.dto.LoginAuthRequestDTO;
-import com.qwarty.auth.dto.LoginAuthResponseDTO;
-import com.qwarty.auth.dto.RefreshAuthResponseDTO;
 import com.qwarty.auth.dto.SignupAuthRequestDTO;
 import com.qwarty.auth.lov.UserStatus;
 import com.qwarty.auth.model.RefreshToken;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
+import com.qwarty.auth.util.CookieUtil;
 import com.qwarty.exception.code.AppExceptionCode;
 import com.qwarty.exception.code.FieldValidationExceptionCode;
 import com.qwarty.exception.type.AppException;
@@ -17,7 +16,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -25,9 +23,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,9 +38,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-
-    @Value("${environment}")
-    private String environment;
+    private final CookieUtil cookieUtil;
 
     /**
      * Registers a user after verifying that an existing account with the same username or email
@@ -70,10 +63,11 @@ public class AuthService {
      * Logs a user in and returns a JWT
      */
     @Transactional
-    public LoginAuthResponseDTO login(LoginAuthRequestDTO requestDto, HttpServletResponse response) {
+    public void login(LoginAuthRequestDTO requestDto, HttpServletResponse response) {
         User user = authenticate(requestDto);
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
+        Instant accessExpiry = jwtService.extractExpiration(accessToken).toInstant();
         Instant refreshExpiry =
                 jwtService.extractExpiration(refreshToken).toInstant(); // extract expiry for db and cookie
 
@@ -85,13 +79,12 @@ public class AuthService {
                 .build();
         refreshTokenRepository.save(refreshTokenEntity);
 
-        setRefreshCookie(refreshToken, refreshExpiry, response);
-
-        return new LoginAuthResponseDTO(accessToken);
+        cookieUtil.setAccessCookie(accessToken, accessExpiry, response);
+        cookieUtil.setRefreshCookie(refreshToken, refreshExpiry, response);
     }
 
     @Transactional
-    public RefreshAuthResponseDTO refresh(String refreshToken, HttpServletResponse response) {
+    public void refresh(String refreshToken, HttpServletResponse response) {
         RefreshToken storedRefreshTokenEntity = validateRefresh(refreshToken);
         User user = validateUserById(storedRefreshTokenEntity.getUserId());
 
@@ -100,6 +93,7 @@ public class AuthService {
 
         String newAccessToken = jwtService.generateAccessToken(user); // new access token
         String newRefreshToken = jwtService.generateRefreshToken(user); // new refresh token
+        Instant newAccessExpiry = jwtService.extractExpiration(newAccessToken).toInstant();
         Instant newRefreshExpiry =
                 jwtService.extractExpiration(newRefreshToken).toInstant(); // extract expiry for db and cookie
 
@@ -111,15 +105,14 @@ public class AuthService {
 
         refreshTokenRepository.saveAll(
                 List.of(storedRefreshTokenEntity, newRefreshTokenEntity)); // update revoked old token, save new token
-
-        setRefreshCookie(newRefreshToken, newRefreshExpiry, response);
-
-        return new RefreshAuthResponseDTO(newAccessToken);
+        
+        cookieUtil.setAccessCookie(newAccessToken, newAccessExpiry, response);
+        cookieUtil.setRefreshCookie(newRefreshToken, newRefreshExpiry, response);
     }
 
     @Transactional
     public void logout(String refreshToken, HttpServletResponse response) {
-        clearRefreshCookie(response);
+        cookieUtil.clearRefreshCookie(response);
 
         if (refreshToken == null || refreshToken.isBlank()) {
             return;
@@ -158,40 +151,6 @@ public class AuthService {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-256 algorithm not available", e);
         }
-    }
-
-    /**
-     * Sets refreshToken cookie in the HTTP headers
-     */
-    private void setRefreshCookie(String refreshToken, Instant refreshTokenExpiry, HttpServletResponse response) {
-        boolean isProd = "PROD".equals(environment);
-
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(isProd ? true : false)
-                .sameSite(isProd ? "Strict" : "Lax")
-                .path("/api/auth/session")
-                .maxAge(Duration.between(Instant.now(), refreshTokenExpiry))
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-    }
-
-    /**
-     * Clears refreshToken cookie in the HTTP headers
-     */
-    private void clearRefreshCookie(HttpServletResponse response) {
-        boolean isProd = "PROD".equals(environment);
-
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(isProd ? true : false)
-                .sameSite(isProd ? "Strict" : "Lax")
-                .path("/api/auth/session")
-                .maxAge(0)
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
     }
 
     private void validateSignup(SignupAuthRequestDTO requestDto) {

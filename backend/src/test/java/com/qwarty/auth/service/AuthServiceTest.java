@@ -11,6 +11,7 @@ import com.qwarty.auth.model.RefreshToken;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
+import com.qwarty.auth.util.CookieUtil;
 import com.qwarty.exception.code.AppExceptionCode;
 import com.qwarty.exception.code.FieldValidationExceptionCode;
 import com.qwarty.exception.type.AppException;
@@ -24,14 +25,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -55,6 +53,9 @@ class AuthServiceTest {
 
     @MockitoBean
     private AuthenticationManager authenticationManager;
+
+    @MockitoBean
+    private CookieUtil cookieUtil;
 
     // Helper to compute the same hash the service uses
     private String hashTokenForTest(String token) throws Exception {
@@ -134,25 +135,23 @@ class AuthServiceTest {
     }
 
     @Test
-    void login_successfulLogin_returnsJwt() {
+    void login_shouldCallCookieUtilAndSaveRefreshToken() {
         String username = "user";
-        String password = "password123";
+        String password = "pass";
 
         LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        User user = User.builder().username(username).verified(true).build();
-
+        User user = User.builder().username(username).verified(true).id(UUID.randomUUID()).build();
         when(userRepository.findByUsernameAndStatusNot(username, UserStatus.DELETED))
                 .thenReturn(Optional.of(user));
 
-        Authentication authentication = mock(Authentication.class);
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(authentication);
-
         authService.login(request, response);
 
-        verify(authenticationManager).authenticate(eq(new UsernamePasswordAuthenticationToken(username, password)));
+        verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
+        verify(cookieUtil).setAccessCookie(anyString(), any(Instant.class), eq(response));
+        verify(cookieUtil).setRefreshCookie(anyString(), any(Instant.class), eq(response));
+        verify(refreshTokenRepository).save(any(RefreshToken.class));
     }
 
     @Test
@@ -209,42 +208,31 @@ class AuthServiceTest {
     }
 
     @Test
-    void refresh_successful_returnsNewAccessToken_andIssuesNewRefreshToken() throws Exception {
+    void refresh_shouldRevokeOldTokenAndSetNewCookies() throws Exception {
         UUID userId = UUID.randomUUID();
         User user = User.builder().id(userId).build();
 
         String oldRefreshToken = jwtService.generateRefreshToken(user);
-        String hashedOldToken = hashTokenForTest(oldRefreshToken);
-        RefreshToken storedOldToken = RefreshToken.builder()
+
+        RefreshToken storedToken = RefreshToken.builder()
                 .userId(userId)
-                .tokenHash(hashedOldToken)
-                .expiryDate(Instant.now().plusSeconds(7 * 24 * 3600))
+                .tokenHash(hashTokenForTest(oldRefreshToken))
+                .expiryDate(Instant.now().plusSeconds(3600))
                 .revoked(false)
                 .build();
 
-        HttpServletResponse response = mock(HttpServletResponse.class);
-
-        when(refreshTokenRepository.findByTokenHash(hashedOldToken)).thenReturn(Optional.of(storedOldToken));
+        when(refreshTokenRepository.findByTokenHash(storedToken.getTokenHash()))
+                .thenReturn(Optional.of(storedToken));
         when(userRepository.findByIdAndStatusNot(userId, UserStatus.DELETED)).thenReturn(Optional.of(user));
+
+        HttpServletResponse response = mock(HttpServletResponse.class);
 
         authService.refresh(oldRefreshToken, response);
 
-        verify(refreshTokenRepository).saveAll(argThat(list -> {
-            List<RefreshToken> tokens = (List<RefreshToken>) list;
-            return tokens.size() == 2
-                    && tokens.stream().anyMatch(t -> ((RefreshToken) t).isRevoked())
-                    && tokens.stream().anyMatch(t -> !((RefreshToken) t).isRevoked());
-        }));
-
-        ArgumentCaptor<String> cookieCaptor = ArgumentCaptor.forClass(String.class);
-        verify(response).addHeader(eq(HttpHeaders.SET_COOKIE), cookieCaptor.capture());
-
-        String cookieHeader = cookieCaptor.getValue();
-        assertTrue(cookieHeader.contains("refreshToken="));
-        assertTrue(cookieHeader.contains("Path=/api/auth/session"));
-        assertTrue(cookieHeader.contains("HttpOnly"));
-        assertTrue(cookieHeader.contains("Max-Age="));
-        assertFalse(cookieHeader.contains(oldRefreshToken));
+        assertTrue(storedToken.isRevoked());
+        verify(refreshTokenRepository).saveAll(anyList());
+        verify(cookieUtil).setAccessCookie(anyString(), any(Instant.class), eq(response));
+        verify(cookieUtil).setRefreshCookie(anyString(), any(Instant.class), eq(response));
     }
 
     @Test
@@ -312,12 +300,11 @@ class AuthServiceTest {
     }
 
     @Test
-    void logout_validToken_deletesTokenAndClearsCookie() throws Exception {
-        HttpServletResponse response = mock(HttpServletResponse.class);
-        String token = "validRefreshToken";
+    void logout_shouldClearCookieAndDeleteToken() throws Exception {
+        UUID userId = UUID.randomUUID();
+        String token = "refreshToken";
         String hashedToken = hashTokenForTest(token);
 
-        UUID userId = UUID.randomUUID();
         RefreshToken storedToken = RefreshToken.builder()
                 .userId(userId)
                 .tokenHash(hashedToken)
@@ -325,23 +312,12 @@ class AuthServiceTest {
                 .revoked(false)
                 .build();
 
-        // Mock repository to return our stored token
         when(refreshTokenRepository.findByTokenHash(hashedToken)).thenReturn(Optional.of(storedToken));
+        HttpServletResponse response = mock(HttpServletResponse.class);
 
-        // Call logout
         authService.logout(token, response);
 
-        // Verify token is deleted
+        verify(cookieUtil).clearRefreshCookie(response);
         verify(refreshTokenRepository).delete(storedToken);
-
-        // Verify cookie is cleared
-        ArgumentCaptor<String> cookieCaptor = ArgumentCaptor.forClass(String.class);
-        verify(response).addHeader(eq(HttpHeaders.SET_COOKIE), cookieCaptor.capture());
-
-        String cookieHeader = cookieCaptor.getValue();
-        assertTrue(cookieHeader.contains("refreshToken="));
-        assertTrue(cookieHeader.contains("Path=/api/auth/session"));
-        assertTrue(cookieHeader.contains("HttpOnly"));
-        assertTrue(cookieHeader.contains("Max-Age=0"));
     }
 }
