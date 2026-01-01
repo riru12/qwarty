@@ -112,6 +112,7 @@ public class AuthService {
 
     @Transactional
     public void logout(String refreshToken, HttpServletResponse response) {
+        cookieUtil.clearAccessCookie(response);
         cookieUtil.clearRefreshCookie(response);
 
         if (refreshToken == null || refreshToken.isBlank()) {

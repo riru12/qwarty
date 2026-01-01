@@ -1,10 +1,6 @@
 import type { Endpoint } from "./endpoint";
 
-interface RefreshResponseDTO {
-    accessToken: string;
-}
-
-export const RefreshEndpoint: Endpoint<void, RefreshResponseDTO> = {
+export const RefreshEndpoint: Endpoint<void, void> = {
     route: "/auth/session/refresh",
     method: "GET"
 };

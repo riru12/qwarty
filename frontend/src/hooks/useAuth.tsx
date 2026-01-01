@@ -10,6 +10,7 @@ import {
     GuestEndpoint
 } from "@/services/api/endpoints";
 import type { EndpointReq } from "@/services/api/endpoints/endpoint";
+import { IdentityEndpoint } from "@/services/api/endpoints/IdentityEndpoint";
 
 export const useAuth = () => {
     const ctx = useContext(AuthContext);
@@ -24,8 +25,8 @@ export const useAuth = () => {
      * content's AuthStates upon successful login
      */
     const login = async (payload: EndpointReq<typeof LoginEndpoint>) => {
-        const response = await apiService.call(LoginEndpoint, payload);
-        ctx.setAuthState(response.accessToken);
+        await apiService.call(LoginEndpoint, payload);
+        await me(); // hydrate auth state after logging in
         navigate("/");
     };
 
@@ -45,8 +46,7 @@ export const useAuth = () => {
 
         refreshing = (async () => {
             try {
-                const response = await apiService.call(RefreshEndpoint);
-                ctx.setAuthState(response.accessToken);
+                await apiService.call(RefreshEndpoint);
             } finally {
                 refreshing = null;
             }
@@ -61,9 +61,13 @@ export const useAuth = () => {
     };
 
     const guest = async () => {
-        const response = await apiService.call(GuestEndpoint);
-        ctx.setAuthState(response.accessToken);
+        await apiService.call(GuestEndpoint);
     };
 
-    return { ...ctx, login, signup, refresh, logout, guest };
+    const me = async() => {
+        const response = await apiService.call(IdentityEndpoint);
+        ctx.setAuthState(response);
+    };
+
+    return { ...ctx, login, signup, refresh, logout, guest, me };
 };

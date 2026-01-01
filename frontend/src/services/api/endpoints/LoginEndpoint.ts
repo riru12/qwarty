@@ -5,11 +5,7 @@ interface LoginRequestDTO {
     password: string;
 }
 
-interface LoginResponseDTO {
-    accessToken: string;
-}
-
-export const LoginEndpoint: Endpoint<LoginRequestDTO, LoginResponseDTO> = {
+export const LoginEndpoint: Endpoint<LoginRequestDTO, void> = {
     route: "/auth/login",
     method: "POST"
 };

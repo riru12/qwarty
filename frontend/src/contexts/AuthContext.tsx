@@ -1,10 +1,11 @@
-import { createContext, useRef, useState } from "react";
+import { createContext, useState } from "react";
+import type { EndpointRes } from "@/services/api/endpoints/endpoint";
+import type { IdentityEndpoint } from "@/services/api/endpoints/IdentityEndpoint";
 
 interface AuthContextType {
-    accessToken: React.RefObject<string | null>;
     username: string | null;
     isGuest: boolean;
-    setAuthState: (token: string | null) => void;
+    setAuthState: (identity: EndpointRes<typeof IdentityEndpoint> | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -12,62 +13,34 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 );
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const accessToken = useRef<string | null>(null);
     const [username, setUsername] = useState<string | null>(null);
     const [isGuest, setIsGuest] = useState<boolean>(true);
 
-    const parseJwt = (token: string) => {
-        var base64Url = token.split(".")[1];
-        var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-        var jsonPayload = decodeURIComponent(
-            window
-                .atob(base64)
-                .split("")
-                .map(function (c) {
-                    return (
-                        "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)
-                    );
-                })
-                .join("")
-        );
-
-        return JSON.parse(jsonPayload);
-    };
-
     const clearAuthState = () => {
-        accessToken.current = null;
         setUsername(null);
         setIsGuest(true);
     };
 
-    const updateAuthState = (token: string, user: string, guest: boolean) => {
-        accessToken.current = token;
+    const updateAuthState = (user: string, guest: boolean) => {
         setUsername(user);
         setIsGuest(guest);
     };
 
-    const setAuthState = (accessToken: string | null) => {
-        if (accessToken === null) {
+    const setAuthState = (identity: EndpointRes<typeof IdentityEndpoint> | null) => {
+        if (identity === null) {
             clearAuthState();
             return;
         }
 
-        try {
-            const parsedJwt = parseJwt(accessToken);
-            updateAuthState(
-                accessToken,
-                parsedJwt.sub,
-                Boolean(parsedJwt.guest)
-            );
-        } catch (error) {
-            clearAuthState();
-        }
+        updateAuthState(
+            identity.username,
+            identity.isGuest
+        );
     };
 
     return (
         <AuthContext.Provider
             value={{
-                accessToken,
                 username,
                 isGuest,
                 setAuthState

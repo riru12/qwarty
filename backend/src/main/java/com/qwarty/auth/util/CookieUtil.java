@@ -52,6 +52,23 @@ public class CookieUtil {
     }
 
     /**
+     * Clears accessToken cookie in the HTTP headers
+     */
+    public void clearAccessCookie(HttpServletResponse response) {
+        boolean isProd = "PROD".equals(environment);
+
+        ResponseCookie refreshCookie = ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(isProd ? true : false)
+                .sameSite(isProd ? "Strict" : "Lax")
+                .path("/api")
+                .maxAge(0)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+    }
+
+    /**
      * Clears refreshToken cookie in the HTTP headers
      */
     public void clearRefreshCookie(HttpServletResponse response) {

@@ -8,15 +8,14 @@ class ApiService {
      */
     public async call<E extends Endpoint<any, any>>(
         endpoint: E,
-        payload?: EndpointReq<E>,
-        accessToken?: string | null
+        payload?: EndpointReq<E>
     ): Promise<EndpointRes<E>> {
         // regex ensures the endpoint route works correctly whether or not it starts with a `/`
         const url = new URL(
             `api/${endpoint.route.replace(/^\/+/, "")}`,
             BASE_URL
         );
-        const request = this.buildRequest(endpoint, accessToken, payload);
+        const request = this.buildRequest(endpoint, payload);
 
         let response = await fetch(url, request);
 
@@ -36,14 +35,9 @@ class ApiService {
      */
     private buildRequest<E extends Endpoint<any, any>>(
         endpoint: E,
-        accessToken?: string | null,
         payload?: EndpointReq<E>
     ): RequestInit {
         const headers: Record<string, string> = {};
-
-        if (accessToken && accessToken !== "") {
-            headers["Authorization"] = `Bearer ${accessToken}`;
-        }
 
         if (payload !== undefined) {
             headers["Content-Type"] = "application/json";

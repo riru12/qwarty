@@ -1,10 +1,6 @@
 import type { Endpoint } from "./endpoint";
 
-interface GuestResponseDTO {
-    accessToken: string;
-}
-
-export const GuestEndpoint: Endpoint<void, GuestResponseDTO> = {
+export const GuestEndpoint: Endpoint<void, void> = {
     route: "/auth/guest",
     method: "GET"
 };

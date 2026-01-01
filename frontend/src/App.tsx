@@ -11,7 +11,7 @@ function App() {
     useEffect(() => {
         const initAuth = async () => {
             try {
-                await auth.refresh();
+                await auth.me();
             } catch {
                 auth.setAuthState(null);
             }
