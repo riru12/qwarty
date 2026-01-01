@@ -55,8 +55,8 @@ export const useAuth = () => {
     };
 
     const logout = async () => {
-        await apiService.call(LogoutEndpoint);
         ctx.setAuthState(null);
+        await apiService.call(LogoutEndpoint);
         navigate("/");
     };
 
