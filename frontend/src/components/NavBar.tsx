@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import "./NavBar.css";
 
 export function NavBar() {
-    const { username, logout } = useAuth();
+    const { username, isGuest, logout } = useAuth();
 
     return (
         <div className="navbar">
@@ -14,17 +14,15 @@ export function NavBar() {
                     </Link>
                 </div>
                 <div className="navbar-right">
-                    {username ? (
-                        <>
-                            <span className="username">{username}</span>
-                            <button className="logout-button" onClick={logout}>
-                                Log out
-                            </button>
-                        </>
-                    ) : (
+                    {username && (<span className="username">{username}</span>)}
+                    {isGuest ? (
                         <Link className="link" to="/login">
                             log in
                         </Link>
+                    ) : (
+                        <button className="logout-button" onClick={logout}>
+                            Log out
+                        </button>
                     )}
                 </div>
             </div>
