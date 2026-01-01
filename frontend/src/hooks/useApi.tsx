@@ -14,6 +14,10 @@ export const useApi = () => {
         endpoint: E,
         payload?: EndpointReq<E>
     ): Promise<EndpointRes<E>> => {
+        if (auth.accessToken.current == null) {
+            auth.isGuest ? await auth.guest() : await auth.refresh();
+        }
+
         try {
             const response = await apiService.call(endpoint, payload, auth.accessToken.current);
             return response;

@@ -12,9 +12,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 );
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const accessToken = useRef<string | null>(
-        localStorage.getItem("accessToken")
-    );
+    const accessToken = useRef<string | null>(null);
     const [username, setUsername] = useState<string | null>(() =>
         localStorage.getItem("username")
     );
@@ -46,7 +44,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUsername(null);
         setIsGuest(true);
 
-        localStorage.removeItem("accessToken");
         localStorage.removeItem("username");
         localStorage.removeItem("isGuest");
     };
@@ -56,7 +53,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUsername(user);
         setIsGuest(guest);
 
-        localStorage.setItem("accessToken", token);
         localStorage.setItem("username", user);
         localStorage.setItem("isGuest", String(guest));
     };
