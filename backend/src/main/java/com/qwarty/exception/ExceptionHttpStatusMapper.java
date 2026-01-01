@@ -8,12 +8,16 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.jsonwebtoken.ExpiredJwtException;
+
 @Component
 public class ExceptionHttpStatusMapper {
 
     public HttpStatus map(Exception ex) {
 
         return switch (ex) {
+            case ExpiredJwtException _ -> HttpStatus.UNAUTHORIZED;
+
             case MethodArgumentNotValidException _,
                     HttpMessageNotReadableException _,
                     MissingRequestCookieException _ -> HttpStatus.BAD_REQUEST;

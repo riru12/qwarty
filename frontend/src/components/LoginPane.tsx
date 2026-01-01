@@ -12,7 +12,7 @@ type LoginFormState = {
 
 export function LoginPane() {
     const { t } = useTranslation(["login"]);
-    const { login } = useAuth();
+    const { login, guest } = useAuth();
     const [form, setForm] = useState<LoginFormState>({
         username: "",
         password: ""
@@ -32,6 +32,7 @@ export function LoginPane() {
         e.preventDefault();
         try {
             await login(form);
+            // await guest();
         } catch (error) {
             alert("Log in failed. Please try again.");
         }

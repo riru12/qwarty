@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 public enum AppExceptionCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "user.not.found.title", "user.not.found.detail"),
     USER_NOT_VERIFIED(HttpStatus.FORBIDDEN, "user.not.verified.title", "user.not.verified.detail"),
+    ACCESS_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "access.token.expired.title", "access.token.expired.detail"),
     REFRESH_TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "refresh.token.missing.title", "refresh.token.missing.detail"),
     REFRESH_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "refresh.token.invalid.title", "refresh.token.invalid.detail"),
     REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "refresh.token.expired.title", "refresh.token.expired.detail"),

@@ -14,14 +14,17 @@ export const useApi = () => {
         endpoint: E,
         payload?: EndpointReq<E>
     ): Promise<EndpointRes<E>> => {
-        try {
-            const response = await apiService.call(endpoint, payload, auth.accessToken.current);
-            return response;
-        } catch {
-            auth.isGuest ? await auth.guest() : await auth.refresh();
-            const response = await apiService.call(endpoint, payload, auth.accessToken.current);
-            return response;
-        }
+        // try {
+        //     const response = await apiService.call(endpoint, payload, auth.accessToken.current);
+        //     return response;
+        // } catch {
+        //     auth.isGuest ? await auth.guest() : await auth.refresh();
+        //     const response = await apiService.call(endpoint, payload, auth.accessToken.current);
+        //     return response;
+        // }
+        const response = await apiService.call(endpoint, payload, auth.accessToken.current);
+        auth.isGuest ? await auth.guest() : await auth.refresh();
+        return response;
 
     };
 
