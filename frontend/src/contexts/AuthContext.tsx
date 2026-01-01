@@ -1,7 +1,7 @@
-import { createContext, useState } from "react";
+import { createContext, useRef, useState } from "react";
 
 interface AuthContextType {
-    accessToken: string | null;
+    accessToken: React.RefObject<string | null>;
     username: string | null;
     isGuest: boolean;
     setAuthState: (token: string | null) => void;
@@ -12,7 +12,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 );
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [accessToken, setAccessToken] = useState<string | null>(() =>
+    const accessToken = useRef<string | null>(
         localStorage.getItem("accessToken")
     );
     const [username, setUsername] = useState<string | null>(() =>
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const clearAuthState = () => {
-        setAccessToken(null);
+        accessToken.current = null;
         setUsername(null);
         setIsGuest(true);
 
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const updateAuthState = (token: string, user: string, guest: boolean) => {
-        setAccessToken(token);
+        accessToken.current = token;
         setUsername(user);
         setIsGuest(guest);
 

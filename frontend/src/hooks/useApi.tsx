@@ -14,7 +14,7 @@ export const useApi = () => {
         endpoint: E,
         payload?: EndpointReq<E>
     ): Promise<EndpointRes<E>> => {
-        const response = await apiService.call(endpoint, payload, auth.accessToken);
+        const response = await apiService.call(endpoint, payload, auth.accessToken.current);
 
         return response;
     };

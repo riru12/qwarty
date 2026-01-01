@@ -33,9 +33,25 @@ export const useAuth = () => {
         await apiService.call(SignupEndpoint, payload);
     };
 
+    /**
+     * Refreshes the user's access token using their refresh token (httpOnly cookie).
+     * Deduplicates concurrent requests within the same page instance.
+     */
+    let refreshing: Promise <void> | null = null;
     const refresh = async () => {
-        const response = await apiService.call(RefreshEndpoint);
-        ctx.setAuthState(response.accessToken);
+        if (refreshing !== null) {
+            return refreshing;
+        }
+
+        refreshing = (async () => {
+            try {
+                const response = await apiService.call(RefreshEndpoint);
+                ctx.setAuthState(response.accessToken);
+            } finally {
+                refreshing = null;
+            }
+        })();
+        return refreshing;
     };
 
     const logout = async () => {
