@@ -23,14 +23,14 @@ public class JwtService {
     @Value("${security.jwt.access-expiration-time}")
     private long accessExpirationTime;
 
-    @Value("${security.jwt.refresh-expiration-time}")
-    private long refreshExpirationTime;
+    // @Value("${security.jwt.refresh-expiration-time}")
+    // private long refreshExpirationTime;
 
     public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", JwtTokenType.ACCESS.name());
         claims.put("guest", false);
-        return buildToken(userDetails, claims, accessExpirationTime);
+        return buildAccessToken(userDetails, claims);
     }
 
     public String generateRefreshToken(UserDetails userDetails) {
@@ -38,25 +38,39 @@ public class JwtService {
         claims.put("type", JwtTokenType.REFRESH.name());
         claims.put("guest", false);
         claims.put("jti", java.util.UUID.randomUUID().toString());
-        return buildToken(userDetails, claims, refreshExpirationTime);
+        return buildRefreshToken(userDetails, claims);
     }
 
     public String generateGuestToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", JwtTokenType.ACCESS.name());
         claims.put("guest", true);
-        return buildToken(userDetails, claims, accessExpirationTime);
+        return buildAccessToken(userDetails, claims);
     }
 
     /**
-     * Builds a JWT
+     * Builds an access JWT (contains expiration claim)
      */
-    private String buildToken(UserDetails userDetails, Map<String, Object> claims, long expiration) {
+    private String buildAccessToken(UserDetails userDetails, Map<String, Object> claims) {
         return Jwts.builder()
                 .claims()
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiration))
+                .expiration(new Date(System.currentTimeMillis() + accessExpirationTime))
+                .add(claims)
+                .and()
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    /**
+     * Builds a refresh JWT (does not contain expiration claim)
+     */
+    private String buildRefreshToken(UserDetails userDetails, Map<String, Object> claims) {
+        return Jwts.builder()
+                .claims()
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
                 .add(claims)
                 .and()
                 .signWith(getSigningKey())

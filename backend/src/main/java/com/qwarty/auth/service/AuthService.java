@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -46,6 +47,9 @@ public class AuthService {
 
     @Value("${environment}")
     private String environment;
+
+    @Value("${security.jwt.refresh-expiration-time}")
+    private long refreshExpirationTime;
 
     /**
      * Registers a user after verifying that an existing account with the same username or email
@@ -74,8 +78,7 @@ public class AuthService {
         User user = authenticate(requestDto);
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
-        Instant refreshExpiry =
-                jwtService.extractExpiration(refreshToken).toInstant(); // extract expiry for db and cookie
+        Instant refreshExpiry = new Date(System.currentTimeMillis() + refreshExpirationTime).toInstant();
 
         // save the refresh token granted to db
         RefreshToken refreshTokenEntity = RefreshToken.builder()
@@ -95,25 +98,19 @@ public class AuthService {
         RefreshToken storedRefreshTokenEntity = validateRefresh(refreshToken);
         User user = validateUserById(storedRefreshTokenEntity.getUserId());
 
-        // client-provided refresh token is valid, generate new access and refresh tokens, and revoke old refresh token
-        storedRefreshTokenEntity.setRevoked(true);
-
-        String newAccessToken = jwtService.generateAccessToken(user); // new access token
-        String newRefreshToken = jwtService.generateRefreshToken(user); // new refresh token
-        Instant newRefreshExpiry =
-                jwtService.extractExpiration(newRefreshToken).toInstant(); // extract expiry for db and cookie
-
-        RefreshToken newRefreshTokenEntity = RefreshToken.builder()
-                .userId(user.getId())
-                .tokenHash(hashToken(newRefreshToken))
-                .expiryDate(newRefreshExpiry)
-                .build();
-
-        refreshTokenRepository.saveAll(
-                List.of(storedRefreshTokenEntity, newRefreshTokenEntity)); // update revoked old token, save new token
-
-        setRefreshCookie(newRefreshToken, newRefreshExpiry, response);
-
+        // Generate new access token
+        String newAccessToken = jwtService.generateAccessToken(user);
+        
+        // Slide the refresh token expiry to 7 days from NOW
+        Instant newRefreshExpiry = Instant.now().plus(Duration.ofDays(7));
+        storedRefreshTokenEntity.setExpiryDate(newRefreshExpiry);
+        
+        // Save updated expiry
+        refreshTokenRepository.save(storedRefreshTokenEntity);
+        
+        // Update cookie with same token but new expiry
+        setRefreshCookie(refreshToken, newRefreshExpiry, response);
+        
         return new RefreshAuthResponseDTO(newAccessToken);
     }
 
