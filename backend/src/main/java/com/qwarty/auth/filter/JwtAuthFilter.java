@@ -6,6 +6,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
+
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -45,16 +47,31 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             final String username = jwtService.extractSubject(jwt);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-            if (username != null && authentication == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-
-                if (jwtService.isAccessTokenValid(jwt, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
+            if (authentication != null) {
+                filterChain.doFilter(request, response);
+                return;
             }
+
+            // Check if provided token is a valid guest token
+            if (jwtService.isGuestAccessTokenValid(jwt)) {
+                UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(username, null, List.of());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (jwtService.isUserAccessTokenValid(jwt, userDetails)) {
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             filterChain.doFilter(request, response);
         } catch (Exception e) {
             handlerExceptionResolver.resolveException(request, response, null, e);
