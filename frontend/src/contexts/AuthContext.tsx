@@ -18,9 +18,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [username, setUsername] = useState<string | null>(() =>
         localStorage.getItem("username")
     );
-    const [isGuest, setIsGuest] = useState<boolean>(
-        () => localStorage.getItem("isGuest") === "true"
-    );
+    const [isGuest, setIsGuest] = useState<boolean>(() => {
+        const storedIsGuest = localStorage.getItem("isGuest");
+        return storedIsGuest === null ? true : storedIsGuest === "true";
+    });
 
     const parseJwt = (token: string) => {
         var base64Url = token.split(".")[1];
