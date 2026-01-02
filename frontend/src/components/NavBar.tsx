@@ -1,9 +1,18 @@
-import { useAuth } from "@/hooks";
-import { Link } from "react-router-dom";
+import { useApi, useAuth } from "@/hooks";
+import { Link, useNavigate } from "react-router-dom";
+import { LogoutEndpoint } from "@/services/api/endpoints";
 import "./NavBar.css";
 
 export function NavBar() {
-    const { username, isGuest, logout } = useAuth();
+    const { username, isGuest, setAuthState } = useAuth();
+    const api = useApi();
+    const nav = useNavigate();
+
+    const logout = async () => {
+        setAuthState(null);
+        api.call(LogoutEndpoint);
+        nav("/");
+    }
 
     return (
         <div className="navbar">

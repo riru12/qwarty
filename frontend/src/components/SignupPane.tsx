@@ -1,7 +1,7 @@
 import "@config/i18n";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "@/hooks";
+import { useApi } from "@/hooks";
 import { Button, Input, PasswordInput } from "@components";
 import { SignupEndpoint } from "@/services/api/endpoints";
 
@@ -14,8 +14,8 @@ type SignupFormState = {
 };
 
 export function SignupPane() {
+    const api = useApi();
     const { t } = useTranslation(["login"]);
-    const { signup } = useAuth();
     const [form, setForm] = useState<SignupFormState>({
         username: "",
         email: "",
@@ -37,7 +37,7 @@ export function SignupPane() {
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         try {
-            await signup({
+            await api.call(SignupEndpoint, {
                 username: form.username,
                 email: form.email,
                 password: form.password

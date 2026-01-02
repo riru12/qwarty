@@ -3,6 +3,8 @@ import type { Endpoint, EndpointReq, EndpointRes } from "./endpoints/endpoint";
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 class ApiService {
+    private activeTasks = new Map<string, Promise<any>>();
+
     /**
      * Perform a fetch to the provided endpoint
      */
@@ -49,6 +51,29 @@ class ApiService {
             headers,
             body: JSON.stringify(payload)
         };
+    }
+
+    /**
+     * Ensures that only one async task per key runs at a time.
+     *
+     * If a task with the same key is already in progress, subsequent callers
+     * will wait for and receive the result of the existing task instead of
+     * starting a new one. Once the task settles, the lock is released.
+     *
+     * Useful for deduplicating shared work such as token refreshes or
+     * idempotent network requests.
+     */
+    public async synchronizedTask<T>(key: string, task: () => Promise<T>): Promise<T> {
+        if (this.activeTasks.has(key)) {
+            return this.activeTasks.get(key)!;
+        }
+
+        const promise = task().finally(() => {
+            this.activeTasks.delete(key);
+        });
+
+        this.activeTasks.set(key, promise);
+        return promise;
     }
 }
 
