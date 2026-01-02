@@ -5,7 +5,9 @@ import type { IdentityEndpoint } from "@/services/api/endpoints/IdentityEndpoint
 interface AuthContextType {
     username: string | null;
     isGuest: boolean;
-    setAuthState: (identity: EndpointRes<typeof IdentityEndpoint> | null) => void;
+    setAuthState: (
+        identity: EndpointRes<typeof IdentityEndpoint> | null
+    ) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -26,16 +28,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsGuest(guest);
     };
 
-    const setAuthState = (identity: EndpointRes<typeof IdentityEndpoint> | null) => {
+    const setAuthState = (
+        identity: EndpointRes<typeof IdentityEndpoint> | null
+    ) => {
         if (identity === null) {
             clearAuthState();
             return;
         }
 
-        updateAuthState(
-            identity.username,
-            identity.isGuest
-        );
+        updateAuthState(identity.username, identity.isGuest);
     };
 
     return (

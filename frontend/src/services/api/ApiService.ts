@@ -63,7 +63,10 @@ class ApiService {
      * Useful for deduplicating shared work such as token refreshes or
      * idempotent network requests.
      */
-    public async synchronizedTask<T>(key: string, task: () => Promise<T>): Promise<T> {
+    public async synchronizedTask<T>(
+        key: string,
+        task: () => Promise<T>
+    ): Promise<T> {
         if (this.activeTasks.has(key)) {
             return this.activeTasks.get(key)!;
         }

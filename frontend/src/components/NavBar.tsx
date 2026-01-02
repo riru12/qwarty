@@ -12,7 +12,7 @@ export function NavBar() {
         setAuthState(null);
         api.call(LogoutEndpoint);
         nav("/");
-    }
+    };
 
     return (
         <div className="navbar">
@@ -23,7 +23,7 @@ export function NavBar() {
                     </Link>
                 </div>
                 <div className="navbar-right">
-                    {username && (<span className="username">{username}</span>)}
+                    {username && <span className="username">{username}</span>}
                     {isGuest ? (
                         <Link className="link" to="/login">
                             log in

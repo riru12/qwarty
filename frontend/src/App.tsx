@@ -13,7 +13,9 @@ function App() {
     useEffect(() => {
         const initAuth = async () => {
             try {
-                auth.setAuthState(await api.call(IdentityEndpoint, undefined, {retry: true}));
+                auth.setAuthState(
+                    await api.call(IdentityEndpoint, undefined, { retry: true })
+                );
             } catch {
                 auth.setAuthState(null);
             }
