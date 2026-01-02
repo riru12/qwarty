@@ -2,14 +2,12 @@ package com.qwarty.auth.filter;
 
 import com.qwarty.auth.service.JwtService;
 import com.qwarty.auth.util.CookieUtil;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -61,7 +59,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             // Check if provided token is a valid guest token
             if (jwtService.isGuestAccessTokenValid(accessToken)) {
                 UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(username, null, List.of());
+                        new UsernamePasswordAuthenticationToken(username, null, List.of());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
                 filterChain.doFilter(request, response);
@@ -87,5 +85,4 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private boolean skipJwtFilter(String path) {
         return path.startsWith("/api/auth/") || path.startsWith("/api/i18n");
     }
-
 }

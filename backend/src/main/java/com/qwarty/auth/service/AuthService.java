@@ -105,7 +105,7 @@ public class AuthService {
 
         refreshTokenRepository.saveAll(
                 List.of(storedRefreshTokenEntity, newRefreshTokenEntity)); // update revoked old token, save new token
-        
+
         cookieUtil.setAccessCookie(newAccessToken, newAccessExpiry, response);
         cookieUtil.setRefreshCookie(newRefreshToken, newRefreshExpiry, response);
     }

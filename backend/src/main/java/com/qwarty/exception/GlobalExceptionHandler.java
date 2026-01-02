@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Creates an RFC 9457-compliant ProblemDetail to be returned by exception handlers and log the exception stack trace
+     * Creates an RFC 9457-compliant ProblemDetail to be returned by exception handlers and log the exception
      *
      * See: https://www.rfc-editor.org/rfc/rfc9457.html
      */

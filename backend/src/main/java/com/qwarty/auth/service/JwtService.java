@@ -114,9 +114,7 @@ public class JwtService {
             final boolean isGuest = isGuestToken(token);
             final JwtTokenType type = extractType(token);
 
-            return JwtTokenType.ACCESS.equals(type)
-                && isGuest
-                && !isTokenExpired(token);
+            return JwtTokenType.ACCESS.equals(type) && isGuest && !isTokenExpired(token);
         } catch (Exception e) {
             return false;
         }
@@ -130,7 +128,7 @@ public class JwtService {
             final String username = extractSubject(token);
             final boolean isGuest = isGuestToken(token);
             final JwtTokenType type = extractType(token);
-            
+
             return (JwtTokenType.ACCESS.equals(type)
                     && username.equals(userDetails.getUsername())
                     && !isGuest

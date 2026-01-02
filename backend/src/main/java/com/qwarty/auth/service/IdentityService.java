@@ -1,10 +1,8 @@
 package com.qwarty.auth.service;
 
-import org.springframework.stereotype.Service;
-
 import com.qwarty.auth.dto.IdentityResponseDTO;
-
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -18,5 +16,4 @@ public class IdentityService {
 
         return new IdentityResponseDTO(username, isGuest);
     }
-
 }

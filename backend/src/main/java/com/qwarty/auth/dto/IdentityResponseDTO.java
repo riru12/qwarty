@@ -1,5 +1,3 @@
 package com.qwarty.auth.dto;
 
-public record IdentityResponseDTO(String username, boolean isGuest) {
-
-}
+public record IdentityResponseDTO(String username, boolean isGuest) {}

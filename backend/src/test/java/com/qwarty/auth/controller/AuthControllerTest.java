@@ -65,11 +65,14 @@ class AuthControllerTest {
 
         // Simulate authService setting cookies
         doAnswer(invocation -> {
-            HttpServletResponse response = invocation.getArgument(1);
-            response.addHeader("Set-Cookie", "accessToken=" + accessToken + "; HttpOnly; Path=/api");
-            response.addHeader("Set-Cookie", "refreshToken=" + refreshToken + "; HttpOnly; Path=/api/auth/refresh");
-            return null;
-        }).when(authService).login(any(LoginAuthRequestDTO.class), any(HttpServletResponse.class));
+                    HttpServletResponse response = invocation.getArgument(1);
+                    response.addHeader("Set-Cookie", "accessToken=" + accessToken + "; HttpOnly; Path=/api");
+                    response.addHeader(
+                            "Set-Cookie", "refreshToken=" + refreshToken + "; HttpOnly; Path=/api/auth/refresh");
+                    return null;
+                })
+                .when(authService)
+                .login(any(LoginAuthRequestDTO.class), any(HttpServletResponse.class));
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -84,11 +87,14 @@ class AuthControllerTest {
     @Test
     void refresh_ShouldReturnOkWithNewCookie_WhenValidToken() throws Exception {
         doAnswer(invocation -> {
-            HttpServletResponse response = invocation.getArgument(1);
-            response.addHeader("Set-Cookie", "accessToken=" + newAccessToken + "; HttpOnly; Path=/api");
-            response.addHeader("Set-Cookie", "refreshToken=" + newRefreshToken + "; HttpOnly; Path=/api/auth/refresh");
-            return null;
-        }).when(authService).refresh(eq(refreshToken), any(HttpServletResponse.class));
+                    HttpServletResponse response = invocation.getArgument(1);
+                    response.addHeader("Set-Cookie", "accessToken=" + newAccessToken + "; HttpOnly; Path=/api");
+                    response.addHeader(
+                            "Set-Cookie", "refreshToken=" + newRefreshToken + "; HttpOnly; Path=/api/auth/refresh");
+                    return null;
+                })
+                .when(authService)
+                .refresh(eq(refreshToken), any(HttpServletResponse.class));
 
         mockMvc.perform(get("/auth/session/refresh").cookie(new Cookie("refreshToken", refreshToken)))
                 .andExpect(status().isOk())

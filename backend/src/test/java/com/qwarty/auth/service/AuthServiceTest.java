@@ -142,7 +142,11 @@ class AuthServiceTest {
         LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
         HttpServletResponse response = mock(HttpServletResponse.class);
 
-        User user = User.builder().username(username).verified(true).id(UUID.randomUUID()).build();
+        User user = User.builder()
+                .username(username)
+                .verified(true)
+                .id(UUID.randomUUID())
+                .build();
         when(userRepository.findByUsernameAndStatusNot(username, UserStatus.DELETED))
                 .thenReturn(Optional.of(user));
 
@@ -221,8 +225,7 @@ class AuthServiceTest {
                 .revoked(false)
                 .build();
 
-        when(refreshTokenRepository.findByTokenHash(storedToken.getTokenHash()))
-                .thenReturn(Optional.of(storedToken));
+        when(refreshTokenRepository.findByTokenHash(storedToken.getTokenHash())).thenReturn(Optional.of(storedToken));
         when(userRepository.findByIdAndStatusNot(userId, UserStatus.DELETED)).thenReturn(Optional.of(user));
 
         HttpServletResponse response = mock(HttpServletResponse.class);

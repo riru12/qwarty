@@ -2,9 +2,7 @@ package com.qwarty.auth.service;
 
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.util.CookieUtil;
-
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.time.Instant;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
