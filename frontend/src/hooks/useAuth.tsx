@@ -7,10 +7,10 @@ import {
     RefreshEndpoint,
     SignupEndpoint,
     LogoutEndpoint,
-    GuestEndpoint
+    GuestEndpoint,
+    IdentityEndpoint
 } from "@/services/api/endpoints";
 import type { EndpointReq } from "@/services/api/endpoints/endpoint";
-import { IdentityEndpoint } from "@/services/api/endpoints/IdentityEndpoint";
 
 export const useAuth = () => {
     const ctx = useContext(AuthContext);
@@ -64,9 +64,25 @@ export const useAuth = () => {
         await apiService.call(GuestEndpoint);
     };
 
+    /**
+     * Retrieves user's identity, automatically calls a refresh if it fails
+     * on initial request.
+     * 
+     * Used to set the auth state of the auth context
+     */
     const me = async() => {
-        const response = await apiService.call(IdentityEndpoint);
-        ctx.setAuthState(response);
+        try {
+            const response = await apiService.call(IdentityEndpoint);
+            ctx.setAuthState(response);
+        } catch (err) {
+            try {
+                await refresh();
+                const response = await apiService.call(IdentityEndpoint);
+                ctx.setAuthState(response);
+            } catch {
+                ctx.setAuthState(null);
+            }
+        }
     };
 
     return { ...ctx, login, signup, refresh, logout, guest, me };
