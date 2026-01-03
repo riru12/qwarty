@@ -27,8 +27,10 @@ export const useApi = () => {
     ): Promise<EndpointRes<E>> => {
         const { retry = true, fallbackToGuest = true } = options ?? {};
 
+        const payloadClone = structuredClone(payload)
+
         try {
-            const response = await apiService.call(endpoint, payload);
+            const response = await apiService.call(endpoint, payloadClone);
             return response;
         } catch (error) {
             if (!(error instanceof ApiError)) {
@@ -48,7 +50,7 @@ export const useApi = () => {
              */
             try {
                 await handleRefresh();
-                return call(endpoint, payload, {
+                return call(endpoint, payloadClone, {
                     ...options,
                     retry: false
                 }); // disable reattempt to prevent loop
@@ -59,7 +61,7 @@ export const useApi = () => {
                 }
 
                 await handleGuestFallback();
-                return call(endpoint, payload, {
+                return call(endpoint, payloadClone, {
                     ...options,
                     retry: false
                 });
