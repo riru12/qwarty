@@ -13,8 +13,11 @@ function App() {
     useEffect(() => {
         const initAuth = async () => {
             try {
+                // avoid falling back to guest token if identity check fails, treat as anonymous and grant token on first meaningful action
                 auth.setAuthState(
-                    await api.call(IdentityEndpoint, undefined, {fallbackToGuest : false})
+                    await api.call(IdentityEndpoint, undefined, {
+                        fallbackToGuest: false
+                    })
                 );
             } catch {
                 auth.setAuthState(null);

@@ -23,8 +23,10 @@ export const useApi = () => {
     const call = async <E extends Endpoint<any, any>>(
         endpoint: E,
         payload?: EndpointReq<E>,
-        options: CallOptions = { retry: true, fallbackToGuest: true }
+        options?: CallOptions
     ): Promise<EndpointRes<E>> => {
+        const { retry = true, fallbackToGuest = true } = options ?? {};
+
         try {
             const response = await apiService.call(endpoint, payload);
             return response;
@@ -33,13 +35,13 @@ export const useApi = () => {
                 throw error;
             }
 
-            if (!options.retry || error.problemDetail.status !== 401) {
+            if (!retry || error.problemDetail.status !== 401) {
                 throw error;
             }
 
             /**
              * If the error is caused by authentication issues, retry:
-             * 
+             *
              * 1) Call for a new accessToken through `/refresh` then reattempt original call
              * 2) If 1. fails and fallbackToGuest is enabled, proceed to 3.
              * 3) Call for a new accessToken through `/guest` then reattempt original call
@@ -51,7 +53,7 @@ export const useApi = () => {
                     retry: false
                 }); // disable reattempt to prevent loop
             } catch (refreshError) {
-                if (!options.fallbackToGuest) {
+                if (!fallbackToGuest) {
                     auth.setAuthState(null);
                     throw refreshError;
                 }
@@ -69,7 +71,7 @@ export const useApi = () => {
         await apiService.synchronizedTask("refresh", () =>
             apiService.call(RefreshEndpoint)
         );
-    }
+    };
 
     const handleGuestFallback = async () => {
         await apiService.synchronizedTask("guest", async () => {
