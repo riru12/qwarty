@@ -16,13 +16,9 @@ Create a .env file in the root of the repository based on .env.example.
 POSTGRES_USER=                  # Database username
 POSTGRES_PASSWORD=              # Database password
 POSTGRES_DB=                    # Database name
-JWT_SECRET_KEY=                 # Secret key used to sign JWTs
-JWT_ACCESS_EXPIRATION_TIME=     # Access token lifetime in milliseconds (e.g. 3600000 = 1 hour)
-JWT_REFRESH_EXPIRATION_TIME=    # Refresh token lifetime in milliseconds (e.g. 604800000 = 7 days)
 BACKEND_PORT=                   # Port where the Spring Boot server will run (e.g. 8080)
 VITE_BACKEND_URL=               # Public backend URL (e.g. http://localhost:8080)
 FRONTEND_URL=                   # Frontend URL (e.g. http://localhost:5173)
-ENVIRONMENT=                    # Determines environment (e.g. DEV or PROD)
 ```
 
 ### Database
