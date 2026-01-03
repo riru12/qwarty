@@ -10,7 +10,7 @@ export function NavBar() {
 
     const logout = async () => {
         setAuthState(null);
-        api.call(LogoutEndpoint);
+        await api.call(LogoutEndpoint);
         nav("/");
     };
 
