@@ -1,13 +1,15 @@
 package com.qwarty.auth.controller;
 
-import com.qwarty.auth.dto.LoginAuthRequestDTO;
-import com.qwarty.auth.dto.SignupAuthRequestDTO;
+import com.qwarty.auth.dto.IdentityResponseDTO;
+import com.qwarty.auth.dto.LoginRequestDTO;
+import com.qwarty.auth.dto.SignupRequestDTO;
 import com.qwarty.auth.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,29 +23,32 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/signup")
-    public ResponseEntity<Void> signup(@Valid @RequestBody SignupAuthRequestDTO requestDto) {
+    public ResponseEntity<Void> signup(@Valid @RequestBody SignupRequestDTO requestDto) {
         authService.signup(requestDto);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(
-            @Valid @RequestBody LoginAuthRequestDTO requestDto, HttpServletResponse response) {
-        authService.login(requestDto, response);
+    public ResponseEntity<Void> login(@Valid @RequestBody LoginRequestDTO requestDto, HttpServletRequest request) {
+        authService.login(requestDto, request);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/session/refresh")
-    public ResponseEntity<Void> refresh(
-            @CookieValue(name = "refreshToken", required = true) String refreshToken, HttpServletResponse response) {
-        authService.refresh(refreshToken, response);
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        authService.logout(request, response);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/session/logout")
-    public ResponseEntity<Void> logout(
-            @CookieValue(name = "refreshToken", required = true) String refreshToken, HttpServletResponse response) {
-        authService.logout(refreshToken, response);
+    @PostMapping("/guest")
+    public ResponseEntity<Void> guest(HttpServletRequest request) {
+        authService.guest(request);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<IdentityResponseDTO> me(HttpServletRequest request) {
+        IdentityResponseDTO response = authService.me(request);
+        return ResponseEntity.ok(response);
     }
 }
