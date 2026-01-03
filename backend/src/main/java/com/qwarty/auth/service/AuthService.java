@@ -1,30 +1,28 @@
 package com.qwarty.auth.service;
 
-import com.qwarty.auth.dto.LoginAuthRequestDTO;
-import com.qwarty.auth.dto.SignupAuthRequestDTO;
+import com.qwarty.auth.dto.IdentityResponseDTO;
+import com.qwarty.auth.dto.LoginRequestDTO;
+import com.qwarty.auth.dto.SignupRequestDTO;
 import com.qwarty.auth.lov.UserStatus;
-import com.qwarty.auth.model.RefreshToken;
 import com.qwarty.auth.model.User;
-import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
-import com.qwarty.auth.util.CookieUtil;
 import com.qwarty.exception.code.AppExceptionCode;
 import com.qwarty.exception.code.FieldValidationExceptionCode;
 import com.qwarty.exception.type.AppException;
 import com.qwarty.exception.type.FieldValidationException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.Instant;
+import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,18 +32,15 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final CookieUtil cookieUtil;
 
     /**
      * Registers a user after verifying that an existing account with the same username or email
      * doesn't exist
      */
     @Transactional
-    public void signup(SignupAuthRequestDTO requestDto) {
+    public void signup(SignupRequestDTO requestDto) {
         validateSignup(requestDto);
 
         User user = User.builder()
@@ -60,101 +55,82 @@ public class AuthService {
     }
 
     /**
-     * Logs a user in and returns a JWT
+     * Logs a user in and returns a session cookie
      */
-    @Transactional
-    public void login(LoginAuthRequestDTO requestDto, HttpServletResponse response) {
-        User user = authenticate(requestDto);
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
-        Instant accessExpiry = jwtService.extractExpiration(accessToken).toInstant();
-        Instant refreshExpiry =
-                jwtService.extractExpiration(refreshToken).toInstant(); // extract expiry for db and cookie
+    public void login(LoginRequestDTO requestDto, HttpServletRequest request) {
+        validateLogin(requestDto);
 
-        // save the refresh token granted to db
-        RefreshToken refreshTokenEntity = RefreshToken.builder()
-                .userId(user.getId())
-                .tokenHash(hashToken(refreshToken))
-                .expiryDate(refreshExpiry)
-                .build();
-        refreshTokenRepository.save(refreshTokenEntity);
-
-        cookieUtil.setAccessCookie(accessToken, accessExpiry, response);
-        cookieUtil.setRefreshCookie(refreshToken, refreshExpiry, response);
-    }
-
-    @Transactional
-    public void refresh(String refreshToken, HttpServletResponse response) {
-        RefreshToken storedRefreshTokenEntity = validateRefresh(refreshToken);
-        User user = validateUserById(storedRefreshTokenEntity.getUserId());
-
-        // client-provided refresh token is valid, generate new access and refresh tokens, and revoke old refresh token
-        storedRefreshTokenEntity.setRevoked(true);
-
-        String newAccessToken = jwtService.generateAccessToken(user); // new access token
-        String newRefreshToken = jwtService.generateRefreshToken(user); // new refresh token
-        Instant newAccessExpiry = jwtService.extractExpiration(newAccessToken).toInstant();
-        Instant newRefreshExpiry =
-                jwtService.extractExpiration(newRefreshToken).toInstant(); // extract expiry for db and cookie
-
-        RefreshToken newRefreshTokenEntity = RefreshToken.builder()
-                .userId(user.getId())
-                .tokenHash(hashToken(newRefreshToken))
-                .expiryDate(newRefreshExpiry)
-                .build();
-
-        refreshTokenRepository.saveAll(
-                List.of(storedRefreshTokenEntity, newRefreshTokenEntity)); // update revoked old token, save new token
-
-        cookieUtil.setAccessCookie(newAccessToken, newAccessExpiry, response);
-        cookieUtil.setRefreshCookie(newRefreshToken, newRefreshExpiry, response);
-    }
-
-    @Transactional
-    public void logout(String refreshToken, HttpServletResponse response) {
-        cookieUtil.clearAccessCookie(response);
-        cookieUtil.clearRefreshCookie(response);
-
-        if (refreshToken == null || refreshToken.isBlank()) {
-            return;
-        }
-
-        String hashedToken = hashToken(refreshToken);
-        Optional<RefreshToken> tokenOptional = refreshTokenRepository.findByTokenHash(hashedToken);
-        if (tokenOptional.isEmpty()) {
-            return;
-        }
-
-        refreshTokenRepository.delete(tokenOptional.get());
-    }
-
-    private User authenticate(LoginAuthRequestDTO requestDto) {
-        User user = validateUserByUsername(requestDto.username());
-
-        if (!user.isVerified()) {
-            throw new AppException(AppExceptionCode.USER_NOT_VERIFIED);
-        }
-
-        authenticationManager.authenticate(
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(requestDto.username(), requestDto.password()));
 
-        return user;
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+        HttpSession session = request.getSession(true);
+        session.setAttribute("SPRING_SECURITY_CONTEXT", context);
     }
 
     /**
-     * Primarily used for hashing a refresh token using SHA-256 before saving it to the DB
+     * Logs a user out - invalidates a session if it exists from client request
      */
-    private String hashToken(String token) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(token.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 algorithm not available", e);
-        }
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+        HttpSession session = request.getSession(false);
+        if (session != null) session.invalidate();
+        SecurityContextHolder.clearContext();
+
+        Cookie cookie = new Cookie("JSESSIONID", null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
     }
 
-    private void validateSignup(SignupAuthRequestDTO requestDto) {
+    /**
+     * Guest session creation
+     */
+    private static final String[] ADJECTIVES = {"Speedy", "Sluggish", "Chill"};
+
+    private static final String[] NOUNS = {"Turtle", "Rabbit", "Capybara"};
+
+    public void guest(HttpServletRequest request) {
+        String guestName = generateGuestName();
+
+        HttpSession session = request.getSession(true);
+        session.setAttribute("USERNAME", guestName);
+        session.setAttribute("IS_GUEST", true);
+    }
+
+    private String generateGuestName() {
+        String adjective = ADJECTIVES[new Random().nextInt(ADJECTIVES.length)];
+        String noun = NOUNS[new Random().nextInt(NOUNS.length)];
+        int number = new Random().nextInt(1000);
+        return adjective + noun + "#" + String.format("%03d", number);
+    }
+
+    public IdentityResponseDTO me(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+
+        if (session != null && Boolean.TRUE.equals(session.getAttribute("IS_GUEST"))) {
+            String username = (String) session.getAttribute("USERNAME");
+            boolean isGuest = true;
+            return new IdentityResponseDTO(username, isGuest);
+        }
+
+        // For registered users
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null
+                && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof User user) {
+            String username = user.getUsername();
+            boolean isGuest = false;
+            return new IdentityResponseDTO(username, isGuest);
+        }
+
+        throw new AppException(AppExceptionCode.NO_SESSION);
+    }
+
+    private void validateSignup(SignupRequestDTO requestDto) {
         List<FieldValidationExceptionCode> validationErrors = new ArrayList<>();
         if (userRepository.existsByUsernameAndStatusNot(requestDto.username(), UserStatus.DELETED)) {
             validationErrors.add(FieldValidationExceptionCode.USERNAME_ALREADY_REGISTERED);
@@ -167,42 +143,17 @@ public class AuthService {
         }
     }
 
-    private RefreshToken validateRefresh(String refreshToken) {
-        if (refreshToken == null || refreshToken.isBlank()) {
-            throw new AppException(AppExceptionCode.REFRESH_TOKEN_MISSING);
-        }
-
-        String hashedToken = hashToken(refreshToken); // hash the provided token from the client
-
-        RefreshToken storedRefreshTokenEntity = refreshTokenRepository
-                .findByTokenHash(hashedToken)
-                .orElseThrow(() -> new AppException(AppExceptionCode.REFRESH_TOKEN_INVALID));
-
-        if (storedRefreshTokenEntity.getExpiryDate().isBefore(Instant.now())) {
-            refreshTokenRepository.delete(storedRefreshTokenEntity);
-            throw new AppException(AppExceptionCode.REFRESH_TOKEN_EXPIRED);
-        }
-
-        if (storedRefreshTokenEntity.isRevoked()) {
-            throw new AppException(AppExceptionCode.REFRESH_TOKEN_REVOKED);
-        }
-
-        return storedRefreshTokenEntity;
-    }
-
-    private User validateUserById(UUID userId) {
+    private void validateLogin(LoginRequestDTO requestDto) {
         User user = userRepository
-                .findByIdAndStatusNot(userId, UserStatus.DELETED)
+                .findByUsernameAndStatusNot(requestDto.username(), UserStatus.DELETED)
                 .orElseThrow(() -> new AppException(AppExceptionCode.USER_NOT_FOUND));
 
-        return user;
-    }
+        if (!user.isVerified()) {
+            throw new AppException(AppExceptionCode.USER_NOT_VERIFIED);
+        }
 
-    private User validateUserByUsername(String username) {
-        User user = userRepository
-                .findByUsernameAndStatusNot(username, UserStatus.DELETED)
-                .orElseThrow(() -> new AppException(AppExceptionCode.USER_NOT_FOUND));
-
-        return user;
+        if (!passwordEncoder.matches(requestDto.password(), user.getPassword())) {
+            throw new AppException(AppExceptionCode.INVALID_CREDENTIALS);
+        }
     }
 }

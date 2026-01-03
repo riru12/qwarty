@@ -5,7 +5,6 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.server.ResponseStatusException;
 
 @Component
@@ -15,8 +14,7 @@ public class ExceptionHttpStatusMapper {
 
         return switch (ex) {
             case MethodArgumentNotValidException _,
-                    HttpMessageNotReadableException _,
-                    MissingRequestCookieException _ -> HttpStatus.BAD_REQUEST;
+                    HttpMessageNotReadableException _ -> HttpStatus.BAD_REQUEST;
 
             case ResponseStatusException exception ->
                 HttpStatus.valueOf(exception.getStatusCode().value());

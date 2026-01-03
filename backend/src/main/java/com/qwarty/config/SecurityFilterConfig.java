@@ -1,6 +1,5 @@
 package com.qwarty.config;
 
-import com.qwarty.auth.filter.JwtAuthFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -21,7 +20,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -36,7 +34,6 @@ public class SecurityFilterConfig {
 
     private final ObjectMapper objectMapper;
     private final MessageSource messageSource;
-    private final JwtAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
     private final Logger logger = LoggerFactory.getLogger(SecurityFilterConfig.class);
 
@@ -44,13 +41,12 @@ public class SecurityFilterConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**", "/i18n/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex ->
                         ex.authenticationEntryPoint(errorEntryPoint()).accessDeniedHandler(accessDeniedHandler()));
         return http.build();
