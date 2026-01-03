@@ -2,6 +2,25 @@ import type { Endpoint, EndpointReq, EndpointRes } from "./endpoints/endpoint";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
+export interface ProblemDetail {
+    status: number;
+    title: string;
+    detail?: string;
+    errors?: Array<Record<string, string>>;
+    [key: string]: any;
+}
+
+export class ApiError extends Error {
+    public problemDetail: ProblemDetail;
+
+    constructor(problemDetail: ProblemDetail) {
+        super(problemDetail.title);
+        this.name = "ApiError";
+        this.problemDetail = problemDetail;
+        Object.setPrototypeOf(this, ApiError.prototype);
+    }
+}
+
 class ApiService {
     private activeTasks = new Map<string, Promise<any>>();
 
@@ -21,14 +40,18 @@ class ApiService {
 
         let response = await fetch(url, request);
 
-        if (!response.ok) {
-            throw new Error(`Request failed with status ${response.status}`);
-        }
-
         let parsedResponse: EndpointRes<E> | undefined;
-
         const responseText = await response.text();
         parsedResponse = responseText ? JSON.parse(responseText) : undefined;
+
+        if (!response.ok) {
+            const problemDetail: ProblemDetail = parsedResponse || {
+                status: response.status,
+                title: `Request failed with status ${response.status}`
+            };
+            throw new ApiError(problemDetail);
+        }
+
         return parsedResponse as EndpointRes<E>;
     }
 

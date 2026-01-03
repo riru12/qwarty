@@ -4,14 +4,14 @@ import {
     RefreshEndpoint
 } from "@/services/api/endpoints";
 import { useAuth } from ".";
-import { apiService } from "@services/api/ApiService";
+import { ApiError, apiService } from "@services/api/ApiService";
 import type {
     Endpoint,
     EndpointReq,
     EndpointRes
 } from "@services/api/endpoints/endpoint";
 
-interface options {
+interface CallOptions {
     retry?: boolean;
     fallbackToGuest?: boolean;
 }
@@ -23,41 +23,60 @@ export const useApi = () => {
     const call = async <E extends Endpoint<any, any>>(
         endpoint: E,
         payload?: EndpointReq<E>,
-        options: options = {}
+        options: CallOptions = { retry: true, fallbackToGuest: true }
     ): Promise<EndpointRes<E>> => {
         try {
             const response = await apiService.call(endpoint, payload);
             return response;
         } catch (error) {
-            if (options.retry) {
-                try {
-                    await apiService.synchronizedTask("refresh", () =>
-                        apiService.call(RefreshEndpoint)
-                    );
-                    return call(endpoint, payload, {
-                        ...options,
-                        retry: false
-                    }); // disable reattempt to prevent loop
-                } catch (refreshError) {
-                    if (options.fallbackToGuest) {
-                        await apiService.synchronizedTask("guest", async () => {
-                            await apiService.call(GuestEndpoint);
-                            const identity =
-                                await apiService.call(IdentityEndpoint);
-                            auth.setAuthState(identity);
-                        });
-                        return call(endpoint, payload, {
-                            ...options,
-                            retry: false
-                        });
-                    }
+            if (!(error instanceof ApiError)) {
+                throw error;
+            }
+
+            if (!options.retry || error.problemDetail.status !== 401) {
+                throw error;
+            }
+
+            /**
+             * If the error is caused by authentication issues, retry:
+             * 
+             * 1) Call for a new accessToken through `/refresh` then reattempt original call
+             * 2) If 1. fails and fallbackToGuest is enabled, proceed to 3.
+             * 3) Call for a new accessToken through `/guest` then reattempt original call
+             */
+            try {
+                await handleRefresh();
+                return call(endpoint, payload, {
+                    ...options,
+                    retry: false
+                }); // disable reattempt to prevent loop
+            } catch (refreshError) {
+                if (!options.fallbackToGuest) {
                     auth.setAuthState(null);
                     throw refreshError;
                 }
-            }
 
-            throw error;
+                await handleGuestFallback();
+                return call(endpoint, payload, {
+                    ...options,
+                    retry: false
+                });
+            }
         }
+    };
+
+    const handleRefresh = async () => {
+        await apiService.synchronizedTask("refresh", () =>
+            apiService.call(RefreshEndpoint)
+        );
+    }
+
+    const handleGuestFallback = async () => {
+        await apiService.synchronizedTask("guest", async () => {
+            await apiService.call(GuestEndpoint);
+            const identity = await apiService.call(IdentityEndpoint);
+            auth.setAuthState(identity);
+        });
     };
 
     return { call };

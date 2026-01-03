@@ -14,7 +14,7 @@ function App() {
         const initAuth = async () => {
             try {
                 auth.setAuthState(
-                    await api.call(IdentityEndpoint, undefined, { retry: true })
+                    await api.call(IdentityEndpoint, undefined, {fallbackToGuest : false})
                 );
             } catch {
                 auth.setAuthState(null);
