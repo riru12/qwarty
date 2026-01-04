@@ -27,8 +27,11 @@
         "baseUrl": ".",
         "paths": {
             "@config/*": ["src/config/*"],
+            "@contexts/*": ["src/contexts/*"],
             "@components/*": ["src/components/*"],
-            "@routes/*": ["src/routes/*"]
+            "@interfaces/*": ["src/interfaces/*"],
+            "@routes/*": ["src/routes/*"],
+            "@utils/*": ["src/utils/*"]
         }
     },
     "include": ["src"]
