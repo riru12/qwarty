@@ -1,9 +1,10 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import type { EndpointRes } from "@interfaces/api/endpoint";
-import type { IdentityEndpoint } from "@interfaces/api/endpoints/IdentityEndpoint";
+import { IdentityEndpoint, type UserType } from "@interfaces/api/endpoints/IdentityEndpoint";
+import { apiClient } from "@utils/ApiClient";
 
 interface AuthContextType {
-    getAuthState: () => { username: string | null; isGuest: boolean };
+    getAuthState: () => { username: string | null; userType: UserType};
     setAuthState: (identity: EndpointRes<typeof IdentityEndpoint> | null) => void;
 }
 
@@ -11,16 +12,23 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [username, setUsername] = useState<string | null>(null);
-    const [isGuest, setIsGuest] = useState<boolean>(true);
+    const [userType, setUserType] = useState<UserType>("ANON");
+
+    useEffect(() => {
+        const initAuthState = async () => {
+            setAuthState(await apiClient.call(IdentityEndpoint));
+        }
+        initAuthState();
+    })
 
     const clearAuthState = () => {
         setUsername(null);
-        setIsGuest(true);
+        setUserType("ANON");
     };
 
-    const updateAuthState = (user: string, guest: boolean) => {
+    const updateAuthState = (user: string, userType: UserType) => {
         setUsername(user);
-        setIsGuest(guest);
+        setUserType(userType);
     };
 
     const setAuthState = (identity: EndpointRes<typeof IdentityEndpoint> | null) => {
@@ -29,10 +37,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             return;
         }
 
-        updateAuthState(identity.username, identity.isGuest);
+        updateAuthState(identity.username, identity.userType);
     };
 
-    const getAuthState = () => ({ username, isGuest });
+    const getAuthState = () => ({ username, userType});
 
     return (
         <AuthContext.Provider

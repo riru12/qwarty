@@ -13,6 +13,6 @@ const MainLayout = () => {
 
 export const MainLayoutRoute = createRoute({
     getParentRoute: () => root,
-    id: "qwarty-layout",
+    id: "main-layout",
     component: MainLayout,
 });
