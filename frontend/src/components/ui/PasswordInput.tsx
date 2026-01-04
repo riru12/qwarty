@@ -17,11 +17,7 @@ export function PasswordInput({ error, ...props }: PasswordInputProps) {
 
     return (
         <div className="input-container">
-            <input
-                {...props}
-                type={showPassword ? "text" : "password"}
-                className="input password-input"
-            />
+            <input {...props} type={showPassword ? "text" : "password"} className="input password-input" />
             <div className="icons">
                 {error && (
                     <div className="error-tooltip">
@@ -29,11 +25,7 @@ export function PasswordInput({ error, ...props }: PasswordInputProps) {
                         <span className="error-text">{error}</span>
                     </div>
                 )}
-                <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="password-toggle"
-                >
+                <button type="button" onClick={togglePasswordVisibility} className="password-toggle">
                     {showPassword ? <EyeClosed /> : <Eye />}
                 </button>
             </div>

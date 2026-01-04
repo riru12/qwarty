@@ -4,7 +4,7 @@ import { IdentityEndpoint, type UserType } from "@interfaces/api/endpoints/Ident
 import { apiClient } from "@utils/ApiClient";
 
 interface AuthContextType {
-    getAuthState: () => { username: string | null; userType: UserType};
+    getAuthState: () => { username: string | null; userType: UserType };
     setAuthState: (identity: EndpointRes<typeof IdentityEndpoint> | null) => void;
 }
 
@@ -17,9 +17,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         const initAuthState = async () => {
             setAuthState(await apiClient.call(IdentityEndpoint));
-        }
+        };
         initAuthState();
-    })
+    });
 
     const clearAuthState = () => {
         setUsername(null);
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         updateAuthState(identity.username, identity.userType);
     };
 
-    const getAuthState = () => ({ username, userType});
+    const getAuthState = () => ({ username, userType });
 
     return (
         <AuthContext.Provider
