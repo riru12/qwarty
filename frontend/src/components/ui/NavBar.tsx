@@ -5,21 +5,21 @@ import "../styles/NavBar.css";
 
 export const NavBar = () => {
     const { t } = useTranslation(["global"]);
-    
+
     return (
         <div className="navbar">
             <div className="navbar-inner">
                 <div className="navbar-left">
                     <Link className="link" to="/">
-                            qwarty
+                        qwarty
                     </Link>
                 </div>
                 <div className="navbar-right">
-                     <Link className="link" to="/login">
-                            {t("login")}
+                    <Link className="link" to="/login">
+                        {t("login")}
                     </Link>
                 </div>
-            </div>  
+            </div>
         </div>
-    )
-}
+    );
+};

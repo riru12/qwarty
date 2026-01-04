@@ -3,16 +3,16 @@ import { NavBar } from "@components/ui";
 import { root } from "../root";
 
 const MainLayout = () => {
-  return (
-    <>
-        <NavBar />
-        <Outlet />
-    </>
-  );
+    return (
+        <>
+            <NavBar />
+            <Outlet />
+        </>
+    );
 };
 
 export const MainLayoutRoute = createRoute({
     getParentRoute: () => root,
     id: "qwarty-layout",
-    component: MainLayout
+    component: MainLayout,
 });

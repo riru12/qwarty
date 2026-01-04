@@ -17,15 +17,9 @@ class ApiClient {
     /**
      * Perform a fetch to the provided endpoint
      */
-    public async call<E extends Endpoint<any, any>>(
-        endpoint: E,
-        payload?: EndpointReq<E>
-    ): Promise<EndpointRes<E>> {
+    public async call<E extends Endpoint<any, any>>(endpoint: E, payload?: EndpointReq<E>): Promise<EndpointRes<E>> {
         // regex ensures the endpoint route works correctly whether or not it starts with a `/`
-        const url = new URL(
-            `api/${endpoint.route.replace(/^\/+/, "")}`,
-            BASE_URL
-        );
+        const url = new URL(`api/${endpoint.route.replace(/^\/+/, "")}`, BASE_URL);
         const request = this.buildRequest(endpoint, payload);
 
         let response = await fetch(url, request);
@@ -37,7 +31,7 @@ class ApiClient {
         if (!response.ok) {
             const problemDetail: ProblemDetail = parsedResponse || {
                 status: response.status,
-                title: `Request failed with status ${response.status}`
+                title: `Request failed with status ${response.status}`,
             };
             throw new ApiError(problemDetail);
         }
@@ -48,10 +42,7 @@ class ApiClient {
     /**
      * Build the request with headers, payload, method, etc.
      */
-    private buildRequest<E extends Endpoint<any, any>>(
-        endpoint: E,
-        payload?: EndpointReq<E>
-    ): RequestInit {
+    private buildRequest<E extends Endpoint<any, any>>(endpoint: E, payload?: EndpointReq<E>): RequestInit {
         const headers: Record<string, string> = {};
 
         if (payload !== undefined) {
@@ -62,7 +53,7 @@ class ApiClient {
             method: endpoint.method,
             credentials: "include",
             headers,
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
         };
     }
 }
