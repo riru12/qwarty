@@ -8,9 +8,13 @@ export default defineConfig({
     plugins: [react()],
     resolve: {
         alias: {
-            "@config": path.resolve(__dirname, "./src/config"),
-            "@components": path.resolve(__dirname, "./src/components"),
-            "@routes": path.resolve(__dirname, "./src/routes"),
+            'src': path.resolve(__dirname, 'src'),
+            "@config": path.resolve(__dirname, "src/config"),
+            "@contexts": path.resolve(__dirname, "src/contexts"),
+            "@components": path.resolve(__dirname, "src/components"),
+            "@interfaces": path.resolve(__dirname, "src/interfaces"),
+            "@routes": path.resolve(__dirname, "src/routes"),
+            "@utils": path.resolve(__dirname, "src/utils"),
         },
     }
 });
