@@ -8,12 +8,12 @@ import { LogoutEndpoint } from "@interfaces/api/endpoints";
 
 export const NavBar = () => {
     const { t } = useTranslation(["global"]);
-    const { setAuthState, getAuthState } = useAuth();
+    const { getAuthState, updateAuthState } = useAuth();
 
     const auth = getAuthState();
 
     const handleLogout = async () => {
-        setAuthState(null);
+        updateAuthState({clear: true});
         await apiClient.call(LogoutEndpoint);
     };
 

@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { apiClient } from "@utils/ApiClient";
 import { useAuth } from "@hooks/useAuth";
-import { IdentityEndpoint, LoginEndpoint } from "@interfaces/api/endpoints";
+import { LoginEndpoint } from "@interfaces/api/endpoints";
 import { Input, PasswordInput, Button } from "@components/ui";
 import "@config/i18n";
 import "../styles/LoginPane.css";
@@ -16,7 +16,7 @@ type LoginFormState = {
 
 export function LoginPane() {
     const { t } = useTranslation(["login"]);
-    const { setAuthState } = useAuth();
+    const { updateAuthState } = useAuth();
     const navigate = useNavigate();
     const [form, setForm] = useState<LoginFormState>({ username: "", password: "" });
 
@@ -26,8 +26,7 @@ export function LoginPane() {
         },
         onSuccess: async () => {
             try {
-                const user = await apiClient.call(IdentityEndpoint);
-                setAuthState(user);
+                updateAuthState();
                 navigate({ to: "/" });
             } catch (err) {
                 console.error("Failed to fetch user identity:", err);

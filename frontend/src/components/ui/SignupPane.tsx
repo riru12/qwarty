@@ -38,8 +38,17 @@ export function SignupPane() {
             alert(t("signup_success") || "Sign up successful! You can now log in.");
         },
         onError: (error: any) => {
-            console.error("Signup failed:", error);
-            alert(t("signup_failed") || "Sign up failed. Please try again.");
+            const problem = error?.problemDetail;
+            
+            if (problem?.errors?.length) {
+                const backendErrors: Partial<SignupFormState> = {};
+                problem.errors.forEach((err: { pointer: string; detail: string }) => {
+                    const field = err.pointer as keyof SignupFormState;
+                    backendErrors[field] = err.detail;
+                });
+                
+                setErrors(backendErrors);
+            }
         },
     });
 
