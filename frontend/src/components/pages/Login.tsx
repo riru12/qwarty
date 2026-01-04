@@ -5,11 +5,13 @@ import { apiClient } from "@utils/ApiClient";
 import { useAuth } from "@hooks/useAuth";
 import { IdentityEndpoint, LoginEndpoint, LogoutEndpoint } from "@interfaces/api/endpoints";
 import "@config/i18n";
+import { Input, PasswordInput } from "@components/ui";
 
 export const Login = () => {
     const { t } = useTranslation(["login"]);
     const { getAuthState, setAuthState } = useAuth();
     const [form, setForm] = useState({ username: "", password: "" });
+    const [errors, setErrors] = useState<{ username?: string; password?: string }>({});
 
     const mutation = useMutation({
         mutationFn: async () => {
@@ -60,10 +62,26 @@ export const Login = () => {
             <div>{getAuthState().username}</div>
             <form onSubmit={handleSubmit}>
                 <h2>{t("login")}</h2>
-                <input type="text" name="username" placeholder={t("username")} value={form.username} onChange={handleChange} />
-                <input type="password" name="password" placeholder={t("password")} value={form.password} onChange={handleChange} />
+
+                <Input
+                    name="username"
+                    placeholder={t("username")}
+                    value={form.username}
+                    onChange={handleChange}
+                    error={errors.username}
+                />
+
+                <PasswordInput
+                    name="password"
+                    placeholder={t("password")}
+                    value={form.password}
+                    onChange={handleChange}
+                    error={errors.password}
+                />
+
                 <button type="submit">{t("login")}</button>
             </form>
+
             <button onClick={handleLogout} style={{ marginTop: "10px" }}>
                 {t("logout")}
             </button>
