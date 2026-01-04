@@ -7,10 +7,9 @@ import static org.mockito.Mockito.*;
 import com.qwarty.auth.dto.IdentityResponseDTO;
 import com.qwarty.auth.dto.LoginRequestDTO;
 import com.qwarty.auth.dto.SignupRequestDTO;
+import com.qwarty.auth.lov.UserType;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.UserRepository;
-import com.qwarty.exception.code.AppExceptionCode;
-import com.qwarty.exception.type.AppException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -18,8 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -83,7 +80,7 @@ class AuthServiceTest {
         authService.guest(request);
 
         verify(session).setAttribute(eq("USERNAME"), any());
-        verify(session).setAttribute("IS_GUEST", true);
+        verify(session).setAttribute("USER_TYPE", UserType.GUEST);
     }
 
     @Test
@@ -92,34 +89,26 @@ class AuthServiceTest {
         HttpSession session = mock(HttpSession.class);
 
         when(request.getSession(false)).thenReturn(session);
-        when(session.getAttribute("IS_GUEST")).thenReturn(true);
+        when(session.getAttribute("USER_TYPE")).thenReturn(UserType.GUEST); // updated
         when(session.getAttribute("USERNAME")).thenReturn(guestUsername);
 
         IdentityResponseDTO dto = authService.me(request);
         assertEquals(guestUsername, dto.username());
-        assertTrue(dto.isGuest());
+        assertEquals(UserType.GUEST, dto.userType());
     }
 
     @Test
     void me_shouldReturnUserIdentity() {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpSession session = mock(HttpSession.class);
-        Authentication auth = mock(Authentication.class);
-        SecurityContext context = mock(SecurityContext.class);
-
-        SecurityContextHolder.setContext(context);
-
-        User user = User.builder().username(username).build();
 
         when(request.getSession(false)).thenReturn(session);
-        when(session.getAttribute("IS_GUEST")).thenReturn(null);
-        when(auth.isAuthenticated()).thenReturn(true);
-        when(auth.getPrincipal()).thenReturn(user);
-        when(context.getAuthentication()).thenReturn(auth);
+        when(session.getAttribute("USER_TYPE")).thenReturn(UserType.USER); // updated
+        when(session.getAttribute("USERNAME")).thenReturn(username);
 
         IdentityResponseDTO dto = authService.me(request);
         assertEquals(username, dto.username());
-        assertFalse(dto.isGuest());
+        assertEquals(UserType.USER, dto.userType());
     }
 
     @Test
@@ -144,7 +133,9 @@ class AuthServiceTest {
 
         when(request.getSession(false)).thenReturn(null);
 
-        AppException ex = assertThrows(AppException.class, () -> authService.me(request));
-        assertEquals(AppExceptionCode.NO_SESSION, ex.getExceptionCode());
+        IdentityResponseDTO dto = authService.me(request);
+
+        assertNull(dto.username());
+        assertEquals(UserType.ANON, dto.userType());
     }
 }

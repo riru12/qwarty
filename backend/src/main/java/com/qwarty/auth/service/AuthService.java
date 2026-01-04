@@ -4,6 +4,7 @@ import com.qwarty.auth.dto.IdentityResponseDTO;
 import com.qwarty.auth.dto.LoginRequestDTO;
 import com.qwarty.auth.dto.SignupRequestDTO;
 import com.qwarty.auth.lov.UserStatus;
+import com.qwarty.auth.lov.UserType;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.UserRepository;
 import com.qwarty.exception.code.AppExceptionCode;
@@ -69,6 +70,8 @@ public class AuthService {
 
         HttpSession session = request.getSession(true);
         session.setAttribute("SPRING_SECURITY_CONTEXT", context);
+        session.setAttribute("USERNAME", requestDto.username());
+        session.setAttribute("USER_TYPE", UserType.USER);
     }
 
     /**
@@ -98,7 +101,7 @@ public class AuthService {
 
         HttpSession session = request.getSession(true);
         session.setAttribute("USERNAME", guestName);
-        session.setAttribute("IS_GUEST", true);
+        session.setAttribute("USER_TYPE", UserType.GUEST);
     }
 
     private String generateGuestName() {
@@ -111,23 +114,16 @@ public class AuthService {
     public IdentityResponseDTO me(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
 
-        if (session != null && Boolean.TRUE.equals(session.getAttribute("IS_GUEST"))) {
+        if (session != null) {
+            UserType userType = (UserType) session.getAttribute("USER_TYPE");
             String username = (String) session.getAttribute("USERNAME");
-            boolean isGuest = true;
-            return new IdentityResponseDTO(username, isGuest);
+
+            if (userType != null) {
+                return new IdentityResponseDTO(username, userType);
+            }
         }
 
-        // For registered users
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null
-                && authentication.isAuthenticated()
-                && authentication.getPrincipal() instanceof User user) {
-            String username = user.getUsername();
-            boolean isGuest = false;
-            return new IdentityResponseDTO(username, isGuest);
-        }
-
-        throw new AppException(AppExceptionCode.NO_SESSION);
+        return new IdentityResponseDTO(null, UserType.ANON);
     }
 
     private void validateSignup(SignupRequestDTO requestDto) {

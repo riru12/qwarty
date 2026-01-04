@@ -1,8 +1,10 @@
 import type { Endpoint } from "../endpoint";
 
+export type UserType = "USER" | "GUEST" | "ANON";
+
 interface IdentityResponseDTO {
     username: string;
-    isGuest: boolean;
+    userType: UserType;
 }
 
 export const IdentityEndpoint: Endpoint<void, IdentityResponseDTO> = {

@@ -13,8 +13,7 @@ public class ExceptionHttpStatusMapper {
     public HttpStatus map(Exception ex) {
 
         return switch (ex) {
-            case MethodArgumentNotValidException _,
-                    HttpMessageNotReadableException _ -> HttpStatus.BAD_REQUEST;
+            case MethodArgumentNotValidException _, HttpMessageNotReadableException _ -> HttpStatus.BAD_REQUEST;
 
             case ResponseStatusException exception ->
                 HttpStatus.valueOf(exception.getStatusCode().value());
