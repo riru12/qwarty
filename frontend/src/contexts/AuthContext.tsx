@@ -1,4 +1,5 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { EndpointRes } from "@interfaces/api/endpoint";
 import { IdentityEndpoint, type UserType } from "@interfaces/api/endpoints/IdentityEndpoint";
 import { apiClient } from "@utils/ApiClient";
@@ -10,43 +11,32 @@ interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [username, setUsername] = useState<string | null>(null);
-    const [userType, setUserType] = useState<UserType>("ANON");
+const IDENTITY_QUERY_KEY = ["auth", "identity"];
 
-    useEffect(() => {
-        const initAuthState = async () => {
-            setAuthState(await apiClient.call(IdentityEndpoint));
-        };
-        initAuthState();
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    const queryClient = useQueryClient();
+
+    const { data: identity } = useQuery({
+        queryKey: IDENTITY_QUERY_KEY,
+        queryFn: () => apiClient.call(IdentityEndpoint),
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        gcTime: 10 * 60 * 1000, // 10 minutes
     });
 
-    const clearAuthState = () => {
-        setUsername(null);
-        setUserType("ANON");
-    };
-
-    const updateAuthState = (user: string, userType: UserType) => {
-        setUsername(user);
-        setUserType(userType);
-    };
-
     const setAuthState = (identity: EndpointRes<typeof IdentityEndpoint> | null) => {
-        if (identity === null) {
-            clearAuthState();
-            return;
-        }
-
-        updateAuthState(identity.username, identity.userType);
+        queryClient.setQueryData(IDENTITY_QUERY_KEY, identity);
     };
 
-    const getAuthState = () => ({ username, userType });
+    const getAuthState = () => ({
+        username: identity?.username ?? null,
+        userType: identity?.userType ?? "ANON",
+    });
 
     return (
         <AuthContext.Provider
             value={{
                 getAuthState,
-                setAuthState,
+                setAuthState
             }}
         >
             {children}
