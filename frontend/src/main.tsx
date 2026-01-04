@@ -1,16 +1,15 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
+import { RouterProvider } from "@tanstack/react-router";
+import { router } from "./routes/router";
 import "./index.css";
-import App from "./App.tsx";
-import { AuthProvider } from "./contexts/AuthContext.tsx";
+import { queryClient } from "@config/queryClient";
+import { QueryClientProvider } from "@tanstack/react-query";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>
-        <AuthProvider>
-            <BrowserRouter>
-                <App />
-            </BrowserRouter>
-        </AuthProvider>
-    </StrictMode>
+        <QueryClientProvider client={queryClient}>
+            <RouterProvider router={router} />
+        </QueryClientProvider>
+    </StrictMode>,
 );

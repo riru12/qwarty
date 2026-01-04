@@ -24,15 +24,11 @@
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true,
 
-        "baseUrl": "./src",
+        "baseUrl": ".",
         "paths": {
-            "@/*": ["./*"],
-            "@components": ["components"],
-            "@config/*": ["config/*"],
-            "@contexts/*": ["contexts/*"],
-            "@hooks": ["hooks"],
-            "@pages": ["pages"],
-            "@services/*": ["services/*"]
+            "@config/*": ["src/config/*"],
+            "@components/*": ["src/components/*"],
+            "@routes/*": ["src/routes/*"]
         }
     },
     "include": ["src"]
