@@ -13,9 +13,7 @@ const mainRoutes = [
         getParentRoute: () => MainLayoutRoute,
         path: "/login",
         component: Login,
-    })
-]
+    }),
+];
 
-export const routeTree = root.addChildren([
-  MainLayoutRoute.addChildren([...mainRoutes])
-]);
+export const routeTree = root.addChildren([MainLayoutRoute.addChildren([...mainRoutes])]);

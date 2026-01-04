@@ -29,6 +29,7 @@
             "@config/*": ["src/config/*"],
             "@contexts/*": ["src/contexts/*"],
             "@components/*": ["src/components/*"],
+            "@hooks/*": ["src/hooks/*"],
             "@interfaces/*": ["src/interfaces/*"],
             "@routes/*": ["src/routes/*"],
             "@utils/*": ["src/utils/*"]
