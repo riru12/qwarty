@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.qwarty.auth.dto.IdentityResponseDTO;
 import com.qwarty.auth.dto.LoginRequestDTO;
 import com.qwarty.auth.dto.SignupRequestDTO;
+import com.qwarty.auth.lov.UserType;
 import com.qwarty.auth.service.AuthService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,7 +77,7 @@ class AuthControllerTest {
 
     @Test
     void me_ShouldReturnIdentityResponseDto() throws Exception {
-        IdentityResponseDTO dummyResponse = new IdentityResponseDTO("username", false);
+        IdentityResponseDTO dummyResponse = new IdentityResponseDTO("username", UserType.USER);
 
         when(authService.me(any())).thenReturn(dummyResponse);
 
