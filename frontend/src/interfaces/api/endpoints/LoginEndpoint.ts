@@ -6,6 +6,6 @@ interface LoginRequestDTO {
 }
 
 export const LoginEndpoint: Endpoint<LoginRequestDTO, void> = {
-    route: "/auth/login",
+    route: "/public/auth/login",
     method: "POST",
 };

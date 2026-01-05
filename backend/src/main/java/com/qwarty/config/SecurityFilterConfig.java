@@ -42,7 +42,7 @@ public class SecurityFilterConfig {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**", "/i18n/**")
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/public/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated())

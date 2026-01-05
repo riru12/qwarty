@@ -12,7 +12,7 @@ i18n.use(HttpBackend)
         ns: [],
         defaultNS: false,
         backend: {
-            loadPath: `${BASE_URL}/api/i18n/{{ns}}`,
+            loadPath: `${BASE_URL}/api/public/i18n/{{ns}}`,
         },
         react: {
             useSuspense: true,

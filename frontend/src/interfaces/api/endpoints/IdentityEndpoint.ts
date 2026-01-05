@@ -8,6 +8,6 @@ interface IdentityResponseDTO {
 }
 
 export const IdentityEndpoint: Endpoint<void, IdentityResponseDTO> = {
-    route: "/auth/me",
+    route: "/public/auth/me",
     method: "GET",
 };

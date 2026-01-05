@@ -7,6 +7,7 @@ import com.qwarty.auth.lov.UserStatus;
 import com.qwarty.auth.lov.UserType;
 import com.qwarty.auth.model.User;
 import com.qwarty.auth.repository.UserRepository;
+import com.qwarty.auth.security.GuestAuthenticationToken;
 import com.qwarty.exception.code.AppExceptionCode;
 import com.qwarty.exception.code.FieldValidationExceptionCode;
 import com.qwarty.exception.type.AppException;
@@ -99,7 +100,13 @@ public class AuthService {
     public void guest(HttpServletRequest request) {
         String guestName = generateGuestName();
 
+        GuestAuthenticationToken authentication = new GuestAuthenticationToken(guestName);
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
         HttpSession session = request.getSession(true);
+        session.setAttribute("SPRING_SECURITY_CONTEXT", context);
         session.setAttribute("USERNAME", guestName);
         session.setAttribute("USER_TYPE", UserType.GUEST);
     }

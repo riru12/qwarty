@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/i18n")
+@RequestMapping("/public/i18n")
 public class I18nController {
 
     private final I18nService i18nService;

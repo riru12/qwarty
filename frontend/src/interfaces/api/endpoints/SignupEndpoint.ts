@@ -7,6 +7,6 @@ interface SignupRequestDTO {
 }
 
 export const SignupEndpoint: Endpoint<SignupRequestDTO, void> = {
-    route: "/auth/signup",
+    route: "/public/auth/signup",
     method: "POST",
 };
