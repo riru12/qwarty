@@ -33,7 +33,7 @@ class I18nControllerTest {
 
         when(i18nService.getGlobalI18n()).thenReturn(dummyTranslations);
 
-        mockMvc.perform(get("/i18n/global")).andExpect(status().isOk());
+        mockMvc.perform(get("/public/i18n/global")).andExpect(status().isOk());
 
         verify(i18nService, times(1)).getGlobalI18n();
     }
@@ -46,7 +46,7 @@ class I18nControllerTest {
 
         when(i18nService.getScreenI18n(screen)).thenReturn(dummyTranslations);
 
-        mockMvc.perform(get("/i18n/{screen}", screen)).andExpect(status().isOk());
+        mockMvc.perform(get("/public/i18n/{screen}", screen)).andExpect(status().isOk());
 
         verify(i18nService, times(1)).getScreenI18n(screen);
     }

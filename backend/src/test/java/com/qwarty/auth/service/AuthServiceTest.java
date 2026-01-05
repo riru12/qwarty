@@ -67,6 +67,8 @@ class AuthServiceTest {
         when(passwordEncoder.matches(any(), any())).thenReturn(true);
 
         assertDoesNotThrow(() -> authService.login(dto, request));
+        verify(session).setAttribute(eq("USERNAME"), any());
+        verify(session).setAttribute("USER_TYPE", UserType.USER);
         verify(session).setAttribute(eq("SPRING_SECURITY_CONTEXT"), any());
     }
 
@@ -81,6 +83,7 @@ class AuthServiceTest {
 
         verify(session).setAttribute(eq("USERNAME"), any());
         verify(session).setAttribute("USER_TYPE", UserType.GUEST);
+        verify(session).setAttribute(eq("SPRING_SECURITY_CONTEXT"), any());
     }
 
     @Test

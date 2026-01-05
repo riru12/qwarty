@@ -45,7 +45,7 @@ class AuthControllerTest {
         SignupRequestDTO requestDto = new SignupRequestDTO(username, email, password);
         doNothing().when(authService).signup(any(SignupRequestDTO.class));
 
-        mockMvc.perform(post("/auth/signup")
+        mockMvc.perform(post("/public/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk());
@@ -58,7 +58,7 @@ class AuthControllerTest {
         LoginRequestDTO requestDto = new LoginRequestDTO(username, password);
         doNothing().when(authService).login(any(LoginRequestDTO.class), any());
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/public/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk());
@@ -70,7 +70,7 @@ class AuthControllerTest {
     void guest_ShouldReturnOk() throws Exception {
         doNothing().when(authService).guest(any());
 
-        mockMvc.perform(post("/auth/guest")).andExpect(status().isOk());
+        mockMvc.perform(post("/public/auth/guest")).andExpect(status().isOk());
 
         verify(authService, times(1)).guest(any());
     }
@@ -81,7 +81,7 @@ class AuthControllerTest {
 
         when(authService.me(any())).thenReturn(dummyResponse);
 
-        mockMvc.perform(get("/auth/me")).andExpect(status().isOk());
+        mockMvc.perform(get("/public/auth/me")).andExpect(status().isOk());
 
         verify(authService, times(1)).me(any());
     }
@@ -95,7 +95,7 @@ class AuthControllerTest {
         };
 
         for (SignupRequestDTO requestDto : testCases) {
-            mockMvc.perform(post("/auth/signup")
+            mockMvc.perform(post("/public/auth/signup")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(requestDto)))
                     .andExpect(status().isBadRequest());
@@ -109,7 +109,7 @@ class AuthControllerTest {
         LoginRequestDTO[] testCases = {new LoginRequestDTO(null, password), new LoginRequestDTO(username, null)};
 
         for (LoginRequestDTO requestDto : testCases) {
-            mockMvc.perform(post("/auth/login")
+            mockMvc.perform(post("/public/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(requestDto)))
                     .andExpect(status().isBadRequest());
