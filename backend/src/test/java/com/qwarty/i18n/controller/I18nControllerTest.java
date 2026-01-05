@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.qwarty.i18n.service.I18nService;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,8 +33,7 @@ class I18nControllerTest {
 
         when(i18nService.getGlobalI18n()).thenReturn(dummyTranslations);
 
-        mockMvc.perform(get("/i18n/global"))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/i18n/global")).andExpect(status().isOk());
 
         verify(i18nService, times(1)).getGlobalI18n();
     }
@@ -47,8 +46,7 @@ class I18nControllerTest {
 
         when(i18nService.getScreenI18n(screen)).thenReturn(dummyTranslations);
 
-        mockMvc.perform(get("/i18n/{screen}", screen))
-                .andExpect(status().isOk());
+        mockMvc.perform(get("/i18n/{screen}", screen)).andExpect(status().isOk());
 
         verify(i18nService, times(1)).getScreenI18n(screen);
     }
