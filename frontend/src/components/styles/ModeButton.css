@@ -1,0 +1,43 @@
+.mode-button-container {
+    background-color: #fb7185;
+    width: 85%;
+}
+
+.mode-button {
+    display: flex;
+    position: relative;
+    width: 100%;
+    padding: 2em 2em;
+    background-color: #fb7185;
+    align-items: center;
+    cursor: pointer;
+    margin-bottom: 2em;
+    transition: transform 0.3s ease-in-out;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+.mode-button:hover {
+    transform: translateX(5em);
+}
+
+.mode-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: 10em;
+    z-index: 2;
+}
+
+.mode-title {
+    font-size: 5em;
+    color: #ffffff;
+    margin: 0;
+    line-height: 0.8;
+}
+
+.mode-description {
+    font-size: 1.5em;
+    color: #ffffff7d;
+    margin: 0;
+}
