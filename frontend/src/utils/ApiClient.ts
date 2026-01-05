@@ -17,10 +17,18 @@ class ApiClient {
     /**
      * Perform a fetch to the provided endpoint
      */
-    public async call<E extends Endpoint<any, any>>(endpoint: E, payload?: EndpointReq<E>): Promise<EndpointRes<E>> {
+    public async call<E extends Endpoint<any, any>>(endpoint: E, options?: {
+        payload?: EndpointReq<E>;
+        params?: Record<string, string | number | boolean>;
+    }): Promise<EndpointRes<E>> {
         // regex ensures the endpoint route works correctly whether or not it starts with a `/`
         const url = new URL(`api/${endpoint.route.replace(/^\/+/, "")}`, BASE_URL);
-        const request = this.buildRequest(endpoint, payload);
+        const request = this.buildRequest(endpoint, options?.payload);
+
+        // append search parameters
+        Object.entries(options?.params || {}).forEach(([key, value]) => {
+            if (value != null) url.searchParams.append(key, String(value));
+        });
 
         let response = await fetch(url, request);
 

@@ -46,6 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const identity = await apiClient.call(IdentityEndpoint);
             queryClient.setQueryData(IDENTITY_QUERY_KEY, identity);
         } catch {
+            // TODO: Add Toast
             queryClient.setQueryData(IDENTITY_QUERY_KEY, null);
         }
     };

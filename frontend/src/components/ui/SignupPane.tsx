@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import { apiClient } from "@utils/ApiClient";
 import { Input, PasswordInput, Button } from "@components/ui";
-import { SignupEndpoint } from "@interfaces/api/endpoints/SignupEndpoint";
+import { SignupEndpoint } from "@interfaces/api/endpoints";
 import "../styles/SignupPane.css";
 
 type SignupFormState = {
@@ -26,13 +26,14 @@ export function SignupPane() {
     });
     const [errors, setErrors] = useState<Partial<SignupFormState>>({});
 
+    // TODO: Add Toast
     const signupMutation = useMutation({
         mutationFn: async () => {
-            return apiClient.call(SignupEndpoint, {
+            return apiClient.call(SignupEndpoint, {payload: {
                 username: form.username,
                 email: form.email,
                 password: form.password,
-            });
+            }});
         },
         onSuccess: () => {
             alert(t("signup_success") || "Sign up successful! You can now log in.");

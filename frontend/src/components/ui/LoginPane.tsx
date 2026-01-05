@@ -20,9 +20,10 @@ export function LoginPane() {
     const navigate = useNavigate();
     const [form, setForm] = useState<LoginFormState>({ username: "", password: "" });
 
+    // TODO: Add Toast
     const loginMutation = useMutation({
         mutationFn: async () => {
-            return apiClient.call(LoginEndpoint, form);
+            return apiClient.call(LoginEndpoint, {payload: form});
         },
         onSuccess: async () => {
             try {

@@ -1,5 +1,9 @@
 import { ModeButton } from "./ModeButton";
 import { useTranslation } from "react-i18next";
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { apiClient } from "@utils/ApiClient";
+import { CreateRoomEndpoint, type CreateRoomResponseDTO } from "@interfaces/api/endpoints";
 import "../styles/ModeSelector.css";
 
 type Mode = {
@@ -10,6 +14,7 @@ type Mode = {
 
 export const ModeSelector = () => {
     const { t } = useTranslation(["global"]);
+    const navigate = useNavigate();
 
     const modes: Mode[] = [
         { id: "racer", name: t("racer"), description: t("racer.description") },
@@ -17,10 +22,25 @@ export const ModeSelector = () => {
         { id: "zen", name: t("zen"), description: t("zen.description") },
     ];
 
+    // TODO: Add Toast
+    const createRoomMutation = useMutation({
+        mutationFn: async (mode: string) => {
+            const response = await apiClient.call(CreateRoomEndpoint, { params: { mode } });
+            return response;
+        },
+        onSuccess: (response: CreateRoomResponseDTO) => {
+            navigate({ to: "/room/" + response.id });
+        },
+        onError: (error: any) => {
+            console.error("Failed to create room:", error);
+        },
+    });
+
+
     return (
         <div className="mode-selector">
             {modes.map((mode: Mode) => (
-                <ModeButton key={mode.id} name={mode.name} description={mode.description} onClick={() => console.log(`Selected mode: ${mode.id}`)} />
+                <ModeButton key={mode.id} name={mode.name} description={mode.description} onClick={()=>createRoomMutation.mutate(mode.id)} />
             ))}
         </div>
     );
