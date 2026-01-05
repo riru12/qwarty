@@ -57,6 +57,7 @@ class AuthServiceTest {
     @Test
     void login_shouldSetSession() {
         HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
         HttpSession session = mock(HttpSession.class);
 
         LoginRequestDTO dto = new LoginRequestDTO(username, password);
@@ -66,7 +67,7 @@ class AuthServiceTest {
         when(userRepository.findByUsernameAndStatusNot(any(), any())).thenReturn(java.util.Optional.of(user));
         when(passwordEncoder.matches(any(), any())).thenReturn(true);
 
-        assertDoesNotThrow(() -> authService.login(dto, request));
+        assertDoesNotThrow(() -> authService.login(dto, request, response));
         verify(session).setAttribute(eq("USERNAME"), any());
         verify(session).setAttribute("USER_TYPE", UserType.USER);
         verify(session).setAttribute(eq("SPRING_SECURITY_CONTEXT"), any());
@@ -75,11 +76,12 @@ class AuthServiceTest {
     @Test
     void guest_shouldSetGuestSession() {
         HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
         HttpSession session = mock(HttpSession.class);
 
         when(request.getSession(true)).thenReturn(session);
 
-        authService.guest(request);
+        authService.guest(request, response);
 
         verify(session).setAttribute(eq("USERNAME"), any());
         verify(session).setAttribute("USER_TYPE", UserType.GUEST);

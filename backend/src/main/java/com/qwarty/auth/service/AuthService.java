@@ -37,6 +37,9 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
+    private final int USER_SESSION_MAX_AGE = 7 * 24 * 60 * 60;
+    private final int GUEST_SESSION_MAX_AGE = -1;
+
     /**
      * Registers a user after verifying that an existing account with the same username or email
      * doesn't exist
@@ -59,7 +62,7 @@ public class AuthService {
     /**
      * Logs a user in and returns a session cookie
      */
-    public void login(LoginRequestDTO requestDto, HttpServletRequest request) {
+    public void login(LoginRequestDTO requestDto, HttpServletRequest request, HttpServletResponse response) {
         validateLogin(requestDto);
 
         Authentication authentication = authenticationManager.authenticate(
@@ -73,6 +76,8 @@ public class AuthService {
         session.setAttribute("SPRING_SECURITY_CONTEXT", context);
         session.setAttribute("USERNAME", requestDto.username());
         session.setAttribute("USER_TYPE", UserType.USER);
+
+        setSessionCookie(response, session.getId(), USER_SESSION_MAX_AGE);
     }
 
     /**
@@ -97,7 +102,7 @@ public class AuthService {
 
     private static final String[] NOUNS = {"Turtle", "Rabbit", "Capybara"};
 
-    public void guest(HttpServletRequest request) {
+    public void guest(HttpServletRequest request, HttpServletResponse response) {
         String guestName = generateGuestName();
 
         GuestAuthenticationToken authentication = new GuestAuthenticationToken(guestName);
@@ -109,6 +114,8 @@ public class AuthService {
         session.setAttribute("SPRING_SECURITY_CONTEXT", context);
         session.setAttribute("USERNAME", guestName);
         session.setAttribute("USER_TYPE", UserType.GUEST);
+
+        setSessionCookie(response, session.getId(), GUEST_SESSION_MAX_AGE);
     }
 
     private String generateGuestName() {
@@ -131,6 +138,15 @@ public class AuthService {
         }
 
         return new IdentityResponseDTO(null, UserType.ANON);
+    }
+
+    private void setSessionCookie(HttpServletResponse response, String sessionId, int maxAge) {
+        Cookie sessionCookie = new Cookie("JSESSIONID", sessionId);
+        sessionCookie.setHttpOnly(true);
+        sessionCookie.setSecure(true); // Use only over HTTPS
+        sessionCookie.setPath("/");
+        sessionCookie.setMaxAge(maxAge);
+        response.addCookie(sessionCookie);
     }
 
     private void validateSignup(SignupRequestDTO requestDto) {

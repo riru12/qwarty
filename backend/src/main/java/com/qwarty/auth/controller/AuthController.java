@@ -29,8 +29,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Void> login(@Valid @RequestBody LoginRequestDTO requestDto, HttpServletRequest request) {
-        authService.login(requestDto, request);
+    public ResponseEntity<Void> login(
+            @Valid @RequestBody LoginRequestDTO requestDto, HttpServletRequest request, HttpServletResponse response) {
+        authService.login(requestDto, request, response);
         return ResponseEntity.ok().build();
     }
 
@@ -41,8 +42,8 @@ public class AuthController {
     }
 
     @PostMapping("/guest")
-    public ResponseEntity<Void> guest(HttpServletRequest request) {
-        authService.guest(request);
+    public ResponseEntity<Void> guest(HttpServletRequest request, HttpServletResponse response) {
+        authService.guest(request, response);
         return ResponseEntity.ok().build();
     }
 

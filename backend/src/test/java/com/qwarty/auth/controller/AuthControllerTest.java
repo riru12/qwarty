@@ -56,23 +56,23 @@ class AuthControllerTest {
     @Test
     void login_ShouldReturnOk_WhenValidRequest() throws Exception {
         LoginRequestDTO requestDto = new LoginRequestDTO(username, password);
-        doNothing().when(authService).login(any(LoginRequestDTO.class), any());
+        doNothing().when(authService).login(any(LoginRequestDTO.class), any(), any());
 
         mockMvc.perform(post("/public/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk());
 
-        verify(authService, times(1)).login(any(LoginRequestDTO.class), any());
+        verify(authService, times(1)).login(any(LoginRequestDTO.class), any(), any());
     }
 
     @Test
     void guest_ShouldReturnOk() throws Exception {
-        doNothing().when(authService).guest(any());
+        doNothing().when(authService).guest(any(), any());
 
         mockMvc.perform(post("/public/auth/guest")).andExpect(status().isOk());
 
-        verify(authService, times(1)).guest(any());
+        verify(authService, times(1)).guest(any(), any());
     }
 
     @Test
@@ -114,7 +114,7 @@ class AuthControllerTest {
                             .content(objectMapper.writeValueAsString(requestDto)))
                     .andExpect(status().isBadRequest());
 
-            verify(authService, times(0)).login(any(), any());
+            verify(authService, times(0)).login(any(), any(), any());
         }
     }
 }
