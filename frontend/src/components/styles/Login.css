@@ -1,0 +1,15 @@
+.pane-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    gap: 24rem;
+    align-items: flex-start;
+}
+
+.login-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 10vh;
+}

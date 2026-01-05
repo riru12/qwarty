@@ -1,36 +1,63 @@
-import { createContext, useState } from "react";
+import { createContext } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { IdentityEndpoint, type UserType } from "@interfaces/api/endpoints/IdentityEndpoint";
+import { apiClient } from "@utils/ApiClient";
 
+/**
+ * Public interface exposed by AuthContext.
+ */
 interface AuthContextType {
-    accessToken: string | null;
-    username: string | null;
-    setAuthStates: (token: string | null, username: string | null) => void;
+    getAuthState: () => { username: string | null; userType: UserType };
+    updateAuthState: (options?: { clear?: boolean }) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children } : { children : React.ReactNode }) => {
-    const [accessToken, setAccessToken] = useState<string | null>(() => localStorage.getItem("accessToken"));
-    const [username, setUsername] = useState<string | null>(() => localStorage.getItem("username"));
+const IDENTITY_QUERY_KEY = ["auth", "identity"];
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    const queryClient = useQueryClient();
+    const { data: identity } = useQuery({
+        queryKey: IDENTITY_QUERY_KEY,
+        queryFn: () => apiClient.call(IdentityEndpoint),
+    });
 
-    const setAuthStates = (accessToken: string | null, username: string | null) => {
-        setAccessToken(accessToken);
-        setUsername(username);
+    const getAuthState = () => ({
+        username: identity?.username ?? null,
+        userType: identity?.userType ?? "ANON",
+    });
 
-        if (accessToken) localStorage.setItem("accessToken", accessToken);
-        else localStorage.removeItem("accessToken");
+    /**
+     * Performs a call to check the user's identity and updates the cached identity state.
+     *
+     * @param options optional parameter:
+     *  - clear: if true, clears the cached identity instead of fetching it.
+     *
+     * Usage:
+     *  await updateAuthState();        // fetch and update identity
+     *  await updateAuthState({ clear: true }); // clear cached identity
+     */
+    const updateAuthState = async ({ clear = false }: { clear?: boolean } = {}) => {
+        if (clear) {
+            queryClient.setQueryData(IDENTITY_QUERY_KEY, null);
+            return;
+        }
 
-        if (username) localStorage.setItem("username", username);
-        else localStorage.removeItem("username");
+        try {
+            const identity = await apiClient.call(IdentityEndpoint);
+            queryClient.setQueryData(IDENTITY_QUERY_KEY, identity);
+        } catch {
+            queryClient.setQueryData(IDENTITY_QUERY_KEY, null);
+        }
     };
 
     return (
-        <AuthContext.Provider 
-            value = {{ 
-                accessToken,
-                username,
-                setAuthStates
-            }}>
-            { children }
+        <AuthContext.Provider
+            value={{
+                getAuthState,
+                updateAuthState,
+            }}
+        >
+            {children}
         </AuthContext.Provider>
-    )
-}
+    );
+};

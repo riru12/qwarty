@@ -1,0 +1,6 @@
+.home-container {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    padding-bottom: 10vh;
+}

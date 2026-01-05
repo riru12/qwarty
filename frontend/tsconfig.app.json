@@ -23,18 +23,18 @@
         "erasableSyntaxOnly": true,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true,
-        
-        "baseUrl": "./src",
-        "paths": {
-            "@/*": ["./*"],
-            "@components": ["components"],
-            "@contexts/*": ["contexts/*"],
-            "@hooks": ["hooks"],
-            "@pages": ["pages"],
-            "@services/*": ["services/*"]
-        }
 
-        
+        "baseUrl": ".",
+        "paths": {
+            "@assets/*": ["src/assets/*"],
+            "@config/*": ["src/config/*"],
+            "@contexts/*": ["src/contexts/*"],
+            "@components/*": ["src/components/*"],
+            "@hooks/*": ["src/hooks/*"],
+            "@interfaces/*": ["src/interfaces/*"],
+            "@routes/*": ["src/routes/*"],
+            "@utils/*": ["src/utils/*"]
+        }
     },
     "include": ["src"]
 }
