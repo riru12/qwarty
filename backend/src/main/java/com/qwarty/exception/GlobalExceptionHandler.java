@@ -47,7 +47,11 @@ public class GlobalExceptionHandler {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         String title = messageSource.getMessage(FIELD_VALIDATION_ERROR_TITLE, null, locale);
         List<Map<String, String>> errors = exception.getBindingResult().getFieldErrors().stream()
-                .map(error -> Map.of("pointer", error.getField(), "detail", String.format("%s %s", error.getField(), error.getDefaultMessage())))
+                .map(error -> Map.of(
+                        "pointer",
+                        error.getField(),
+                        "detail",
+                        String.format("%s %s", error.getField(), error.getDefaultMessage())))
                 .toList();
 
         ProblemDetail responseBody = buildMultiErrorProblemDetail(exception, status, title, errors);
@@ -60,7 +64,11 @@ public class GlobalExceptionHandler {
         HttpStatus status = HttpStatus.BAD_REQUEST;
         String title = messageSource.getMessage(FIELD_VALIDATION_ERROR_TITLE, null, locale);
         List<Map<String, String>> errors = exception.getFieldErrors().stream()
-                .map(error -> java.util.Map.of("pointer", error.getField(), "detail", messageSource.getMessage(error.getMessage(), null, locale)))
+                .map(error -> java.util.Map.of(
+                        "pointer",
+                        error.getField(),
+                        "detail",
+                        messageSource.getMessage(error.getMessage(), null, locale)))
                 .toList();
 
         ProblemDetail responseBody = buildMultiErrorProblemDetail(exception, status, title, errors);

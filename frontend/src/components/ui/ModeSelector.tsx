@@ -14,17 +14,11 @@ const modes: Mode[] = [
 ];
 
 export const ModeSelector = () => {
-
     return (
         <div className="mode-selector">
             {modes.map((mode: Mode) => (
-                <ModeButton
-                    key={mode.id}
-                    name={mode.name}
-                    description={mode.description}
-                    onClick={() => console.log(`Selected mode: ${mode.id}`)}
-                />
+                <ModeButton key={mode.id} name={mode.name} description={mode.description} onClick={() => console.log(`Selected mode: ${mode.id}`)} />
             ))}
         </div>
     );
-}
+};

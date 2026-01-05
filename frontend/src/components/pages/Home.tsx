@@ -6,5 +6,5 @@ export const Home = () => {
         <div className="home-container">
             <ModeSelector />
         </div>
-    )
+    );
 };
