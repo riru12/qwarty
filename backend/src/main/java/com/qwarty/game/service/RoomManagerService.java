@@ -1,0 +1,53 @@
+package com.qwarty.game.service;
+
+import com.qwarty.exception.code.AppExceptionCode;
+import com.qwarty.exception.type.AppException;
+import com.qwarty.game.lov.GameMode;
+import com.qwarty.game.model.Room;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.stereotype.Service;
+
+@Service
+public class RoomManagerService {
+
+    private final Map<String, Room> rooms = new ConcurrentHashMap<>();
+
+    public Room createRoom(GameMode mode, String username) {
+        if (username == null) {
+            throw new AppException(AppExceptionCode.SESSION_USERNAME_NOT_FOUND);
+        }
+
+        String roomId = generateUniqueRoomId();
+        Room room = new Room(roomId, mode);
+        room.addPlayer(username);
+        rooms.put(roomId, room);
+        return room;
+    }
+
+    public Room joinRoom(String roomId, String username) {
+        if (username == null) {
+            throw new AppException(AppExceptionCode.SESSION_USERNAME_NOT_FOUND);
+        }
+
+        Room room = rooms.get(roomId);
+
+        if (room == null || room.isFull()) {
+            throw new AppException(AppExceptionCode.ROOM_FULL);
+        }
+
+        room.addPlayer(username);
+        return room;
+    }
+
+    private String generateUniqueRoomId() {
+        String roomId;
+
+        do {
+            roomId = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        } while (rooms.containsKey(roomId));
+
+        return roomId;
+    }
+}
