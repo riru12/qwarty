@@ -39,14 +39,14 @@ export function SignupPane() {
         },
         onError: (error: any) => {
             const problem = error?.problemDetail;
-            
+
             if (problem?.errors?.length) {
                 const backendErrors: Partial<SignupFormState> = {};
                 problem.errors.forEach((err: { pointer: string; detail: string }) => {
                     const field = err.pointer as keyof SignupFormState;
                     backendErrors[field] = err.detail;
                 });
-                
+
                 setErrors(backendErrors);
             }
         },

@@ -49,14 +49,13 @@ export function LoginPane() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="field-container">
+        <form onSubmit={handleSubmit}>
             <h2>{t("login")}</h2>
-
-            <Input name="username" placeholder={t("username")} value={form.username} onChange={handleChange} />
-
-            <PasswordInput name="password" placeholder={t("password")} value={form.password} onChange={handleChange} />
-
-            <Button type="submit" label={t("login")} />
+            <div className="field-container">
+                <Input name="username" placeholder={t("username")} value={form.username} onChange={handleChange} />
+                <PasswordInput name="password" placeholder={t("password")} value={form.password} onChange={handleChange} />
+                <Button type="submit" label={t("login")} />
+            </div>
         </form>
     );
 }

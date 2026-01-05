@@ -13,7 +13,7 @@ export const NavBar = () => {
     const auth = getAuthState();
 
     const handleLogout = async () => {
-        updateAuthState({clear: true});
+        updateAuthState({ clear: true });
         await apiClient.call(LogoutEndpoint);
     };
 

@@ -15,11 +15,10 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 const IDENTITY_QUERY_KEY = ["auth", "identity"];
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-
     const queryClient = useQueryClient();
     const { data: identity } = useQuery({
         queryKey: IDENTITY_QUERY_KEY,
-        queryFn: () => apiClient.call(IdentityEndpoint)
+        queryFn: () => apiClient.call(IdentityEndpoint),
     });
 
     const getAuthState = () => ({
@@ -27,13 +26,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         userType: identity?.userType ?? "ANON",
     });
 
-
     /**
      * Performs a call to check the user's identity and updates the cached identity state.
-     * 
+     *
      * @param options optional parameter:
      *  - clear: if true, clears the cached identity instead of fetching it.
-     * 
+     *
      * Usage:
      *  await updateAuthState();        // fetch and update identity
      *  await updateAuthState({ clear: true }); // clear cached identity
@@ -50,13 +48,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch {
             queryClient.setQueryData(IDENTITY_QUERY_KEY, null);
         }
-    }
+    };
 
     return (
         <AuthContext.Provider
             value={{
                 getAuthState,
-                updateAuthState
+                updateAuthState,
             }}
         >
             {children}
