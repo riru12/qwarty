@@ -1,4 +1,5 @@
 import { ModeButton } from "./ModeButton";
+import { useTranslation } from "react-i18next";
 import "../styles/ModeSelector.css";
 
 type Mode = {
@@ -7,13 +8,15 @@ type Mode = {
     description: string;
 };
 
-const modes: Mode[] = [
-    { id: "racer", name: "racer", description: "Short description..." },
-    { id: "classic", name: "classic", description: "Short description..." },
-    { id: "zen", name: "zen", description: "Short description..." },
-];
-
 export const ModeSelector = () => {
+    const { t } = useTranslation(["global"]);
+
+    const modes: Mode[] = [
+        { id: "racer", name: t("racer"), description: t("racer.description") },
+        { id: "classic", name: t("classic"), description: t("classic.description") },
+        { id: "zen", name: t("zen"), description: t("zen.description") },
+    ];
+
     return (
         <div className="mode-selector">
             {modes.map((mode: Mode) => (
