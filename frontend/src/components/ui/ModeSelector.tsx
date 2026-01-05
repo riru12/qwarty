@@ -1,5 +1,6 @@
 import { ModeButton } from "./ModeButton";
 import { useTranslation } from "react-i18next";
+import hoverSoundFile from "@assets/audio/modebuttonhover.wav";
 import "../styles/ModeSelector.css";
 
 type Mode = {
@@ -17,10 +18,12 @@ export const ModeSelector = () => {
         { id: "zen", name: t("zen"), description: t("zen.description") },
     ];
 
+    const hoverSound = new Audio(hoverSoundFile);
+
     return (
         <div className="mode-selector">
             {modes.map((mode: Mode) => (
-                <ModeButton key={mode.id} name={mode.name} description={mode.description} onClick={() => console.log(`Selected mode: ${mode.id}`)} />
+                <ModeButton key={mode.id} name={mode.name} description={mode.description} sound={hoverSound} onClick={() => console.log(`Selected mode: ${mode.id}`)} />
             ))}
         </div>
     );
