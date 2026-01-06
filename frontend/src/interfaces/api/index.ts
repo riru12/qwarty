@@ -1,2 +1,2 @@
-export * from "./endpoint";
-export * from "./problemDetail";
+export * from "./Endpoint";
+export * from "./ProblemDetail";

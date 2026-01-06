@@ -1,4 +1,4 @@
-import type { Endpoint } from "../endpoint";
+import type { Endpoint } from "../Endpoint";
 
 interface SignupRequestDTO {
     email: string;
