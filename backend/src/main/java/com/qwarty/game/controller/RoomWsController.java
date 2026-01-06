@@ -23,6 +23,7 @@ public class RoomWsController {
     @MessageMapping("/room.join/{roomId}")
     public void joinRoom(@DestinationVariable String roomId, StompHeaderAccessor accessor) {
 
+        accessor.getSessionAttributes().put("ROOM_ID", roomId); // upon joining a room, save the roomId into the WS session's attributes
         String sessionUid = (String) accessor.getSessionAttributes().get("SESSION_UID");
 
         Room room = roomManager.getRoom(roomId);
@@ -54,16 +55,14 @@ public class RoomWsController {
 
         if (room.isEmpty()) {
             roomManager.removeRoom(roomId);
-            return;
+        } else {
+            PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
+                    .roomId(roomId)
+                    .players(new ArrayList<>(room.getPlayers()))
+                    .messageType(MessageType.LEAVE)
+                    .build();
+            messagingTemplate.convertAndSend("/topic/room/" + roomId, eventDTO);
         }
-
-        PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
-                .roomId(roomId)
-                .players(new ArrayList<>(room.getPlayers()))
-                .messageType(MessageType.LEAVE)
-                .build();
-
-        messagingTemplate.convertAndSend("/topic/room/" + roomId, eventDTO);
     }
 
     private void sendError(String sessionUid, String code, String message) {

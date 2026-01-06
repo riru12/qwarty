@@ -21,22 +21,25 @@ public class WebSocketEventListener {
 
     @EventListener
     public void handleSessionDisconnect(SessionDisconnectEvent event) {
-        String sessionUid = (String) event.getMessage()
+        @SuppressWarnings("unchecked")
+        Map<String, Object> attributes = (Map<String, Object>) event.getMessage()
                 .getHeaders()
-                .get("simpSessionAttributes", Map.class)
-                .get("SESSION_UID");
+                .get("simpSessionAttributes");
 
-        if (sessionUid == null) return;
+        if (attributes == null) return;
+        
+        String sessionUid = (String) attributes.get("SESSION_UID");
+        String roomId = (String) attributes.get("ROOM_ID");
 
-        for (Room room : roomManager.getAllRooms()) {
-            if (room.hasPlayer(sessionUid)) {
-                room.removePlayer(sessionUid);
+        if (sessionUid == null || roomId == null) return;
 
-                if (room.isEmpty()) {
-                    roomManager.removeRoom(room.getId());
-                    continue;
-                }
+        Room room = roomManager.getRoom(roomId);
+        if (room != null && room.hasPlayer(sessionUid)) {
+            room.removePlayer(sessionUid);
 
+            if (room.isEmpty()) {
+                roomManager.removeRoom(room.getId());
+            } else {
                 PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
                         .roomId(room.getId())
                         .players(new ArrayList<>(room.getPlayers()))
