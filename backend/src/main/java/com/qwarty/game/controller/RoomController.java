@@ -3,7 +3,6 @@ package com.qwarty.game.controller;
 import com.qwarty.auth.lov.UserType;
 import com.qwarty.game.dto.RoomDetailsDTO;
 import com.qwarty.game.lov.GameMode;
-import com.qwarty.game.model.Room;
 import com.qwarty.game.service.RoomManager;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
