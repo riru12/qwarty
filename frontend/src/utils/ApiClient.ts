@@ -1,4 +1,4 @@
-import type { Endpoint, EndpointReq, EndpointRes, ProblemDetail } from "src/interfaces/api";
+import type { Endpoint, EndpointReq, EndpointRes, ProblemDetail } from "@interfaces/api";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
