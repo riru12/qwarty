@@ -1,82 +1,46 @@
+import { useAuth } from "@hooks/useAuth";
+import { GuestEndpoint } from "@interfaces/api/endpoints/GuestEndpoint";
+import { JoinRoomEndpoint } from "@interfaces/api/endpoints/JoinRoomEndpoint";
 import { RoomRoute } from "@routes/routes";
+import { useQuery } from "@tanstack/react-query";
 import { useMatch } from "@tanstack/react-router";
-import { Client } from '@stomp/stompjs';
-import { useEffect, useRef, useState } from 'react';
+import { apiClient } from "@utils/ApiClient";
 
 export const Room = () => {
-  const { params } = useMatch({ from: RoomRoute.id }); 
-  const clientRef = useRef<Client | null>(null);
-  const [connected, setConnected] = useState(false);
-  const [messages, setMessages] = useState<any[]>([]);
+    const { params } = useMatch({ from: RoomRoute.id }); 
+    const { roomId } = params;
+    const { getAuthState, updateAuthState } = useAuth();
 
-  useEffect(() => {
-    // Create STOMP client
-    const client = new Client({
-      brokerURL: 'ws://localhost:8081/api/ws',
-      
-      onConnect: () => {
-        console.log('Connected to WebSocket');
-        setConnected(true);
-        
-        // Subscribe to room-specific topic
-        client.subscribe(`/topic/room/${params.roomId}`, (message) => {
-          const data = JSON.parse(message.body);
-          console.log('Received message:', data);
-          setMessages(prev => [...prev, data]);
-        });
-      },
-      
-      onStompError: (frame) => {
-        console.error('STOMP error:', frame);
-        setConnected(false);
-      },
+    const { data : roomData } = useQuery({
+        queryKey: ['joinRoom', roomId],
+        queryFn: async () => {
+            try {
+                return await apiClient.call(JoinRoomEndpoint, {pathParams: {roomId}});
+            } catch(error) {
+                if (getAuthState().userType != "USER") {
+                    try {
+                        await apiClient.call(GuestEndpoint);
+                        updateAuthState();
+                        return await apiClient.call(JoinRoomEndpoint, {pathParams: {roomId}});
+                    }
+                    catch(guestError) {
+                        throw guestError;
+                    }
 
-      onDisconnect: () => {
-        console.log('Disconnected from WebSocket');
-        setConnected(false);
-      }
-    });
+                }
+                throw error;
+            }
+        },
+        enabled: !!roomId,
+        staleTime: Infinity
+    })
 
-    clientRef.current = client;
-    client.activate();
-
-    // Cleanup on unmount
-    return () => {
-      client.deactivate();
-    };
-  }, [params.roomId]);
-
-  const sendMessage = (content: string, messageType: string = 'INPUT') => {
-    if (clientRef.current && connected) {
-        clientRef.current.publish({
-        destination: `/app/room/${params.roomId}`,
-        body: JSON.stringify({
-            content: content,
-            messageType: messageType,
-            // sender and roomId will be set by the backend
-        })
-        });
-    }
-    };
 
     return (
-    <div>
-        <h1>Welcome to room {params.roomId}</h1>
-        <p>Status: {connected ? '🟢 Connected' : '🔴 Disconnected'}</p>
-        
-        {/* Example: Display received messages */}
         <div>
-        {messages.map((msg, i) => (
-            <div key={i}>
-            <strong>{msg.sender}:</strong> {msg.content}
-            </div>
-        ))}
+            {roomData?.gameMode}
+            <br />
+            {roomData?.players}
         </div>
-
-        {/* Example: Send a message */}
-        <button onClick={() => sendMessage('Hello from browser!', 'INPUT')}>
-        Send Test Message
-        </button>
-    </div>
     );
 };

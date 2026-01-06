@@ -25,7 +25,7 @@ export const ModeSelector = () => {
     // TODO: Add Toast
     const createRoomMutation = useMutation({
         mutationFn: async (mode: string) => {
-            const response = await apiClient.call(CreateRoomEndpoint, { params: { mode } });
+            const response = await apiClient.call(CreateRoomEndpoint, { queryParams: { mode } });
             return response;
         },
         onSuccess: (response: CreateRoomResponseDTO) => {

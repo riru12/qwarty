@@ -19,14 +19,22 @@ class ApiClient {
      */
     public async call<E extends Endpoint<any, any>>(endpoint: E, options?: {
         payload?: EndpointReq<E>;
-        params?: Record<string, string | number | boolean>;
+        queryParams?: Record<string, string | number | boolean>;
+        pathParams?: Record<string, string | number>;
     }): Promise<EndpointRes<E>> {
         // regex ensures the endpoint route works correctly whether or not it starts with a `/`
-        const url = new URL(`api/${endpoint.route.replace(/^\/+/, "")}`, BASE_URL);
+        let route = endpoint.route.replace(/^\/+/, "");
+
+        // replace path parameters (e.g., :roomId -> room-123)
+        Object.entries(options?.pathParams || {}).forEach(([key, value]) => {
+            route = route.replace(`:${key}`, String(value));
+        });
+
+        const url = new URL(`api/${route}`, BASE_URL);
         const request = this.buildRequest(endpoint, options?.payload);
 
-        // append search parameters
-        Object.entries(options?.params || {}).forEach(([key, value]) => {
+        // append query parameters
+        Object.entries(options?.queryParams || {}).forEach(([key, value]) => {
             if (value != null) url.searchParams.append(key, String(value));
         });
 

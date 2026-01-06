@@ -32,8 +32,13 @@ public class RoomManagerService {
         }
 
         Room room = rooms.get(roomId);
-
-        if (room == null || room.isFull()) {
+        if (room == null) {
+            throw new AppException(AppExceptionCode.ROOM_NOT_FOUND);
+        }
+        if (room.getPlayers().contains(username)) {
+            return room;
+        }
+        if (room.isFull()) {
             throw new AppException(AppExceptionCode.ROOM_FULL);
         }
 
