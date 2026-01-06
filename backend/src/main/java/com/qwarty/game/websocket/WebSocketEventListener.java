@@ -34,14 +34,15 @@ public class WebSocketEventListener {
 
                 if (room.isEmpty()) {
                     roomManager.removeRoom(room.getId());
-                } else {
-                    PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
-                            .roomId(room.getId())
-                            .players(new ArrayList<>(room.getPlayers()))
-                            .messageType(MessageType.LEAVE)
-                            .build();
-                    messagingTemplate.convertAndSend("/topic/room/" + room.getId(), eventDTO);
+                    continue;
                 }
+
+                PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
+                        .roomId(room.getId())
+                        .players(new ArrayList<>(room.getPlayers()))
+                        .messageType(MessageType.LEAVE)
+                        .build();
+                messagingTemplate.convertAndSend("/topic/room/" + room.getId(), eventDTO);
             }
         }
     }

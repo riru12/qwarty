@@ -57,13 +57,13 @@ public class RoomWsController {
             return;
         }
 
-        PlayerListEventDTO event = PlayerListEventDTO.builder()
+        PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
                 .roomId(roomId)
                 .players(new ArrayList<>(room.getPlayers()))
                 .messageType(MessageType.LEAVE)
                 .build();
 
-        messagingTemplate.convertAndSend("/topic/room/" + roomId, event);
+        messagingTemplate.convertAndSend("/topic/room/" + roomId, eventDTO);
     }
 
     private void sendError(String sessionUid, String code, String message) {
