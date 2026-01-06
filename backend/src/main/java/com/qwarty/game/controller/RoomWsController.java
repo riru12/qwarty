@@ -27,12 +27,16 @@ public class RoomWsController {
         String sessionUid = (String) accessor.getSessionAttributes().get("SESSION_UID");
 
         Room room = roomManager.getRoom(roomId);
-        if (!room.hasPlayer(sessionUid)) {
+        if (room.hasPlayer(sessionUid)) {
+            room.addConnection(sessionUid);
+        } else {
             if (room.isFull()) {
                 sendError(sessionUid, "ROOM_FULL", "Room is full");
                 return;
             }
-            room.addPlayer(sessionUid);
+
+            room.initPlayerConnection(sessionUid);
+            room.addConnection(sessionUid);
         }
 
         PlayerListEventDTO event = PlayerListEventDTO.builder()
@@ -49,8 +53,8 @@ public class RoomWsController {
         String sessionUid = (String) accessor.getSessionAttributes().get("SESSION_UID");
 
         Room room = roomManager.getRoom(roomId);
-        if (room.hasPlayer(sessionUid)) {
-            room.removePlayer(sessionUid);
+        if (room.isPlayerConnected(sessionUid)) {
+            room.removeConnection(sessionUid);
         }
 
         if (room.isEmpty()) {

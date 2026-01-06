@@ -8,7 +8,6 @@ import com.qwarty.game.model.Room;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +39,7 @@ public class RoomManager {
         String roomId = generateUniqueRoomId();
         Room room = new Room(roomId, mode);
 
-        room.addPlayer(sessionUid);
+        room.initPlayerConnection(sessionUid);
 
         rooms.put(roomId, room);
         return retrieveRoomDetails(roomId);
@@ -62,7 +61,7 @@ public class RoomManager {
             throw new AppException(AppExceptionCode.ROOM_FULL);
         }
 
-        room.addPlayer(sessionUid);
+        room.initPlayerConnection(sessionUid);
         return retrieveRoomDetails(roomId);
     }
 
@@ -73,8 +72,7 @@ public class RoomManager {
         }
 
         GameMode gameMode = room.getGameMode();
-        Set<String> players = room.getPlayers();
-        List<String> playerList = new ArrayList<>(players);
+        List<String> playerList = room.getPlayers();
 
         return new RoomDetailsDTO(roomId, playerList, gameMode);
     }

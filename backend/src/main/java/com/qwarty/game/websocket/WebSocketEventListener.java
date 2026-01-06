@@ -35,7 +35,7 @@ public class WebSocketEventListener {
 
         Room room = roomManager.getRoom(roomId);
         if (room != null && room.hasPlayer(sessionUid)) {
-            room.removePlayer(sessionUid);
+            room.removeConnection(sessionUid);
 
             if (room.isEmpty()) {
                 roomManager.removeRoom(room.getId());
