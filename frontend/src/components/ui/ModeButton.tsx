@@ -12,7 +12,7 @@ let lastSoundPlay = 0;
 
 export const ModeButton = ({ name, description, onClick }: ModeButtonProps) => {
     const hoverSound = useRef(new Audio(hoverSoundFile));
-    hoverSound.current.volume = 0.025;
+    hoverSound.current.volume = 0.15;
     const playSound = () => {
         const now = Date.now();
 
