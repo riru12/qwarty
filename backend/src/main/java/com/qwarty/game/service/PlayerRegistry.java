@@ -2,7 +2,6 @@ package com.qwarty.game.service;
 
 import com.qwarty.auth.lov.UserType;
 import com.qwarty.game.model.PlayerInfo;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;

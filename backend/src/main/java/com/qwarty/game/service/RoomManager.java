@@ -8,7 +8,6 @@ import com.qwarty.game.dto.RoomDetailsDTO;
 import com.qwarty.game.lov.GameMode;
 import com.qwarty.game.model.PlayerInfo;
 import com.qwarty.game.model.Room;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
@@ -74,11 +73,8 @@ public class RoomManager {
 
         Collection<PlayerInfo> playerInfos = playerRegistry.getAll(room.getPlayers());
         Collection<PlayerInfoDTO> playerDTOs = playerInfos.stream()
-            .map(playerInfo -> new PlayerInfoDTO(
-                    playerInfo.username(),
-                    playerInfo.userType()
-            ))
-            .toList();
+                .map(playerInfo -> new PlayerInfoDTO(playerInfo.username(), playerInfo.userType()))
+                .toList();
 
         return new RoomDetailsDTO(roomId, playerDTOs, gameMode);
     }
