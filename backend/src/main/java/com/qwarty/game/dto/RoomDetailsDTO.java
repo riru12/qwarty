@@ -1,6 +1,6 @@
 package com.qwarty.game.dto;
 
 import com.qwarty.game.lov.GameMode;
-import java.util.Collection;
+import java.util.List;
 
-public record RoomDetailsDTO(String roomId, Collection<PlayerInfoDTO> players, GameMode gameMode) {}
+public record RoomDetailsDTO(String roomId, List<String> players, GameMode gameMode) {}

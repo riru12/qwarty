@@ -1,15 +1,9 @@
 import type { Endpoint } from "../Endpoint";
-import type { UserType } from "./IdentityEndpoint";
-
-export interface PlayerInfoDTO {
-  username: string;
-  userType: UserType;
-}
 
 export interface RoomDetailsDTO {
     roomId: string;
     gameMode: string;
-    players: PlayerInfoDTO[];
+    players: string[];
 }
 
 export const CreateRoomEndpoint: Endpoint<void, RoomDetailsDTO> = {

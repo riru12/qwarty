@@ -24,7 +24,7 @@ export const Room = () => {
                 Players:
                 <ul>
                     {roomData?.players.map(player => (
-                        <li key={player.username}>{player.username}</li>
+                        <li key={player}>{player}</li>
                     ))}
                 </ul>
             </div>

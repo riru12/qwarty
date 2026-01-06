@@ -1,7 +1,6 @@
 package com.qwarty.game.model;
 
 import com.qwarty.game.lov.GameMode;
-import com.qwarty.game.lov.RoomState;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.Getter;
@@ -12,7 +11,6 @@ import lombok.Setter;
 public class Room {
     private final String id;
     private final GameMode gameMode;
-    private final RoomState roomState = RoomState.WAITING;
     private final Set<String> players = ConcurrentHashMap.newKeySet();
 
     public Room(String id, GameMode gameMode) {

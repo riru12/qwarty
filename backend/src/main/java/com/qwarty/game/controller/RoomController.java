@@ -1,6 +1,5 @@
 package com.qwarty.game.controller;
 
-import com.qwarty.auth.lov.UserType;
 import com.qwarty.game.dto.RoomDetailsDTO;
 import com.qwarty.game.lov.GameMode;
 import com.qwarty.game.service.RoomManager;
@@ -23,20 +22,16 @@ public class RoomController {
     @PostMapping("/create")
     public ResponseEntity<RoomDetailsDTO> create(@RequestParam String mode, HttpSession session) {
         String sessionUid = (String) session.getAttribute("SESSION_UID");
-        String username = (String) session.getAttribute("USERNAME");
-        UserType userType = (UserType) session.getAttribute("USER_TYPE");
 
-        RoomDetailsDTO roomDetails = roomManagerService.createRoom(GameMode.from(mode), sessionUid, username, userType);
+        RoomDetailsDTO roomDetails = roomManagerService.createRoom(GameMode.from(mode), sessionUid);
         return ResponseEntity.ok(roomDetails);
     }
 
     @PostMapping("/join/{roomId}")
     public ResponseEntity<RoomDetailsDTO> join(@PathVariable String roomId, HttpSession session) {
         String sessionUid = (String) session.getAttribute("SESSION_UID");
-        String username = (String) session.getAttribute("USERNAME");
-        UserType userType = (UserType) session.getAttribute("USER_TYPE");
 
-        RoomDetailsDTO roomDetails = roomManagerService.joinRoom(roomId, sessionUid, username, userType);
+        RoomDetailsDTO roomDetails = roomManagerService.joinRoom(roomId, sessionUid);
         return ResponseEntity.ok(roomDetails);
     }
 }

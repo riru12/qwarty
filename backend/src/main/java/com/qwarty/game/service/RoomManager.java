@@ -1,15 +1,15 @@
 package com.qwarty.game.service;
 
-import com.qwarty.auth.lov.UserType;
 import com.qwarty.exception.code.AppExceptionCode;
 import com.qwarty.exception.type.AppException;
-import com.qwarty.game.dto.PlayerInfoDTO;
 import com.qwarty.game.dto.RoomDetailsDTO;
 import com.qwarty.game.lov.GameMode;
-import com.qwarty.game.model.PlayerInfo;
 import com.qwarty.game.model.Room;
-import java.util.Collection;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
@@ -19,15 +19,13 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class RoomManager {
 
-    private final PlayerRegistry playerRegistry;
-
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 
     public Room getRoom(String roomId) {
         return rooms.get(roomId);
     }
-
-    public RoomDetailsDTO createRoom(GameMode mode, String sessionUid, String username, UserType userType) {
+    
+    public RoomDetailsDTO createRoom(GameMode mode, String sessionUid) {
         if (sessionUid == null) {
             throw new AppException(AppExceptionCode.SESSION_UID_NOT_FOUND);
         }
@@ -35,14 +33,13 @@ public class RoomManager {
         String roomId = generateUniqueRoomId();
         Room room = new Room(roomId, mode);
 
-        registerPlayer(sessionUid, username, userType);
         room.addPlayer(sessionUid);
 
         rooms.put(roomId, room);
         return retrieveRoomDetails(roomId);
     }
 
-    public RoomDetailsDTO joinRoom(String roomId, String sessionUid, String username, UserType userType) {
+    public RoomDetailsDTO joinRoom(String roomId, String sessionUid) {
         if (sessionUid == null) {
             throw new AppException(AppExceptionCode.SESSION_UID_NOT_FOUND);
         }
@@ -58,7 +55,6 @@ public class RoomManager {
             throw new AppException(AppExceptionCode.ROOM_FULL);
         }
 
-        registerPlayer(sessionUid, username, userType);
         room.addPlayer(sessionUid);
         return retrieveRoomDetails(roomId);
     }
@@ -70,23 +66,12 @@ public class RoomManager {
         }
 
         GameMode gameMode = room.getGameMode();
+        Set<String> players = room.getPlayers();
+        List<String> playerList = new ArrayList<>(players);
 
-        Collection<PlayerInfo> playerInfos = playerRegistry.getAll(room.getPlayers());
-        Collection<PlayerInfoDTO> playerDTOs = playerInfos.stream()
-                .map(playerInfo -> new PlayerInfoDTO(playerInfo.username(), playerInfo.userType()))
-                .toList();
-
-        return new RoomDetailsDTO(roomId, playerDTOs, gameMode);
+        return new RoomDetailsDTO(roomId, playerList, gameMode);
     }
 
-    /**
-     * Registers a player as an active player in {@link #PlayerRegistry}
-     */
-    private void registerPlayer(String sessionUid, String username, UserType userType) {
-        if (playerRegistry.get(sessionUid) == null) {
-            playerRegistry.register(sessionUid, username, userType);
-        }
-    }
 
     private String generateUniqueRoomId() {
         String roomId;
