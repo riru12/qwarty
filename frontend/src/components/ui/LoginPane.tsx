@@ -23,7 +23,7 @@ export function LoginPane() {
     // TODO: Add Toast
     const loginMutation = useMutation({
         mutationFn: async () => {
-            return apiClient.call(LoginEndpoint, {payload: form});
+            return apiClient.call(LoginEndpoint, { payload: form });
         },
         onSuccess: async () => {
             try {

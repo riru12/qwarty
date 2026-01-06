@@ -29,11 +29,13 @@ export function SignupPane() {
     // TODO: Add Toast
     const signupMutation = useMutation({
         mutationFn: async () => {
-            return apiClient.call(SignupEndpoint, {payload: {
-                username: form.username,
-                email: form.email,
-                password: form.password,
-            }});
+            return apiClient.call(SignupEndpoint, {
+                payload: {
+                    username: form.username,
+                    email: form.email,
+                    password: form.password,
+                },
+            });
         },
         onSuccess: () => {
             alert(t("signup_success") || "Sign up successful! You can now log in.");

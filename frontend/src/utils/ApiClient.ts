@@ -17,11 +17,14 @@ class ApiClient {
     /**
      * Perform a fetch to the provided endpoint
      */
-    public async call<E extends Endpoint<any, any>>(endpoint: E, options?: {
-        payload?: EndpointReq<E>;
-        queryParams?: Record<string, string | number | boolean>;
-        pathParams?: Record<string, string | number>;
-    }): Promise<EndpointRes<E>> {
+    public async call<E extends Endpoint<any, any>>(
+        endpoint: E,
+        options?: {
+            payload?: EndpointReq<E>;
+            queryParams?: Record<string, string | number | boolean>;
+            pathParams?: Record<string, string | number>;
+        },
+    ): Promise<EndpointRes<E>> {
         // regex ensures the endpoint route works correctly whether or not it starts with a `/`
         let route = endpoint.route.replace(/^\/+/, "");
 

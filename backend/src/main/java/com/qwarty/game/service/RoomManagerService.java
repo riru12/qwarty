@@ -14,6 +14,10 @@ public class RoomManagerService {
 
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 
+    public Room getRoom(String roomId) {
+        return rooms.get(roomId);
+    }
+
     public Room createRoom(GameMode mode, String username) {
         if (username == null) {
             throw new AppException(AppExceptionCode.SESSION_USERNAME_NOT_FOUND);

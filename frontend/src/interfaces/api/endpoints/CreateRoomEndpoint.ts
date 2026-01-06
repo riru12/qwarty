@@ -7,7 +7,6 @@ export interface CreateRoomResponseDTO {
     players: string[];
 }
 
-
 export const CreateRoomEndpoint: Endpoint<void, CreateRoomResponseDTO> = {
     route: "/rooms/create",
     method: "POST",
