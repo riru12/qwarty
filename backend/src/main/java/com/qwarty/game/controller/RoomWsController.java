@@ -15,7 +15,7 @@ import org.springframework.stereotype.Controller;
 
 @Controller
 @RequiredArgsConstructor
-public class GameController {
+public class RoomWsController {
 
     private final RoomManager roomManager;
     private final SimpMessagingTemplate messagingTemplate;

@@ -44,7 +44,5 @@ public class WebSocketEventListener {
                 }
             }
         }
-        System.out.println("ACTIVE ROOMS:\n");
-        System.out.println(roomManager.getAllRooms());
     }
 }
