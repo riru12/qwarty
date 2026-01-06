@@ -7,12 +7,16 @@ import { Client } from "@stomp/stompjs";
 import { useEffect, useRef, useState } from "react";
 import { Racer } from "@components/modes";
 
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const WS_BASE_URL = BASE_URL.replace(/^http/, "ws");
+
 export const Room = () => {
     const { params } = useMatch({ from: RoomRoute.id });
     const { roomId } = params;
+    const [players, setPlayers] = useState<string[]>([]);
     const { callWithGuestFallback } = useCallWithGuestFallback();
     const clientRef = useRef<Client | null>(null);
-    const [players, setPlayers] = useState<string[]>([]);
+
 
     /**
      * Upon opening the link to a room, call for /rooms/join/{roomId}
@@ -50,7 +54,7 @@ export const Room = () => {
         if (!roomId || !isSuccess) return;
 
         const client = new Client({
-            brokerURL: "ws://localhost:8081/api/ws",
+            brokerURL: `${WS_BASE_URL}/api/ws`,
             onConnect: () => {
                 subscribeToRoom(client); // subscribe to the room topic
                 client.publish({
