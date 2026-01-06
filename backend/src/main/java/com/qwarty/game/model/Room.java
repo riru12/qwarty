@@ -20,8 +20,16 @@ public class Room {
         this.gameMode = gameMode;
     }
 
-    public void addPlayer(String username) {
-        players.add(username);
+    public void addPlayer(String sessionUid) {
+        players.add(sessionUid);
+    }
+
+    public void removePlayer(String sessionUid) {
+        players.remove(sessionUid);
+    }
+
+    public boolean hasPlayer(String sessionUid) {
+        return players.contains(sessionUid);
     }
 
     public boolean isFull() {

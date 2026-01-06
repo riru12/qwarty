@@ -30,7 +30,9 @@ public class HttpSessionInterceptor implements HandshakeInterceptor {
                 return true;
             }
 
+            String sessionUid = (String) session.getAttribute("SESSION_UID");
             String username = (String) session.getAttribute("USERNAME");
+            attributes.put("SESSION_UID", sessionUid);
             attributes.put("USERNAME", username);
         }
         return true;

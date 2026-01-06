@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RoomManagerService {
+public class RoomManager {
 
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 
@@ -18,35 +18,35 @@ public class RoomManagerService {
         return rooms.get(roomId);
     }
 
-    public Room createRoom(GameMode mode, String username) {
-        if (username == null) {
-            throw new AppException(AppExceptionCode.SESSION_USERNAME_NOT_FOUND);
+    public Room createRoom(GameMode mode, String sessionUid) {
+        if (sessionUid == null) {
+            throw new AppException(AppExceptionCode.SESSION_UID_NOT_FOUND);
         }
 
         String roomId = generateUniqueRoomId();
         Room room = new Room(roomId, mode);
-        room.addPlayer(username);
+        room.addPlayer(sessionUid);
         rooms.put(roomId, room);
         return room;
     }
 
-    public Room joinRoom(String roomId, String username) {
-        if (username == null) {
-            throw new AppException(AppExceptionCode.SESSION_USERNAME_NOT_FOUND);
+    public Room joinRoom(String roomId, String sessionUid) {
+        if (sessionUid == null) {
+            throw new AppException(AppExceptionCode.SESSION_UID_NOT_FOUND);
         }
 
         Room room = rooms.get(roomId);
         if (room == null) {
             throw new AppException(AppExceptionCode.ROOM_NOT_FOUND);
         }
-        if (room.getPlayers().contains(username)) {
+        if (room.hasPlayer(sessionUid)) {
             return room;
         }
         if (room.isFull()) {
             throw new AppException(AppExceptionCode.ROOM_FULL);
         }
 
-        room.addPlayer(username);
+        room.addPlayer(sessionUid);
         return room;
     }
 

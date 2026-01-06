@@ -9,8 +9,8 @@ public enum AppExceptionCode {
     USER_NOT_VERIFIED(HttpStatus.FORBIDDEN, "user.not.verified.title", "user.not.verified.detail"),
     INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "user.invalid.credentials.title", "user.invalid.credentials.detail"),
     NO_SESSION(HttpStatus.UNAUTHORIZED, "session.not.found.title", "session.not.found.detail"),
-    SESSION_USERNAME_NOT_FOUND(
-            HttpStatus.UNAUTHORIZED, "session.username.not.found.title", "session.username.not.found.detail"),
+    SESSION_UID_NOT_FOUND(
+            HttpStatus.UNAUTHORIZED, "session.uid.not.found.title", "session.uid.not.found.detail"),
     ROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "room.not.found.title", "room.not.found.detail"),
     ROOM_FULL(HttpStatus.CONFLICT, "room.full.title", "room.full.detail");
 
