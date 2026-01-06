@@ -33,4 +33,8 @@ public class Room {
     public boolean isFull() {
         return players.size() >= gameMode.getMaxPlayers();
     }
+
+    public boolean isEmpty() {
+        return players.size() == 0;
+    }
 }

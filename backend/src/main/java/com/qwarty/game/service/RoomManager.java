@@ -5,7 +5,6 @@ import com.qwarty.exception.type.AppException;
 import com.qwarty.game.dto.RoomDetailsDTO;
 import com.qwarty.game.lov.GameMode;
 import com.qwarty.game.model.Room;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,15 @@ public class RoomManager {
     public Room getRoom(String roomId) {
         return rooms.get(roomId);
     }
-    
+
+    public List<Room> getAllRooms() {
+        return new ArrayList<>(rooms.values());
+    }
+
+    public void removeRoom(String roomId) {
+        rooms.remove(roomId);
+    }
+
     public RoomDetailsDTO createRoom(GameMode mode, String sessionUid) {
         if (sessionUid == null) {
             throw new AppException(AppExceptionCode.SESSION_UID_NOT_FOUND);
@@ -71,7 +78,6 @@ public class RoomManager {
 
         return new RoomDetailsDTO(roomId, playerList, gameMode);
     }
-
 
     private String generateUniqueRoomId() {
         String roomId;
