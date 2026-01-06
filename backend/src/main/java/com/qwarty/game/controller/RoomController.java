@@ -1,5 +1,7 @@
 package com.qwarty.game.controller;
 
+import com.qwarty.auth.lov.UserType;
+import com.qwarty.game.dto.RoomDetailsDTO;
 import com.qwarty.game.lov.GameMode;
 import com.qwarty.game.model.Room;
 import com.qwarty.game.service.RoomManager;
@@ -20,18 +22,22 @@ public class RoomController {
     private final RoomManager roomManagerService;
 
     @PostMapping("/create")
-    public ResponseEntity<Room> create(@RequestParam String mode, HttpSession session) {
+    public ResponseEntity<RoomDetailsDTO> create(@RequestParam String mode, HttpSession session) {
         String sessionUid = (String) session.getAttribute("SESSION_UID");
+        String username = (String) session.getAttribute("USERNAME");
+        UserType userType = (UserType) session.getAttribute("USER_TYPE");
 
-        Room room = roomManagerService.createRoom(GameMode.from(mode), sessionUid);
-        return ResponseEntity.ok(room);
+        RoomDetailsDTO roomDetails = roomManagerService.createRoom(GameMode.from(mode), sessionUid, username, userType);
+        return ResponseEntity.ok(roomDetails);
     }
 
     @PostMapping("/join/{roomId}")
-    public ResponseEntity<Room> join(@PathVariable String roomId, HttpSession session) {
+    public ResponseEntity<RoomDetailsDTO> join(@PathVariable String roomId, HttpSession session) {
         String sessionUid = (String) session.getAttribute("SESSION_UID");
+        String username = (String) session.getAttribute("USERNAME");
+        UserType userType = (UserType) session.getAttribute("USER_TYPE");
 
-        Room room = roomManagerService.joinRoom(roomId, sessionUid);
-        return ResponseEntity.ok(room);
+        RoomDetailsDTO roomDetails = roomManagerService.joinRoom(roomId, sessionUid, username, userType);
+        return ResponseEntity.ok(roomDetails);
     }
 }

@@ -20,7 +20,14 @@ export const Room = () => {
         <div>
             {roomData?.gameMode}
             <br />
-            {roomData?.players}
+            <div>
+                Players:
+                <ul>
+                    {roomData?.players.map(player => (
+                        <li key={player.username}>{player.username}</li>
+                    ))}
+                </ul>
+            </div>
         </div>
     );
 };

@@ -1,7 +1,6 @@
 package com.qwarty.game.model;
 
 import com.qwarty.game.lov.MessageType;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,5 +18,4 @@ public class GameEvent {
     private String sender;
     private String roomId;
     private MessageType messageType;
-
 }
