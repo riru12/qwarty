@@ -4,3 +4,4 @@ export * from "./Input";
 export * from "./PasswordInput";
 export * from "./ModeButton";
 export * from "./ModeSelector";
+export * from "./RoomBody";

@@ -1,11 +1,10 @@
-import { useCallWithGuestFallback } from "@hooks/useCallWithGuestFallback";
-import { RoomInfoEndpoint } from "@interfaces/api/endpoints/RoomInfoEndpoint";
-import { RoomRoute } from "@routes/routes";
 import { useQuery } from "@tanstack/react-query";
 import { useMatch } from "@tanstack/react-router";
-import { Client } from "@stomp/stompjs";
-import { useEffect, useRef, useState } from "react";
-import { Racer } from "@components/modes";
+import { useCallWithGuestFallback } from "@hooks/useCallWithGuestFallback";
+import { SocketProvider } from "@contexts/SocketContext";
+import { RoomRoute } from "@routes/routes";
+import { RoomInfoEndpoint } from "@interfaces/api/endpoints";
+import { RoomBody } from "@components/ui";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const WS_BASE_URL = BASE_URL.replace(/^http/, "ws");
@@ -13,116 +12,26 @@ const WS_BASE_URL = BASE_URL.replace(/^http/, "ws");
 export const Room = () => {
     const { params } = useMatch({ from: RoomRoute.id });
     const { roomId } = params;
-    const [players, setPlayers] = useState<string[]>([]);
     const { callWithGuestFallback } = useCallWithGuestFallback();
-    const clientRef = useRef<Client | null>(null);
-
 
     /**
-     * Upon opening the link to a room, call for /rooms/info/{roomId}
-     *
-     * Call is done with guest fallback, so non-users can join by first getting
-     * a guest session (if they already do not have one)
+     * Upon opening the room, retrieve the room's details
+     * 
+     * As a side effect, the user is granted a guest token (if they do not have one)
+     * due to calling with guest fallback.
      */
     const { data: roomData, isSuccess } = useQuery({
         queryKey: ["joinRoom", roomId],
         queryFn: async () => callWithGuestFallback(RoomInfoEndpoint, { pathParams: { roomId } }),
-        enabled: !!roomId, // Only perform a call if a roomId is provided in the URL
+        enabled: !!roomId,
         staleTime: Infinity,
     });
 
-    /**
-     * Subscribe to user's room error queue and handle errors received
-     */
-    const subscribeToErrors = (client: Client) => {
-        return client.subscribe(`/user/queue/errors/${roomId}`, (message) => {
-            console.log(message);
-        });
-    }
-
-    /**
-     * Subscribe to the room's topic and handle join and leave events received
-     */
-    const subscribeToRoom = (client: Client) => {
-        return client.subscribe(`/topic/room/${roomId}`, (message) => {
-            const event = JSON.parse(message.body);
-
-            if (event.messageType === "JOIN" || event.messageType === "LEAVE") {
-                setPlayers(event.players); // replace the current players list
-            }
-        });
-    };
-
-    /**
-     * Connect to the WebSocket and subscribe the the room's topic
-     *
-     * Triggered upon successful retrieval of room info
-     */
-    useEffect(() => {
-        // If a room wasn't successfully joined through the HTTP call, do not proceed with WS connection
-        if (!roomId || !isSuccess) return;
-
-        const client = new Client({
-            brokerURL: `${WS_BASE_URL}/api/ws`,
-            onConnect: () => {
-                subscribeToErrors(client);
-                subscribeToRoom(client); // subscribe to the room topic
-                client.publish({
-                    // announce to other users that you joined
-                    destination: `/app/room.join/${roomId}`,
-                });
-            },
-        });
-
-        client.activate();
-        clientRef.current = client;
-
-        return () => {
-            if (clientRef.current && clientRef.current.connected) {
-                // announce to other users that you are leaving
-                clientRef.current.publish({
-                    destination: `/app/room.leave/${roomId}`,
-                });
-            }
-
-            client.deactivate();
-        };
-    }, [isSuccess]);
-
-    /**
-     * Once room info has been retrieved, update the player list state and re-render
-     */
-    useEffect(() => {
-        if (roomData?.players) {
-            setPlayers(roomData.players);
-        }
-    }, [roomData]);
-
-    const renderGameMode = () => {
-        if (!clientRef.current) return null;
-
-        switch (roomData?.gameMode) {
-            case "RACER":
-                return <Racer />;
-            default:
-                return <div>Unknown game mode</div>;
-        }
-    };
+    if (!isSuccess) return <div>Loading room...</div>;
 
     return (
-        <div>
-            {roomData?.gameMode}
-            <br />
-            <div>
-                Players:
-                <ul>
-                    {players?.map((player) => (
-                        <li key={player}>{player}</li>
-                    ))}
-                </ul>
-            </div>
-
-            {renderGameMode()}
-        </div>
+        <SocketProvider url={`${WS_BASE_URL}/api/ws`}>
+            <RoomBody roomData={roomData} roomId={roomId} />
+        </SocketProvider>
     );
-};
+}
