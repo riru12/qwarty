@@ -1,7 +1,11 @@
 import { Client } from "@stomp/stompjs";
 import { createContext, useEffect, useState } from "react";
 
-export const SocketContext = createContext<Client | null>(null);
+interface SocketContextType {
+    client: Client | null;
+}
+
+export const SocketContext = createContext<SocketContextType | undefined>(undefined);
 
 export const SocketProvider = ({ url, children }: { url: string; children: React.ReactNode }) => {
     const [stompClient, setStompClient] = useState<Client | null>(null);
@@ -30,7 +34,7 @@ export const SocketProvider = ({ url, children }: { url: string; children: React
     }, [url]);
 
     return (
-        <SocketContext.Provider value={stompClient}>
+        <SocketContext.Provider value={{client: stompClient}}>
             {children}
         </SocketContext.Provider>
     );

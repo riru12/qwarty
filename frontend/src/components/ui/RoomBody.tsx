@@ -5,7 +5,7 @@ import type { RoomDetailsDTO } from "@interfaces/api/endpoints";
 import { Racer } from "@components/modes";
 
 export const RoomBody = ({ roomData, roomId }: { roomData: RoomDetailsDTO; roomId: string }) => {
-    const client = useSocket();
+    const { client } = useSocket();
     const [players, setPlayers] = useState<string[]>(roomData.players || []);
 
     /**
