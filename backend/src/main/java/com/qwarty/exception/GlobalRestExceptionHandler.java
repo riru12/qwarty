@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 @RequiredArgsConstructor
-public class GlobalExceptionHandler {
+public class GlobalRestExceptionHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(GlobalRestExceptionHandler.class);
     private final ExceptionHttpStatusMapper exceptionHttpStatusMapper;
     private final MessageSource messageSource;
 
