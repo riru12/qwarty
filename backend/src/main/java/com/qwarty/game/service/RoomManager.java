@@ -63,7 +63,7 @@ public class RoomManager {
 
         Room room = rooms.get(roomId);
         if (room == null) {
-            throw new AppException(AppExceptionCode.ROOM_NOT_FOUND);
+            return null;
         }
         if (room.hasPlayer(sessionUid)) {
             room.removeConnection(sessionUid);
@@ -72,7 +72,6 @@ public class RoomManager {
             rooms.remove(roomId);
             return null;
         }
-
         return retrieveRoomDetails(roomId);
     }
 

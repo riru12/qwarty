@@ -1,5 +1,6 @@
 package com.qwarty.game.dto;
 
+import com.qwarty.game.lov.GameMode;
 import com.qwarty.game.lov.MessageType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,5 +16,6 @@ import lombok.experimental.SuperBuilder;
 public abstract class RoomEventDTO {
     private String sender;
     private String roomId;
+    private GameMode gameMode;
     private MessageType messageType;
 }

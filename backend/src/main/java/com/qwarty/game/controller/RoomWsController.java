@@ -30,6 +30,7 @@ public class RoomWsController {
         PlayerListEventDTO event = PlayerListEventDTO.builder()
                 .roomId(roomDetailsDto.roomId())
                 .players(roomDetailsDto.players())
+                .gameMode(roomDetailsDto.gameMode())
                 .messageType(MessageType.JOIN)
                 .build();
         messagingTemplate.convertAndSend("/topic/room/" + roomId, event);
@@ -49,6 +50,7 @@ public class RoomWsController {
         PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
                 .roomId(roomDetailsDto.roomId())
                 .players(roomDetailsDto.players())
+                .gameMode(roomDetailsDto.gameMode())
                 .messageType(MessageType.LEAVE)
                 .build();
         messagingTemplate.convertAndSend("/topic/room/" + roomId, eventDTO);
