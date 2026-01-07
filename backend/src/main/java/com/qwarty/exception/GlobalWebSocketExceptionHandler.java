@@ -1,5 +1,6 @@
 package com.qwarty.exception;
 
+import java.security.Principal;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -17,23 +18,19 @@ public class GlobalWebSocketExceptionHandler {
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageExceptionHandler(Exception.class)
-    public void handleAllExceptions(Exception exception, StompHeaderAccessor accessor) {
+    public void handleAllExceptions(Exception exception, StompHeaderAccessor accessor, Principal principal) {
         logger.warn(
                 "Exception occurred: {} - {}",
                 exception.getClass().getSimpleName(),
                 exception.getMessage());
 
-        String sessionUid = (String) accessor.getSessionAttributes().get("SESSION_UID");
-
-        if (sessionUid == null) {
-            return;
-        }
+        String roomId = (String) accessor.getSessionAttributes().get("ROOM_ID");
 
         Map<String, Object> error = Map.of(
                 "type", "ERROR",
                 "code", "INTERNAL_ERROR",
                 "message", "An unexpected error occurred");
-
-        messagingTemplate.convertAndSendToUser(sessionUid, "/queue/errors", error);
+        
+        messagingTemplate.convertAndSendToUser(principal.getName(),  "/queue/errors/" + roomId, error);
     }
 }

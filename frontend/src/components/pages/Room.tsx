@@ -56,6 +56,9 @@ export const Room = () => {
         const client = new Client({
             brokerURL: `${WS_BASE_URL}/api/ws`,
             onConnect: () => {
+                client.subscribe(`/user/queue/errors/${roomId}`, (message) => {
+                    console.log(message);
+                });
                 subscribeToRoom(client); // subscribe to the room topic
                 client.publish({
                     // announce to other users that you joined
