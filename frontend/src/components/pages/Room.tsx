@@ -32,6 +32,15 @@ export const Room = () => {
     });
 
     /**
+     * Subscribe to user's room error queue and handle errors received
+     */
+    const subscribeToErrors = (client: Client) => {
+        return client.subscribe(`/user/queue/errors/${roomId}`, (message) => {
+            console.log(message);
+        });
+    }
+
+    /**
      * Subscribe to the room's topic and handle join and leave events received
      */
     const subscribeToRoom = (client: Client) => {
@@ -56,9 +65,7 @@ export const Room = () => {
         const client = new Client({
             brokerURL: `${WS_BASE_URL}/api/ws`,
             onConnect: () => {
-                client.subscribe(`/user/queue/errors/${roomId}`, (message) => {
-                    console.log(message);
-                });
+                subscribeToErrors(client);
                 subscribeToRoom(client); // subscribe to the room topic
                 client.publish({
                     // announce to other users that you joined
