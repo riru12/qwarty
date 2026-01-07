@@ -75,7 +75,6 @@ public class AuthService {
 
         HttpSession session = request.getSession(true);
         session.setAttribute("SPRING_SECURITY_CONTEXT", context);
-        session.setAttribute("SESSION_UID", UUID.randomUUID().toString());
         session.setAttribute("USERNAME", requestDto.username());
         session.setAttribute("USER_TYPE", UserType.USER);
 
@@ -114,7 +113,6 @@ public class AuthService {
 
         HttpSession session = request.getSession(true);
         session.setAttribute("SPRING_SECURITY_CONTEXT", context);
-        session.setAttribute("SESSION_UID", UUID.randomUUID().toString());
         session.setAttribute("USERNAME", guestName);
         session.setAttribute("USER_TYPE", UserType.GUEST);
 

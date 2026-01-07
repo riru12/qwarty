@@ -5,6 +5,9 @@ import com.qwarty.game.dto.RoomDetailsDTO;
 import com.qwarty.game.lov.MessageType;
 import com.qwarty.game.service.RoomManager;
 import lombok.RequiredArgsConstructor;
+
+import java.security.Principal;
+
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -19,13 +22,13 @@ public class RoomWsController {
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/room.join/{roomId}")
-    public void joinRoom(@DestinationVariable String roomId, StompHeaderAccessor accessor) {
+    public void joinRoom(@DestinationVariable String roomId, StompHeaderAccessor accessor, Principal principal) {
         accessor.getSessionAttributes()
                 .put("ROOM_ID", roomId); // upon joining a room, save the roomId into the WS session's attributes
-        String sessionUid = (String) accessor.getSessionAttributes().get("SESSION_UID");
+        String username = principal.getName();
 
         // let RoomManager handle the joining
-        RoomDetailsDTO roomDetailsDto = roomManager.joinRoom(roomId, sessionUid);
+        RoomDetailsDTO roomDetailsDto = roomManager.joinRoom(roomId, username);
 
         PlayerListEventDTO event = PlayerListEventDTO.builder()
                 .roomId(roomDetailsDto.roomId())
@@ -37,11 +40,11 @@ public class RoomWsController {
     }
 
     @MessageMapping("/room.leave/{roomId}")
-    public void leaveRoom(@DestinationVariable String roomId, StompHeaderAccessor accessor) {
-        String sessionUid = (String) accessor.getSessionAttributes().get("SESSION_UID");
+    public void leaveRoom(@DestinationVariable String roomId, StompHeaderAccessor accessor, Principal principal) {
+        String username = principal.getName();
 
         // let RoomManager handle leaving the room
-        RoomDetailsDTO roomDetailsDto = roomManager.leaveRoom(roomId, sessionUid);
+        RoomDetailsDTO roomDetailsDto = roomManager.leaveRoom(roomId, username);
 
         if (roomDetailsDto == null) { // if the room has been closed after the last person left
             return;

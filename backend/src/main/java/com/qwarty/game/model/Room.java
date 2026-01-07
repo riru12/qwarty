@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,51 +15,76 @@ import lombok.Setter;
 public class Room {
     private final String id;
     private final GameMode gameMode;
-    private final Map<String, Integer> playerSessionConnections = new ConcurrentHashMap<>();
+    private final Map<String, Integer> playerConnections = new ConcurrentHashMap<>();
+    private final Semaphore slots;
 
     public Room(String id, GameMode gameMode) {
         this.id = id;
         this.gameMode = gameMode;
+        this.slots = new Semaphore(gameMode.getMaxPlayers());
     }
 
+
     /**
-     * Increments the number of connections a user has to a room by 1.
-     *
-     * If this is the player's first connection to the room, sets it to 1.
+     * Atomically tries to add a connection to the room.
+     * Returns true if successful, false if room is full.
      */
     @SuppressWarnings("null")
-    public void addConnection(String sessionUid) {
-        playerSessionConnections.merge(sessionUid, 1, Integer::sum);
+    public boolean addConnection(String username) {
+        // Existing player → just increment
+        if (playerConnections.containsKey(username)) {
+            playerConnections.merge(username, 1, Integer::sum);
+            return true;
+        }
+        
+        // New player → try to acquire slot
+        if (!slots.tryAcquire()) {
+            return false; // Room is full
+        }
+        
+        Integer prev = playerConnections.putIfAbsent(username, 1);
+        if (prev != null) {
+            // Race: someone else added this player first
+            slots.release(); // Give back the slot we acquired
+            playerConnections.merge(username, 1, Integer::sum);
+        }
+        
+        return true;
     }
 
-    /**
-     * Decrements the number of connections a user has to a room by 1.
-     *
-     * If result connection count is 0, the user loses its entry in the hash map.
-     * */
-    public void removeConnection(String sessionUid) {
-        playerSessionConnections.computeIfPresent(sessionUid, (id, count) -> count > 1 ? count - 1 : null);
+   /**
+     * Decrements the number of connections a user has to a room.
+     * If connection count reaches 0, the user loses their reserved slot completely.
+     */
+    public void removeConnection(String username) {
+        playerConnections.computeIfPresent(username, (k, v) -> {
+            if (v == 1) {
+                slots.release(); // Release slot when last connection is removed
+                return null; // Remove entry from map
+            }
+            return v - 1;
+        });
     }
 
-    /* Returns sessionUIDs of all the players in the room */
+    /* Returns usernames of all the players in the room */
     public List<String> getPlayers() {
-        return new ArrayList<>(playerSessionConnections.keySet());
+        return new ArrayList<>(playerConnections.keySet());
     }
 
     /* Checks if a player has any connections to the room  */
-    public boolean hasPlayer(String sessionUid) {
-        return playerSessionConnections.containsKey(sessionUid);
+    public boolean hasPlayer(String username) {
+        return playerConnections.containsKey(username);
     }
 
     /* Checks if the max number of reserved slots available for a room is filled */
     public boolean isFull() {
-        return playerSessionConnections.size() >= gameMode.getMaxPlayers();
+        return playerConnections.size() >= gameMode.getMaxPlayers();
     }
 
     /**
      * Checks if all users (if any are left) in the room all have no active connections
      */
     public boolean isEmpty() {
-        return playerSessionConnections.isEmpty();
+        return playerConnections.isEmpty();
     }
 }

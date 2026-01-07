@@ -21,11 +21,7 @@ public class RoomManager {
     /**
      * Creates a room and stores it in memory by hash map, returns its details in a DTO
      */
-    public RoomDetailsDTO createRoom(GameMode mode, String sessionUid) {
-        if (sessionUid == null) {
-            throw new AppException(AppExceptionCode.SESSION_UID_NOT_FOUND);
-        }
-
+    public RoomDetailsDTO createRoom(GameMode mode) {
         String roomId = generateUniqueRoomId();
         Room room = new Room(roomId, mode);
 
@@ -36,11 +32,7 @@ public class RoomManager {
     /**
      * Joins a room by creating a connection to a room via hashmap, returns updated room details in a DTO
      */
-    public RoomDetailsDTO joinRoom(String roomId, String sessionUid) {
-        if (sessionUid == null) {
-            throw new AppException(AppExceptionCode.SESSION_UID_NOT_FOUND);
-        }
-
+    public RoomDetailsDTO joinRoom(String roomId, String username) {
         Room room = rooms.get(roomId);
         if (room == null) {
             throw new AppException(AppExceptionCode.ROOM_NOT_FOUND);
@@ -48,25 +40,23 @@ public class RoomManager {
         if (room.isFull()) {
             throw new AppException(AppExceptionCode.ROOM_FULL);
         }
+        if (!room.addConnection(username)) {
+            throw new AppException(AppExceptionCode.ROOM_FULL);
+        };
 
-        room.addConnection(sessionUid);
         return retrieveRoomDetails(roomId);
     }
 
     /**
      * Leaves a room by removing a connection to the room, returns updated room details in a DTO
      */
-    public RoomDetailsDTO leaveRoom(String roomId, String sessionUid) {
-        if (sessionUid == null) {
-            throw new AppException(AppExceptionCode.SESSION_UID_NOT_FOUND);
-        }
-
+    public RoomDetailsDTO leaveRoom(String roomId, String username) {
         Room room = rooms.get(roomId);
         if (room == null) {
             return null;
         }
-        if (room.hasPlayer(sessionUid)) {
-            room.removeConnection(sessionUid);
+        if (room.hasPlayer(username)) {
+            room.removeConnection(username);
         }
         if (room.isEmpty()) {
             rooms.remove(roomId);

@@ -22,9 +22,7 @@ public class RoomRestController {
 
     @PostMapping("/create")
     public ResponseEntity<RoomDetailsDTO> create(@RequestParam String mode, HttpSession session) {
-        String sessionUid = (String) session.getAttribute("SESSION_UID");
-
-        RoomDetailsDTO roomDetails = roomManagerService.createRoom(GameMode.from(mode), sessionUid);
+        RoomDetailsDTO roomDetails = roomManagerService.createRoom(GameMode.from(mode));
         return ResponseEntity.ok(roomDetails);
     }
 

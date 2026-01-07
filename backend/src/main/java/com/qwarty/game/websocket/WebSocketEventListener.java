@@ -4,6 +4,8 @@ import com.qwarty.game.dto.PlayerListEventDTO;
 import com.qwarty.game.dto.RoomDetailsDTO;
 import com.qwarty.game.lov.MessageType;
 import com.qwarty.game.service.RoomManager;
+
+import java.security.Principal;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -26,12 +28,13 @@ public class WebSocketEventListener {
 
         if (attributes == null) return;
 
-        String sessionUid = (String) attributes.get("SESSION_UID");
+        Principal principal = event.getUser();
+        String username = principal.getName();
         String roomId = (String) attributes.get("ROOM_ID");
 
-        if (sessionUid == null || roomId == null) return;
+        if (username == null || roomId == null) return;
 
-        RoomDetailsDTO roomDetailsDto = roomManager.leaveRoom(roomId, sessionUid);
+        RoomDetailsDTO roomDetailsDto = roomManager.leaveRoom(roomId, username);
 
         if (roomDetailsDto == null) {
             return;
