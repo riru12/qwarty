@@ -20,7 +20,8 @@ public class RoomWsController {
 
     @MessageMapping("/room.join/{roomId}")
     public void joinRoom(@DestinationVariable String roomId, StompHeaderAccessor accessor) {
-        accessor.getSessionAttributes().put("ROOM_ID", roomId); // upon joining a room, save the roomId into the WS session's attributes
+        accessor.getSessionAttributes()
+                .put("ROOM_ID", roomId); // upon joining a room, save the roomId into the WS session's attributes
         String sessionUid = (String) accessor.getSessionAttributes().get("SESSION_UID");
 
         // let RoomManager handle the joining
@@ -41,7 +42,7 @@ public class RoomWsController {
         // let RoomManager handle leaving the room
         RoomDetailsDTO roomDetailsDto = roomManager.leaveRoom(roomId, sessionUid);
 
-        if (roomDetailsDto == null) {   // if the room has been closed after the last person left
+        if (roomDetailsDto == null) { // if the room has been closed after the last person left
             return;
         }
 

@@ -75,7 +75,7 @@ public class RoomManager {
 
         return retrieveRoomDetails(roomId);
     }
-    
+
     public RoomDetailsDTO retrieveRoomDetails(String roomId) {
         Room room = rooms.get(roomId);
         if (room == null) {

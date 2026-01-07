@@ -21,12 +21,11 @@ public class WebSocketEventListener {
     @EventListener
     public void handleSessionDisconnect(SessionDisconnectEvent event) {
         @SuppressWarnings("unchecked")
-        Map<String, Object> attributes = (Map<String, Object>) event.getMessage()
-                .getHeaders()
-                .get("simpSessionAttributes");
+        Map<String, Object> attributes =
+                (Map<String, Object>) event.getMessage().getHeaders().get("simpSessionAttributes");
 
         if (attributes == null) return;
-        
+
         String sessionUid = (String) attributes.get("SESSION_UID");
         String roomId = (String) attributes.get("ROOM_ID");
 
@@ -36,13 +35,12 @@ public class WebSocketEventListener {
 
         if (roomDetailsDto == null) {
             return;
-        } else {
-            PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
-                    .roomId(roomDetailsDto.roomId())
-                    .players(roomDetailsDto.players())
-                    .messageType(MessageType.LEAVE)
-                    .build();
-            messagingTemplate.convertAndSend("/topic/room/" + roomId, eventDTO);
         }
+        PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
+                .roomId(roomDetailsDto.roomId())
+                .players(roomDetailsDto.players())
+                .messageType(MessageType.LEAVE)
+                .build();
+        messagingTemplate.convertAndSend("/topic/room/" + roomId, eventDTO);
     }
 }

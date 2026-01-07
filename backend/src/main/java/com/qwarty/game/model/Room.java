@@ -1,7 +1,6 @@
 package com.qwarty.game.model;
 
 import com.qwarty.game.lov.GameMode;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,7 @@ public class Room {
 
     /**
      * Increments the number of connections a user has to a room by 1.
-     * 
+     *
      * If this is the player's first connection to the room, sets it to 1.
      */
     @SuppressWarnings("null")
@@ -31,9 +30,9 @@ public class Room {
         playerSessionConnections.merge(sessionUid, 1, Integer::sum);
     }
 
-    /** 
-     * Decrements the number of connections a user has to a room by 1.  
-     * 
+    /**
+     * Decrements the number of connections a user has to a room by 1.
+     *
      * If result connection count is 0, the user loses its entry in the hash map.
      * */
     public void removeConnection(String sessionUid) {
@@ -56,7 +55,7 @@ public class Room {
     }
 
     /**
-     * Checks if all users (if any are left) in the room all have no active connections 
+     * Checks if all users (if any are left) in the room all have no active connections
      */
     public boolean isEmpty() {
         return playerSessionConnections.isEmpty();
