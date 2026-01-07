@@ -17,6 +17,7 @@ export const useCallWithGuestFallback = () => {
         if (getAuthState().userType === "ANON") {
             try {
                 await apiClient.call(GuestEndpoint);
+                updateAuthState();
             } catch (guestError) {
                 throw guestError;
             }
