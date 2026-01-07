@@ -1,10 +1,9 @@
 package com.qwarty.game.websocket;
 
 import com.qwarty.game.dto.PlayerListEventDTO;
+import com.qwarty.game.dto.RoomDetailsDTO;
 import com.qwarty.game.lov.MessageType;
-import com.qwarty.game.model.Room;
 import com.qwarty.game.service.RoomManager;
-import java.util.ArrayList;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -33,20 +32,17 @@ public class WebSocketEventListener {
 
         if (sessionUid == null || roomId == null) return;
 
-        Room room = roomManager.getRoom(roomId);
-        if (room != null && room.hasPlayer(sessionUid)) {
-            room.removeConnection(sessionUid);
+        RoomDetailsDTO roomDetailsDto = roomManager.leaveRoom(roomId, sessionUid);
 
-            if (room.isEmpty()) {
-                roomManager.removeRoom(room.getId());
-            } else {
-                PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
-                        .roomId(room.getId())
-                        .players(new ArrayList<>(room.getPlayers()))
-                        .messageType(MessageType.LEAVE)
-                        .build();
-                messagingTemplate.convertAndSend("/topic/room/" + room.getId(), eventDTO);
-            }
+        if (roomDetailsDto == null) {
+            return;
+        } else {
+            PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
+                    .roomId(roomDetailsDto.roomId())
+                    .players(roomDetailsDto.players())
+                    .messageType(MessageType.LEAVE)
+                    .build();
+            messagingTemplate.convertAndSend("/topic/room/" + roomId, eventDTO);
         }
     }
 }

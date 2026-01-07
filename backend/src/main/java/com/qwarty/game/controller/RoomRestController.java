@@ -6,6 +6,7 @@ import com.qwarty.game.service.RoomManager;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,11 +28,9 @@ public class RoomRestController {
         return ResponseEntity.ok(roomDetails);
     }
 
-    @PostMapping("/join/{roomId}")
-    public ResponseEntity<RoomDetailsDTO> join(@PathVariable String roomId, HttpSession session) {
-        String sessionUid = (String) session.getAttribute("SESSION_UID");
-
-        RoomDetailsDTO roomDetails = roomManagerService.joinRoom(roomId, sessionUid);
+    @GetMapping("/info/{roomId}")
+    public ResponseEntity<RoomDetailsDTO> info(@PathVariable String roomId) {
+        RoomDetailsDTO roomDetails = roomManagerService.retrieveRoomDetails(roomId);
         return ResponseEntity.ok(roomDetails);
     }
 }

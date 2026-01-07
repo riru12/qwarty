@@ -1,5 +1,5 @@
 import { useCallWithGuestFallback } from "@hooks/useCallWithGuestFallback";
-import { JoinRoomEndpoint } from "@interfaces/api/endpoints/JoinRoomEndpoint";
+import { RoomInfoEndpoint } from "@interfaces/api/endpoints/RoomInfoEndpoint";
 import { RoomRoute } from "@routes/routes";
 import { useQuery } from "@tanstack/react-query";
 import { useMatch } from "@tanstack/react-router";
@@ -19,14 +19,14 @@ export const Room = () => {
 
 
     /**
-     * Upon opening the link to a room, call for /rooms/join/{roomId}
+     * Upon opening the link to a room, call for /rooms/info/{roomId}
      *
      * Call is done with guest fallback, so non-users can join by first getting
      * a guest session (if they already do not have one)
      */
     const { data: roomData, isSuccess } = useQuery({
         queryKey: ["joinRoom", roomId],
-        queryFn: async () => callWithGuestFallback(JoinRoomEndpoint, { pathParams: { roomId } }),
+        queryFn: async () => callWithGuestFallback(RoomInfoEndpoint, { pathParams: { roomId } }),
         enabled: !!roomId, // Only perform a call if a roomId is provided in the URL
         staleTime: Infinity,
     });
@@ -47,7 +47,7 @@ export const Room = () => {
     /**
      * Connect to the WebSocket and subscribe the the room's topic
      *
-     * Triggered upon successful joining of room
+     * Triggered upon successful retrieval of room info
      */
     useEffect(() => {
         // If a room wasn't successfully joined through the HTTP call, do not proceed with WS connection
@@ -80,7 +80,7 @@ export const Room = () => {
     }, [isSuccess]);
 
     /**
-     * Once room has been joined, update the player list state and re-render
+     * Once room info has been retrieved, update the player list state and re-render
      */
     useEffect(() => {
         if (roomData?.players) {

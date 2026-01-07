@@ -21,50 +21,33 @@ public class Room {
         this.gameMode = gameMode;
     }
 
-    /** 
-     * "Reserves" a slot for a player to make connections to the room. 
-     * 
-     * This is primarily used in {@link #RoomManager.createRoom} and {@link #RoomManager.joinRoom}
-     * Used as a fallback in {@link #RoomWsController} when joining to reserve a slot if they already don't have one.
-     * */
-    public void initPlayerConnection(String sessionUid) {
-        playerSessionConnections.putIfAbsent(sessionUid, 0);
-    }
-
     /**
-     * Increments the number of connections a user has to a room.
+     * Increments the number of connections a user has to a room by 1.
+     * 
+     * If this is the player's first connection to the room, sets it to 1.
      */
     @SuppressWarnings("null")
     public void addConnection(String sessionUid) {
-        if (!playerSessionConnections.containsKey(sessionUid)) {
-            throw new IllegalStateException("Player does not have a reserved slot in this room.");
-        }
         playerSessionConnections.merge(sessionUid, 1, Integer::sum);
     }
 
     /** 
-     * Decrements the number of connections a user has to a room.  
+     * Decrements the number of connections a user has to a room by 1.  
      * 
-     * If result connection count is 0, the user loses its reserved slot completely.
+     * If result connection count is 0, the user loses its entry in the hash map.
      * */
     public void removeConnection(String sessionUid) {
         playerSessionConnections.computeIfPresent(sessionUid, (id, count) -> count > 1 ? count - 1 : null);
     }
 
-    /* Returns sessionUIDs of all the players with reserved slots in the room */
+    /* Returns sessionUIDs of all the players in the room */
     public List<String> getPlayers() {
         return new ArrayList<>(playerSessionConnections.keySet());
     }
 
-    /* Checks if a player has a slot in the room regardless of any active connections  */
+    /* Checks if a player has any connections to the room  */
     public boolean hasPlayer(String sessionUid) {
         return playerSessionConnections.containsKey(sessionUid);
-    }
-
-    /* Checks if a player's sessionUid has an active connection to the room  */
-    public boolean isPlayerConnected(String sessionUid) {
-        Integer count = playerSessionConnections.get(sessionUid);
-        return count != null && count > 0;
     }
 
     /* Checks if the max number of reserved slots available for a room is filled */
@@ -74,10 +57,8 @@ public class Room {
 
     /**
      * Checks if all users (if any are left) in the room all have no active connections 
-     * 
-     * Note: this is currently an O(n) solution. It might be worth considering adding an O(1) solution in the future.
      */
     public boolean isEmpty() {
-        return playerSessionConnections.values().stream().allMatch(count -> count == 0);
+        return playerSessionConnections.isEmpty();
     }
 }

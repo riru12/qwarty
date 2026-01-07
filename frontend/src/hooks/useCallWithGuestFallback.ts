@@ -14,6 +14,14 @@ export const useCallWithGuestFallback = () => {
             pathParams?: Record<string, string | number>;
         },
     ): Promise<EndpointRes<E>> => {
+        if (getAuthState().userType === "ANON") {
+            try {
+                await apiClient.call(GuestEndpoint);
+            } catch (guestError) {
+                throw guestError;
+            }
+        }
+
         try {
             return await apiClient.call(endpoint, options);
         } catch (error) {

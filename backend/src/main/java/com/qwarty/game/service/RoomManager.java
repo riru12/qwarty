@@ -5,7 +5,6 @@ import com.qwarty.exception.type.AppException;
 import com.qwarty.game.dto.RoomDetailsDTO;
 import com.qwarty.game.lov.GameMode;
 import com.qwarty.game.model.Room;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -19,18 +18,9 @@ public class RoomManager {
 
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 
-    public Room getRoom(String roomId) {
-        return rooms.get(roomId);
-    }
-
-    public List<Room> getAllRooms() {
-        return new ArrayList<>(rooms.values());
-    }
-
-    public void removeRoom(String roomId) {
-        rooms.remove(roomId);
-    }
-
+    /**
+     * Creates a room and stores it in memory by hash map, returns its details in a DTO
+     */
     public RoomDetailsDTO createRoom(GameMode mode, String sessionUid) {
         if (sessionUid == null) {
             throw new AppException(AppExceptionCode.SESSION_UID_NOT_FOUND);
@@ -39,34 +29,55 @@ public class RoomManager {
         String roomId = generateUniqueRoomId();
         Room room = new Room(roomId, mode);
 
-        room.initPlayerConnection(sessionUid);
-
         rooms.put(roomId, room);
         return retrieveRoomDetails(roomId);
     }
 
+    /**
+     * Joins a room by creating a connection to a room via hashmap, returns updated room details in a DTO
+     */
     public RoomDetailsDTO joinRoom(String roomId, String sessionUid) {
         if (sessionUid == null) {
             throw new AppException(AppExceptionCode.SESSION_UID_NOT_FOUND);
         }
 
-        Room room = getRoom(roomId);
+        Room room = rooms.get(roomId);
         if (room == null) {
             throw new AppException(AppExceptionCode.ROOM_NOT_FOUND);
-        }
-        if (room.hasPlayer(sessionUid)) {
-            return retrieveRoomDetails(roomId);
         }
         if (room.isFull()) {
             throw new AppException(AppExceptionCode.ROOM_FULL);
         }
 
-        room.initPlayerConnection(sessionUid);
+        room.addConnection(sessionUid);
         return retrieveRoomDetails(roomId);
     }
 
-    private RoomDetailsDTO retrieveRoomDetails(String roomId) {
-        Room room = getRoom(roomId);
+    /**
+     * Leaves a room by removing a connection to the room, returns updated room details in a DTO
+     */
+    public RoomDetailsDTO leaveRoom(String roomId, String sessionUid) {
+        if (sessionUid == null) {
+            throw new AppException(AppExceptionCode.SESSION_UID_NOT_FOUND);
+        }
+
+        Room room = rooms.get(roomId);
+        if (room == null) {
+            throw new AppException(AppExceptionCode.ROOM_NOT_FOUND);
+        }
+        if (room.hasPlayer(sessionUid)) {
+            room.removeConnection(sessionUid);
+        }
+        if (room.isEmpty()) {
+            rooms.remove(roomId);
+            return null;
+        }
+
+        return retrieveRoomDetails(roomId);
+    }
+    
+    public RoomDetailsDTO retrieveRoomDetails(String roomId) {
+        Room room = rooms.get(roomId);
         if (room == null) {
             throw new AppException(AppExceptionCode.ROOM_NOT_FOUND);
         }
