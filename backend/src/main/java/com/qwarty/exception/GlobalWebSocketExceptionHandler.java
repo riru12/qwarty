@@ -19,7 +19,7 @@ public class GlobalWebSocketExceptionHandler {
     @MessageExceptionHandler(Exception.class)
     public void handleAllExceptions(Exception exception, StompHeaderAccessor accessor) {
         logger.warn(
-                "Exception occurred in WebSocket: {} - {}",
+                "Exception occurred: {} - {}",
                 exception.getClass().getSimpleName(),
                 exception.getMessage());
 
