@@ -19,6 +19,8 @@ import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -121,8 +123,8 @@ public class AuthService {
     private String generateGuestName() {
         String adjective = ADJECTIVES[new Random().nextInt(ADJECTIVES.length)];
         String noun = NOUNS[new Random().nextInt(NOUNS.length)];
-        int number = new Random().nextInt(1000);
-        return adjective + noun + "#" + String.format("%03d", number);
+        String uuidSubstring = UUID.randomUUID().toString().substring(0, 8);
+        return adjective + noun + "#" + uuidSubstring;
     }
 
     public IdentityResponseDTO me(HttpServletRequest request) {
