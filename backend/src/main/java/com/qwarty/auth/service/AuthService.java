@@ -145,7 +145,7 @@ public class AuthService {
     private void setSessionCookie(HttpServletResponse response, String sessionId, int maxAge) {
         Cookie sessionCookie = new Cookie("JSESSIONID", sessionId);
         sessionCookie.setHttpOnly(true);
-        sessionCookie.setSecure(true); // Use only over HTTPS
+        sessionCookie.setSecure(true);
         sessionCookie.setPath("/");
         sessionCookie.setMaxAge(maxAge);
         response.addCookie(sessionCookie);
