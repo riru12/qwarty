@@ -1,6 +1,6 @@
 import type { Endpoint, EndpointReq, EndpointRes } from "@interfaces/api";
 import { GuestEndpoint } from "@interfaces/api/endpoints";
-import { apiClient } from "@utils/ApiClient";
+import { apiClient, ApiError } from "@utils/ApiClient";
 import { useAuth } from "./useAuth";
 
 export const useCallWithGuestFallback = () => {
@@ -26,7 +26,7 @@ export const useCallWithGuestFallback = () => {
         try {
             return await apiClient.call(endpoint, options);
         } catch (error) {
-            if (getAuthState().userType !== "USER") {
+            if (error instanceof ApiError && error.problemDetail.status === 401 && getAuthState().userType !== "USER") {
                 try {
                     await apiClient.call(GuestEndpoint);
                     updateAuthState();
