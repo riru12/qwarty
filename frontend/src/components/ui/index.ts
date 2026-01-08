@@ -4,4 +4,6 @@ export * from "./Input";
 export * from "./PasswordInput";
 export * from "./ModeButton";
 export * from "./ModeSelector";
-export * from "./RoomBody";
+export * from "./LiveRoom";
+export * from "./PlayerBar";
+export * from "./WaitingScreen";

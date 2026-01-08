@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallWithGuestFallback } from "@hooks/useCallWithGuestFallback";
-import { CreateRoomEndpoint, type RoomDetailsDTO } from "@interfaces/api/endpoints";
+import { CreateRoomEndpoint, type RoomIdDTO,  } from "@interfaces/api/endpoints";
 import "../styles/ModeSelector.css";
 
 type Mode = {
@@ -17,9 +17,7 @@ export const ModeSelector = () => {
     const navigate = useNavigate();
     const { callWithGuestFallback } = useCallWithGuestFallback();
     const modes: Mode[] = [
-        // { id: "racer", name: t("racer"), description: t("racer.description") },
-        { id: "classic", name: t("classic"), description: t("classic.description") },
-        // { id: "zen", name: t("zen"), description: t("zen.description") },
+        { id: "classic", name: t("classic"), description: t("classic.description") }
     ];
 
     // TODO: Add Toast
@@ -28,7 +26,7 @@ export const ModeSelector = () => {
             const response = await callWithGuestFallback(CreateRoomEndpoint, { queryParams: { mode } });
             return response;
         },
-        onSuccess: (response: RoomDetailsDTO) => {
+        onSuccess: (response: RoomIdDTO) => {
             navigate({ to: "/room/" + response.roomId });
         },
         onError: (error: any) => {

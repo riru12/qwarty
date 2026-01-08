@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useSocket } from "@hooks/useSocket";
 import type { Client, StompSubscription } from "@stomp/stompjs";
 import type { RoomDetailsDTO } from "@interfaces/api/endpoints";
-import { Racer } from "@components/modes";
+import { WaitingScreen } from "./WaitingScreen";
 
-export const RoomBody = ({ roomData, roomId }: { roomData: RoomDetailsDTO; roomId: string }) => {
+export const LiveRoom = ({ roomData, roomId }: { roomData: RoomDetailsDTO; roomId: string }) => {
     const { client } = useSocket();
     const [players, setPlayers] = useState<string[]>(roomData.players || []);
 
@@ -51,26 +51,7 @@ export const RoomBody = ({ roomData, roomId }: { roomData: RoomDetailsDTO; roomI
         };
     }, [client, client?.connected]);
 
-    const renderGameMode = () => {
-        if (!client) return null;
-
-        switch (roomData?.gameMode) {
-            case "RACER":
-                return <Racer />;
-            default:
-                return <div>Unknown game mode</div>;
-        }
-    };
-
     return (
-        <div>
-            <h1>Mode: {roomData.gameMode}</h1>
-            <div>
-                Players:
-                <ul>{players.map(p => <li key={p}>{p}</li>)}</ul>
-            </div>
-
-            {renderGameMode()}
-        </div>
+        <WaitingScreen players={players} />
     );
 };

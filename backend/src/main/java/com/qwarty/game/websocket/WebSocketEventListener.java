@@ -1,24 +1,19 @@
 package com.qwarty.game.websocket;
 
-import com.qwarty.game.dto.PlayerListEventDTO;
-import com.qwarty.game.dto.RoomDetailsDTO;
-import com.qwarty.game.lov.MessageType;
-import com.qwarty.game.service.RoomManager;
+import com.qwarty.game.service.RoomService;
 
 import java.security.Principal;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 @Component
 @RequiredArgsConstructor
 public class WebSocketEventListener {
-
-    private final RoomManager roomManager;
-    private final SimpMessagingTemplate messagingTemplate;
+    
+    private final RoomService roomService;
 
     @EventListener
     public void handleSessionDisconnect(SessionDisconnectEvent event) {
@@ -33,17 +28,7 @@ public class WebSocketEventListener {
         String roomId = (String) attributes.get("ROOM_ID");
 
         if (username == null || roomId == null) return;
-
-        RoomDetailsDTO roomDetailsDto = roomManager.leaveRoom(roomId, username);
-
-        if (roomDetailsDto == null) {
-            return;
-        }
-        PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
-                .roomId(roomDetailsDto.roomId())
-                .players(roomDetailsDto.players())
-                .messageType(MessageType.LEAVE)
-                .build();
-        messagingTemplate.convertAndSend("/topic/room/" + roomId, eventDTO);
+        
+        roomService.leaveRoom(roomId, username);
     }
 }

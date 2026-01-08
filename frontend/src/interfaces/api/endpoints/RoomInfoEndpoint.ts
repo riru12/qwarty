@@ -1,5 +1,9 @@
 import type { Endpoint } from "../Endpoint";
-import type { RoomDetailsDTO } from "./CreateRoomEndpoint";
+
+export interface RoomDetailsDTO {
+    roomId: string;
+    players: string[];
+}
 
 export const RoomInfoEndpoint: Endpoint<void, RoomDetailsDTO> = {
     route: "/rooms/info/:roomId",

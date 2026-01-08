@@ -1,0 +1,16 @@
+.waiting-screen-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    justify-content: center;
+    gap: 5em;
+    padding-bottom: 10vh;
+}
+
+.player-1-bar-container {
+    margin-right:auto;
+}
+
+.player-2-bar-container {
+    margin-left:auto;
+}

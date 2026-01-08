@@ -4,7 +4,7 @@ import { useCallWithGuestFallback } from "@hooks/useCallWithGuestFallback";
 import { SocketProvider } from "@contexts/SocketContext";
 import { RoomRoute } from "@routes/routes";
 import { RoomInfoEndpoint } from "@interfaces/api/endpoints";
-import { RoomBody } from "@components/ui";
+import { LiveRoom } from "@components/ui";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const WS_BASE_URL = BASE_URL.replace(/^http/, "ws");
@@ -21,7 +21,7 @@ export const Room = () => {
      * due to calling with guest fallback.
      */
     const { data: roomData, isSuccess } = useQuery({
-        queryKey: ["joinRoom", roomId],
+        queryKey: ["roomInfo", roomId],
         queryFn: async () => callWithGuestFallback(RoomInfoEndpoint, { pathParams: { roomId } }),
         enabled: !!roomId,
         staleTime: Infinity,
@@ -29,7 +29,7 @@ export const Room = () => {
 
     return (
         isSuccess && <SocketProvider url={`${WS_BASE_URL}/api/ws`}>
-            <RoomBody roomData={roomData} roomId={roomId} />
+            <LiveRoom roomData={roomData} roomId={roomId} />
         </SocketProvider>
     );
 }

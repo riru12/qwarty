@@ -1,12 +1,10 @@
 import type { Endpoint } from "../Endpoint";
 
-export interface RoomDetailsDTO {
+export interface RoomIdDTO {
     roomId: string;
-    gameMode: string;
-    players: string[];
 }
 
-export const CreateRoomEndpoint: Endpoint<void, RoomDetailsDTO> = {
+export const CreateRoomEndpoint: Endpoint<void, RoomIdDTO> = {
     route: "/rooms/create",
     method: "POST",
 };

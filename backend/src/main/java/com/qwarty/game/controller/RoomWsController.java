@@ -1,16 +1,13 @@
 package com.qwarty.game.controller;
 
-import com.qwarty.game.dto.PlayerListEventDTO;
-import com.qwarty.game.dto.RoomDetailsDTO;
-import com.qwarty.game.lov.MessageType;
-import com.qwarty.game.service.RoomManager;
+import com.qwarty.game.service.RoomService;
+
 import lombok.RequiredArgsConstructor;
 
 import java.security.Principal;
 
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 
@@ -18,8 +15,7 @@ import org.springframework.stereotype.Controller;
 @RequiredArgsConstructor
 public class RoomWsController {
 
-    private final RoomManager roomManager;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final RoomService roomService;
 
     @MessageMapping("/room.join/{roomId}")
     public void joinRoom(@DestinationVariable String roomId, StompHeaderAccessor accessor, Principal principal) {
@@ -27,35 +23,13 @@ public class RoomWsController {
                 .put("ROOM_ID", roomId); // upon joining a room, save the roomId into the WS session's attributes
         String username = principal.getName();
 
-        // let RoomManager handle the joining
-        RoomDetailsDTO roomDetailsDto = roomManager.joinRoom(roomId, username);
-
-        PlayerListEventDTO event = PlayerListEventDTO.builder()
-                .roomId(roomDetailsDto.roomId())
-                .players(roomDetailsDto.players())
-                .gameMode(roomDetailsDto.gameMode())
-                .messageType(MessageType.JOIN)
-                .build();
-        messagingTemplate.convertAndSend("/topic/room/" + roomId, event);
+        roomService.joinRoom(roomId, username);
     }
 
     @MessageMapping("/room.leave/{roomId}")
     public void leaveRoom(@DestinationVariable String roomId, StompHeaderAccessor accessor, Principal principal) {
         String username = principal.getName();
 
-        // let RoomManager handle leaving the room
-        RoomDetailsDTO roomDetailsDto = roomManager.leaveRoom(roomId, username);
-
-        if (roomDetailsDto == null) { // if the room has been closed after the last person left
-            return;
-        }
-
-        PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
-                .roomId(roomDetailsDto.roomId())
-                .players(roomDetailsDto.players())
-                .gameMode(roomDetailsDto.gameMode())
-                .messageType(MessageType.LEAVE)
-                .build();
-        messagingTemplate.convertAndSend("/topic/room/" + roomId, eventDTO);
+        roomService.leaveRoom(roomId, username);
     }
 }

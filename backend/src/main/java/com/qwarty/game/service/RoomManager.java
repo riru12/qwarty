@@ -3,8 +3,9 @@ package com.qwarty.game.service;
 import com.qwarty.exception.code.AppExceptionCode;
 import com.qwarty.exception.type.AppException;
 import com.qwarty.game.dto.RoomDetailsDTO;
-import com.qwarty.game.lov.GameMode;
+import com.qwarty.game.dto.RoomIdDTO;
 import com.qwarty.game.model.Room;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,12 +22,24 @@ public class RoomManager {
     /**
      * Creates a room and stores it in memory by hash map, returns its details in a DTO
      */
-    public RoomDetailsDTO createRoom(GameMode mode) {
+    public RoomIdDTO createRoom() {
         String roomId = generateUniqueRoomId();
-        Room room = new Room(roomId, mode);
+        Room room = new Room(roomId);
 
         rooms.put(roomId, room);
-        return retrieveRoomDetails(roomId);
+        return new RoomIdDTO(roomId);
+    }
+
+    /**
+     * Retrieve room details, which includes the given roomId and player(s) inside the room
+     */
+    public RoomDetailsDTO retrieveRoomDetails(String roomId) {
+        Room room = rooms.get(roomId);
+        if (room == null) {
+            throw new AppException(AppExceptionCode.ROOM_NOT_FOUND);
+        }
+        List<String> playerList = room.getPlayers();
+        return new RoomDetailsDTO(roomId, playerList);
     }
 
     /**
@@ -63,18 +76,6 @@ public class RoomManager {
             return null;
         }
         return retrieveRoomDetails(roomId);
-    }
-
-    public RoomDetailsDTO retrieveRoomDetails(String roomId) {
-        Room room = rooms.get(roomId);
-        if (room == null) {
-            throw new AppException(AppExceptionCode.ROOM_NOT_FOUND);
-        }
-
-        GameMode gameMode = room.getGameMode();
-        List<String> playerList = room.getPlayers();
-
-        return new RoomDetailsDTO(roomId, playerList, gameMode);
     }
 
     private String generateUniqueRoomId() {

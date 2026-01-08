@@ -1,0 +1,54 @@
+.player-bar-container {
+    background-color: #fb7185;
+}
+
+.player-1-bar {
+    display: flex;
+    position: relative;
+    width: 100%;
+    padding: 3em 2em;
+    background-color: #fb7185;
+    align-items: center;
+    transition: transform 0.3s ease-in-out;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+.player-2-bar {
+    display: flex;
+    position: relative;
+    width: 100%;
+    padding: 3em 2em;
+    background-color: #383839;
+    align-items: center;
+    transition: transform 0.3s ease-in-out;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+.player-bar-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: 10em;
+    margin-right: 10em;
+    z-index: 2;
+}
+
+.player-1-bar-name {
+    font-size: 4.5em;
+    color: #ffffff;
+    margin: 0;
+    line-height: 0.8;
+}
+
+.player-2-bar-name {
+    font-size: 4.5em;
+    color: #18181B;
+    margin: 0;
+    line-height: 0.8;
+}
+
+.italic {
+    font-style: italic;
+}
