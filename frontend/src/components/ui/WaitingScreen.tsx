@@ -14,10 +14,10 @@ export const WaitingScreen = ({ players } : WaitingScreenProps) => {
 
     return (
         <div className="waiting-screen-container">
-            <div className="player-1-bar-container">
+            <div className="waiting-player-1">
                 <PlayerBar username={player1} player={1}/>
             </div>
-            <div className="player-2-bar-container">
+            <div className="waiting-player-2">
                 <PlayerBar username={player2} player={2}/>
             </div>
         </div>

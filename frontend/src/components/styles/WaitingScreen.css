@@ -7,10 +7,12 @@
     padding-bottom: 10vh;
 }
 
-.player-1-bar-container {
-    margin-right:auto;
+.waiting-player-1 {
+    display: flex;
+    justify-content: flex-start;
 }
 
-.player-2-bar-container {
-    margin-left:auto;
+.waiting-player-2 {
+    display: flex;
+    justify-content: flex-end;
 }
