@@ -5,6 +5,9 @@ import com.qwarty.exception.type.AppException;
 import com.qwarty.game.dto.RoomDetailsDTO;
 import com.qwarty.game.lov.GameMode;
 import com.qwarty.game.model.Room;
+import com.qwarty.game.session.GameSession;
+import com.qwarty.game.session.GameSessionFactory;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -17,6 +20,7 @@ import org.springframework.stereotype.Service;
 public class RoomManager {
 
     private final Map<String, Room> rooms = new ConcurrentHashMap<>();
+    private final GameSessionFactory gameSessionFactory;
 
     /**
      * Creates a room and stores it in memory by hash map, returns its details in a DTO
@@ -25,6 +29,9 @@ public class RoomManager {
         String roomId = generateUniqueRoomId();
         Room room = new Room(roomId, mode);
 
+        GameSession gameSession = gameSessionFactory.createSession(mode, room);
+        room.setGameSession(gameSession);
+        
         rooms.put(roomId, room);
         return retrieveRoomDetails(roomId);
     }
@@ -43,7 +50,7 @@ public class RoomManager {
         if (!room.addConnection(username)) {
             throw new AppException(AppExceptionCode.ROOM_FULL);
         };
-
+        System.out.println("ROOM JOIN:" + username);
         return retrieveRoomDetails(roomId);
     }
 
@@ -85,5 +92,28 @@ public class RoomManager {
         } while (rooms.containsKey(roomId));
 
         return roomId;
+    }
+
+    /**
+     * Returns a given room's GameSession
+     * 
+     * Primarily used by {@link #GameOrchestrator}
+     */
+    public GameSession getRoomGameSesssion(String roomId) {
+        Room room = rooms.get(roomId);
+        return room.getGameSession();
+    }
+
+    /**
+     * Checks if a given username has successfully joined the room
+     */
+    public boolean isPlayerInRoom(String username, String roomId) {
+        Room room = rooms.get(roomId);
+
+        if (room == null) {
+            return false;
+        }
+        
+        return room.hasPlayer(username);
     }
 }

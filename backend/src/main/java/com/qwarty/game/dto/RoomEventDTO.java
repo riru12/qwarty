@@ -1,7 +1,9 @@
 package com.qwarty.game.dto;
 
+import java.time.Instant;
+
 import com.qwarty.game.lov.GameMode;
-import com.qwarty.game.lov.MessageType;
+import com.qwarty.game.lov.RoomMessageType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,5 +19,6 @@ public abstract class RoomEventDTO {
     private String sender;
     private String roomId;
     private GameMode gameMode;
-    private MessageType messageType;
+    private RoomMessageType messageType;
+    private Instant timestamp;
 }

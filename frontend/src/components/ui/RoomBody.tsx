@@ -7,7 +7,7 @@ import { Racer } from "@components/modes";
 export const RoomBody = ({ roomData, roomId }: { roomData: RoomDetailsDTO; roomId: string }) => {
     const { client } = useSocket();
     const [players, setPlayers] = useState<string[]>(roomData.players || []);
-
+    const [hasJoined, setHasJoined] = useState(false);
     /**
      * Subscribe to user's room error queue and handle errors received
      */
@@ -41,6 +41,8 @@ export const RoomBody = ({ roomData, roomId }: { roomData: RoomDetailsDTO; roomI
             destination: `/app/room.join/${roomId}`,
         });
 
+        setHasJoined(true);
+
         // 3. cleanup on unmount
         return () => {
             if (client.connected) { // announce to other players that you are leaving
@@ -56,7 +58,7 @@ export const RoomBody = ({ roomData, roomId }: { roomData: RoomDetailsDTO; roomI
 
         switch (roomData?.gameMode) {
             case "RACER":
-                return <Racer />;
+                return <Racer roomId={roomId} hasJoinedRoom={hasJoined} />;
             default:
                 return <div>Unknown game mode</div>;
         }

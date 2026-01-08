@@ -1,6 +1,9 @@
 package com.qwarty.game.model;
 
 import com.qwarty.game.lov.GameMode;
+// import com.qwarty.game.session.GameSession;
+import com.qwarty.game.session.GameSession;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,12 +21,13 @@ public class Room {
     private final Map<String, Integer> playerConnections = new ConcurrentHashMap<>();
     private final Semaphore slots;
 
+    private GameSession gameSession;
+
     public Room(String id, GameMode gameMode) {
         this.id = id;
         this.gameMode = gameMode;
         this.slots = new Semaphore(gameMode.getMaxPlayers());
     }
-
 
     /**
      * Atomically tries to add a connection to the room.

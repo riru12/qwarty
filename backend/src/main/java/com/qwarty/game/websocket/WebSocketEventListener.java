@@ -2,7 +2,7 @@ package com.qwarty.game.websocket;
 
 import com.qwarty.game.dto.PlayerListEventDTO;
 import com.qwarty.game.dto.RoomDetailsDTO;
-import com.qwarty.game.lov.MessageType;
+import com.qwarty.game.lov.RoomMessageType;
 import com.qwarty.game.service.RoomManager;
 
 import java.security.Principal;
@@ -42,7 +42,7 @@ public class WebSocketEventListener {
         PlayerListEventDTO eventDTO = PlayerListEventDTO.builder()
                 .roomId(roomDetailsDto.roomId())
                 .players(roomDetailsDto.players())
-                .messageType(MessageType.LEAVE)
+                .messageType(RoomMessageType.LEAVE)
                 .build();
         messagingTemplate.convertAndSend("/topic/room/" + roomId, eventDTO);
     }

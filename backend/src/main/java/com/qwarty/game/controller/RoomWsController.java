@@ -2,11 +2,12 @@ package com.qwarty.game.controller;
 
 import com.qwarty.game.dto.PlayerListEventDTO;
 import com.qwarty.game.dto.RoomDetailsDTO;
-import com.qwarty.game.lov.MessageType;
+import com.qwarty.game.lov.RoomMessageType;
 import com.qwarty.game.service.RoomManager;
 import lombok.RequiredArgsConstructor;
 
 import java.security.Principal;
+import java.time.Instant;
 
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -34,13 +35,14 @@ public class RoomWsController {
                 .roomId(roomDetailsDto.roomId())
                 .players(roomDetailsDto.players())
                 .gameMode(roomDetailsDto.gameMode())
-                .messageType(MessageType.JOIN)
+                .messageType(RoomMessageType.JOIN)
+                .timestamp(Instant.now())
                 .build();
         messagingTemplate.convertAndSend("/topic/room/" + roomId, event);
     }
 
     @MessageMapping("/room.leave/{roomId}")
-    public void leaveRoom(@DestinationVariable String roomId, StompHeaderAccessor accessor, Principal principal) {
+    public void leaveRoom(@DestinationVariable String roomId, Principal principal) {
         String username = principal.getName();
 
         // let RoomManager handle leaving the room
@@ -54,7 +56,8 @@ public class RoomWsController {
                 .roomId(roomDetailsDto.roomId())
                 .players(roomDetailsDto.players())
                 .gameMode(roomDetailsDto.gameMode())
-                .messageType(MessageType.LEAVE)
+                .messageType(RoomMessageType.LEAVE)
+                .timestamp(Instant.now())
                 .build();
         messagingTemplate.convertAndSend("/topic/room/" + roomId, eventDTO);
     }
