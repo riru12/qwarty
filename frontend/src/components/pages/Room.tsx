@@ -27,10 +27,8 @@ export const Room = () => {
         staleTime: Infinity,
     });
 
-    if (!isSuccess) return <div>Loading room...</div>;
-
     return (
-        <SocketProvider url={`${WS_BASE_URL}/api/ws`}>
+        isSuccess && <SocketProvider url={`${WS_BASE_URL}/api/ws`}>
             <RoomBody roomData={roomData} roomId={roomId} />
         </SocketProvider>
     );

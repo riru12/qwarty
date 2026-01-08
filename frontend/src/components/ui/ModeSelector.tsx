@@ -17,9 +17,9 @@ export const ModeSelector = () => {
     const navigate = useNavigate();
     const { callWithGuestFallback } = useCallWithGuestFallback();
     const modes: Mode[] = [
-        { id: "racer", name: t("racer"), description: t("racer.description") },
+        // { id: "racer", name: t("racer"), description: t("racer.description") },
         { id: "classic", name: t("classic"), description: t("classic.description") },
-        { id: "zen", name: t("zen"), description: t("zen.description") },
+        // { id: "zen", name: t("zen"), description: t("zen.description") },
     ];
 
     // TODO: Add Toast
