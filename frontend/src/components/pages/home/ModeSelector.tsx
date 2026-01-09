@@ -13,9 +13,7 @@ export const ModeSelector = () => {
     const { t } = useTranslation(["global"]);
 
     const modes: Mode[] = [
-        { id: "racer", name: t("racer"), description: t("racer.description") },
-        { id: "classic", name: t("classic"), description: t("classic.description") },
-        { id: "zen", name: t("zen"), description: t("zen.description") },
+        { id: "stacker", name: t("stacker"), description: t("stacker.description") }
     ];
 
     const hoverSound = new Audio(hoverSoundFile);
