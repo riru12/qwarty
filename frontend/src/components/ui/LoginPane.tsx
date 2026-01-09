@@ -4,10 +4,10 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { apiClient } from "@utils/ApiClient";
 import { useAuth } from "@hooks/useAuth";
-import { LoginEndpoint } from "@interfaces/api/endpoints";
+import { LoginEndpoint } from "@interfaces/endpoints";
 import { Input, PasswordInput, Button } from "@components/ui";
 import "@config/i18n";
-import "../styles/LoginPane.css";
+import "@components/styles/LoginPane.css";
 
 type LoginFormState = {
     username: string;

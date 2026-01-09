@@ -1,6 +1,6 @@
 import { LoginPane } from "@components/ui/LoginPane";
 import { SignupPane } from "@components/ui/SignupPane";
-import "../styles/Login.css";
+import "@components/styles/Login.css";
 
 export const Login = () => {
     return (

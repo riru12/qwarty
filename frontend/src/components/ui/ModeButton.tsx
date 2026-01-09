@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import "../styles/ModeButton.css";
+import "@components/styles/ModeButton.css";
 
 type ModeButtonProps = {
     name: string;

@@ -1,9 +1,5 @@
-import type { Endpoint } from "../endpoint";
-
-interface LoginRequestDTO {
-    username: string;
-    password: string;
-}
+import type { LoginRequestDTO } from "@interfaces/dto";
+import type { Endpoint } from "../Endpoint";
 
 export const LoginEndpoint: Endpoint<LoginRequestDTO, void> = {
     route: "/public/auth/login",

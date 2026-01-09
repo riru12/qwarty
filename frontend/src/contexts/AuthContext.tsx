@@ -1,7 +1,8 @@
 import { createContext } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { IdentityEndpoint, type UserType } from "@interfaces/api/endpoints/IdentityEndpoint";
 import { apiClient } from "@utils/ApiClient";
+import { IdentityEndpoint } from "@interfaces/endpoints";
+import type { UserType } from "@interfaces";
 
 /**
  * Public interface exposed by AuthContext.

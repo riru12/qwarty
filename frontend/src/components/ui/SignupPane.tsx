@@ -1,11 +1,11 @@
-import "@config/i18n";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import { apiClient } from "@utils/ApiClient";
 import { Input, PasswordInput, Button } from "@components/ui";
-import { SignupEndpoint } from "@interfaces/api/endpoints/SignupEndpoint";
-import "../styles/SignupPane.css";
+import { SignupEndpoint } from "@interfaces/endpoints/SignupEndpoint";
+import "@components/styles/SignupPane.css";
+import "@config/i18n";
 
 type SignupFormState = {
     username: string;
