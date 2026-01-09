@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import "@components/styles/ModeButton.css";
+import "./ModeButton.css";
 
 type ModeButtonProps = {
     name: string;
@@ -12,7 +12,7 @@ let lastSoundPlay = 0;
 
 export const ModeButton = ({ name, description, sound, onClick }: ModeButtonProps) => {
     const hoverSound = useRef(sound);
-    hoverSound.current.volume = 0.025;
+    hoverSound.current.volume = 0.075;
     const playSound = () => {
         const now = Date.now();
 

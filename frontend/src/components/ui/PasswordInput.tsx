@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { InputHTMLAttributes } from "react";
 import { Eye, EyeClosed, X } from "lucide-react";
-import "@components/styles/Input.css";
-import "@components/styles/PasswordInput.css";
+import "./Input.css";
+import "./PasswordInput.css";
 
 type PasswordInputProps = InputHTMLAttributes<HTMLInputElement> & {
     error?: string;

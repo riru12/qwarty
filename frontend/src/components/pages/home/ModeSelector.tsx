@@ -1,7 +1,7 @@
 import { ModeButton } from "./ModeButton";
 import { useTranslation } from "react-i18next";
 import hoverSoundFile from "@assets/audio/modebuttonhover.wav";
-import "@components/styles/ModeSelector.css";
+import "./ModeSelector.css";
 
 type Mode = {
     id: string;
