@@ -1,10 +1,10 @@
-import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import "@config/i18n";
-import "../styles/NavBar.css";
 import { useAuth } from "@hooks/useAuth";
+import { Link } from "@tanstack/react-router";
 import { apiClient } from "@utils/ApiClient";
-import { LogoutEndpoint } from "@interfaces/api/endpoints";
+import { LogoutEndpoint } from "@interfaces/endpoints";
+import "@config/i18n";
+import "@components/styles/NavBar.css";
 
 export const NavBar = () => {
     const { t } = useTranslation(["global"]);

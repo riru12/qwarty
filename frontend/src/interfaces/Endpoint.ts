@@ -1,4 +1,4 @@
-export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+import type { HttpMethod } from "./HttpMethod";
 
 export interface Endpoint<Req, Res> {
     route: string;
@@ -6,7 +6,5 @@ export interface Endpoint<Req, Res> {
     _req?: Req;
     _res?: Res;
 }
-
 export type EndpointReq<T> = T extends Endpoint<infer Q, any> ? Q : never;
-
 export type EndpointRes<T> = T extends Endpoint<any, infer R> ? R : never;

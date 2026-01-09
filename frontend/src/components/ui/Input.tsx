@@ -1,6 +1,6 @@
 import type { InputHTMLAttributes } from "react";
 import { X } from "lucide-react";
-import "../styles/Input.css";
+import "@components/styles/Input.css";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
     error?: string;

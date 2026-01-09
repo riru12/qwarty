@@ -31,6 +31,7 @@
             "@contexts/*": ["contexts/*"],
             "@components/*": ["components/*"],
             "@hooks/*": ["hooks/*"],
+            "@interfaces": ["src/interfaces"],
             "@interfaces/*": ["interfaces/*"],
             "@routes/*": ["routes/*"],
             "@utils/*": ["utils/*"]
