@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import "@components/styles/404NotFound.css";
+import "./404NotFound.css";
 
 export const NotFound = () => {
     return (

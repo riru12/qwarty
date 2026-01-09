@@ -1,3 +1,3 @@
-export * from "./404NotFound";
-export * from "./Home";
-export * from "./Login";
+export * from "./not-found/404NotFound";
+export * from "./home/Home";
+export * from "./login/Login";

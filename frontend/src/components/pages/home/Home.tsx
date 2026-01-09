@@ -1,5 +1,5 @@
 import { ModeSelector } from "@components/ui";
-import "@components/styles/Home.css";
+import "./Home.css";
 
 export const Home = () => {
     return (

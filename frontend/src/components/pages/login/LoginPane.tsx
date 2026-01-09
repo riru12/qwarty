@@ -7,7 +7,7 @@ import { useAuth } from "@hooks/useAuth";
 import { LoginEndpoint } from "@interfaces/endpoints";
 import { Input, PasswordInput, Button } from "@components/ui";
 import "@config/i18n";
-import "@components/styles/LoginPane.css";
+import "./LoginPane.css";
 
 type LoginFormState = {
     username: string;
