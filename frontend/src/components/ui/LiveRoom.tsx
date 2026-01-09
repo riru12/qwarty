@@ -1,11 +1,22 @@
 import { useEffect, useState } from "react";
 import { useSocket } from "@hooks/useSocket";
 import type { Client, StompSubscription } from "@stomp/stompjs";
-import type { RoomDetailsDTO } from "@interfaces/api/endpoints";
-import { WaitingScreen } from "./WaitingScreen";
+import type { GameRoomDetailsDTO } from "@interfaces/api/endpoints";
+import type { GameStatus, GameState } from "@interfaces/game";
+import { Stacker, WaitingScreen } from ".";
 
-export const LiveRoom = ({ roomData, roomId }: { roomData: RoomDetailsDTO; roomId: string }) => {
+export const LiveRoom = ({ roomData, roomId }: { roomData: GameRoomDetailsDTO; roomId: string }) => {
     const { client } = useSocket();
+    const [gameStatus, setGameStatus] = useState<GameStatus>("WAITING");
+    const [gameState, setGameState] = useState<GameState>({
+        sequence: 0,
+        p1Stack: [],
+        p2Stack: [],
+        player1: null,
+        player2: null,
+        lastUpdate: new Date().toISOString(),
+        lastUpdatedBy: null,
+    })
     const [players, setPlayers] = useState<string[]>(roomData.players || []);
 
     /**
@@ -25,6 +36,12 @@ export const LiveRoom = ({ roomData, roomId }: { roomData: RoomDetailsDTO; roomI
             const event = JSON.parse(message.body);
             if (event.messageType === "JOIN" || event.messageType === "LEAVE") {
                 setPlayers(event.players);
+            }
+            if (event.messageType === "GAME_START") {
+                setGameStatus("IN_PROGRESS")
+            }
+            if (event.messageType === "GAME_STATE") {
+                setGameState(event.stackerGameState);
             }
         });
     };
@@ -51,7 +68,18 @@ export const LiveRoom = ({ roomData, roomId }: { roomData: RoomDetailsDTO; roomI
         };
     }, [client, client?.connected]);
 
+    const render = () => {
+        switch(gameStatus) {
+            case "WAITING":
+                return (<WaitingScreen players={players} />)
+            case "IN_PROGRESS":
+                return (<Stacker state={gameState}/>)
+            default:
+                return (<div>error</div>)
+        }
+    }
+
     return (
-        <WaitingScreen players={players} />
+        render()
     );
 };

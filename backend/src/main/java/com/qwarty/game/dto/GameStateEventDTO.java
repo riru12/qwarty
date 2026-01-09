@@ -1,6 +1,7 @@
 package com.qwarty.game.dto;
 
-import java.util.List;
+import com.qwarty.game.session.StackerGameState;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlayerListEventDTO extends GameRoomEventDTO {
-    private List<String> players;
+public class GameStateEventDTO extends GameRoomEventDTO {
+    private StackerGameState stackerGameState;
 }

@@ -12,7 +12,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class RoomEventDTO {
+public class GameRoomEventDTO {
     private String sender;
     private String roomId;
     private MessageType messageType;

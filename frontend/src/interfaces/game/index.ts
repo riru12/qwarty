@@ -1,1 +1,2 @@
-export * from "./GameSocket";
+export * from "./GameStatus";
+export * from "./GameState";

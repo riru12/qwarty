@@ -2,5 +2,7 @@ package com.qwarty.game.lov;
 
 public enum MessageType {
     JOIN,
-    LEAVE
+    LEAVE,
+    GAME_START,
+    GAME_STATE
 }

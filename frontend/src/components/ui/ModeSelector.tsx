@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallWithGuestFallback } from "@hooks/useCallWithGuestFallback";
-import { CreateRoomEndpoint, type RoomIdDTO,  } from "@interfaces/api/endpoints";
+import { CreateRoomEndpoint, type GameRoomIdDTO,  } from "@interfaces/api/endpoints";
 import "../styles/ModeSelector.css";
 
 type Mode = {
@@ -26,7 +26,7 @@ export const ModeSelector = () => {
             const response = await callWithGuestFallback(CreateRoomEndpoint, { queryParams: { mode } });
             return response;
         },
-        onSuccess: (response: RoomIdDTO) => {
+        onSuccess: (response: GameRoomIdDTO) => {
             navigate({ to: "/room/" + response.roomId });
         },
         onError: (error: any) => {

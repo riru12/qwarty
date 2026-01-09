@@ -6,19 +6,24 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
+import com.qwarty.game.session.StackerGameRunner;
+import com.qwarty.game.session.StackerGameSession;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class Room {
+public class GameRoom {
     private final int SLOTS = 2;
 
     private final String id;
     private final Map<String, Integer> playerConnections = new ConcurrentHashMap<>();
     private final Semaphore slots;
+    private StackerGameSession stackerGameSession;
+    private StackerGameRunner stackerGameRunner;
 
-    public Room(String id) {
+    public GameRoom(String id) {
         this.id = id;
         this.slots = new Semaphore(SLOTS);
     }

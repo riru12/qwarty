@@ -1,6 +1,6 @@
 package com.qwarty.game.websocket;
 
-import com.qwarty.game.service.RoomService;
+import com.qwarty.game.service.GameRoomService;
 
 import java.security.Principal;
 import java.util.Map;
@@ -13,7 +13,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 @RequiredArgsConstructor
 public class WebSocketEventListener {
     
-    private final RoomService roomService;
+    private final GameRoomService roomService;
 
     @EventListener
     public void handleSessionDisconnect(SessionDisconnectEvent event) {

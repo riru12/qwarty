@@ -7,3 +7,4 @@ export * from "./ModeSelector";
 export * from "./LiveRoom";
 export * from "./PlayerBar";
 export * from "./WaitingScreen";
+export * from "./Stacker";
