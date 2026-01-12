@@ -4,3 +4,4 @@ export * from "./LogoutEndpoint";
 export * from "./IdentityEndpoint";
 export * from "./GuestEndpoint";
 export * from "./RoomCreateEndpoint";
+export * from "./RoomStateEndpoint";

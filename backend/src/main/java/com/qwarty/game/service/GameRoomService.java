@@ -38,7 +38,7 @@ public class GameRoomService {
      * 
      * Called primarily from {@link #GameRoomRestController#info(String)}
      */
-    public GameStateDTO getRoomInfo(String roomId) {
+    public GameStateDTO getGameRoomState(String roomId) {
         GameRoom room = rooms.get(roomId);
         GameState state = room.getSession().getState();
         return new GameStateDTO(state);

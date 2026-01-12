@@ -33,8 +33,8 @@ public class GameRoomRestController {
      * Gets the current GameState of a given room and returns it in a DTO
      */
     @GetMapping("/{roomId}")
-    public ResponseEntity<GameStateDTO> info(@PathVariable String roomId) {
-        GameStateDTO roomDetailsDto = gameRoomService.getRoomInfo(roomId);
+    public ResponseEntity<GameStateDTO> state(@PathVariable String roomId) {
+        GameStateDTO roomDetailsDto = gameRoomService.getGameRoomState(roomId);
         return ResponseEntity.ok(roomDetailsDto);
     }
 
