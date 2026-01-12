@@ -1,24 +1,19 @@
 package com.qwarty.auth.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.qwarty.auth.dto.LoginAuthRequestDTO;
-import com.qwarty.auth.dto.LoginAuthResponseDTO;
-import com.qwarty.auth.dto.RefreshAuthResponseDTO;
-import com.qwarty.auth.dto.SignupAuthRequestDTO;
+import com.qwarty.auth.dto.IdentityResponseDTO;
+import com.qwarty.auth.dto.LoginRequestDTO;
+import com.qwarty.auth.dto.SignupRequestDTO;
+import com.qwarty.auth.lov.UserType;
 import com.qwarty.auth.service.AuthService;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,81 +39,63 @@ class AuthControllerTest {
     private final String username = "testuser";
     private final String email = "test@example.com";
     private final String password = "password123";
-    private final String accessToken = "access-token";
-    private final String refreshToken = "refresh-token";
-    private final String newAccessToken = "new-access-token";
-    private final String newRefreshToken = "new-refresh-token";
-    private final String refreshCookieName = "refreshToken";
-    private final String refreshCookiePath = "/auth/refresh";
 
     @Test
     void signup_ShouldReturnOk_WhenValidRequest() throws Exception {
-        SignupAuthRequestDTO requestDto = new SignupAuthRequestDTO(username, email, password);
-        doNothing().when(authService).signup(any(SignupAuthRequestDTO.class));
+        SignupRequestDTO requestDto = new SignupRequestDTO(username, email, password);
+        doNothing().when(authService).signup(any(SignupRequestDTO.class));
 
-        mockMvc.perform(post("/auth/signup")
+        mockMvc.perform(post("/public/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk());
 
-        verify(authService, times(1)).signup(any(SignupAuthRequestDTO.class));
+        verify(authService, times(1)).signup(any(SignupRequestDTO.class));
     }
 
     @Test
-    void login_ShouldReturnOkWithAccessTokenAndCookie_WhenValidRequest() throws Exception {
-        LoginAuthRequestDTO requestDto = new LoginAuthRequestDTO(username, password);
-        LoginAuthResponseDTO responseDto = new LoginAuthResponseDTO(accessToken, username);
+    void login_ShouldReturnOk_WhenValidRequest() throws Exception {
+        LoginRequestDTO requestDto = new LoginRequestDTO(username, password);
+        doNothing().when(authService).login(any(LoginRequestDTO.class), any(), any());
 
-        when(authService.login(any(LoginAuthRequestDTO.class), any(HttpServletResponse.class)))
-                .thenAnswer(invocation -> {
-                    HttpServletResponse response = invocation.getArgument(1);
-                    response.addHeader(
-                            "Set-Cookie",
-                            refreshCookieName + "=" + refreshToken + "; HttpOnly; Path=" + refreshCookiePath);
-                    return responseDto;
-                });
-
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/public/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value(accessToken))
-                .andExpect(cookie().exists(refreshCookieName));
+                .andExpect(status().isOk());
 
-        verify(authService, times(1)).login(any(LoginAuthRequestDTO.class), any(HttpServletResponse.class));
+        verify(authService, times(1)).login(any(LoginRequestDTO.class), any(), any());
     }
 
     @Test
-    void refresh_ShouldReturnOkWithNewAccessTokenAndCookie_WhenValidToken() throws Exception {
-        RefreshAuthResponseDTO responseDto = new RefreshAuthResponseDTO(newAccessToken);
+    void guest_ShouldReturnOk() throws Exception {
+        doNothing().when(authService).guest(any(), any());
 
-        when(authService.refresh(eq(refreshToken), any(HttpServletResponse.class)))
-                .thenAnswer(invocation -> {
-                    HttpServletResponse response = invocation.getArgument(1);
-                    response.addHeader(
-                            "Set-Cookie",
-                            refreshCookieName + "=" + newRefreshToken + "; HttpOnly; Path=" + refreshCookiePath);
-                    return responseDto;
-                });
+        mockMvc.perform(post("/public/auth/guest")).andExpect(status().isOk());
 
-        mockMvc.perform(get("/auth/refresh").cookie(new Cookie(refreshCookieName, refreshToken)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value(newAccessToken))
-                .andExpect(cookie().exists(refreshCookieName));
+        verify(authService, times(1)).guest(any(), any());
+    }
 
-        verify(authService, times(1)).refresh(eq(refreshToken), any(HttpServletResponse.class));
+    @Test
+    void me_ShouldReturnIdentityResponseDto() throws Exception {
+        IdentityResponseDTO dummyResponse = new IdentityResponseDTO("username", UserType.USER);
+
+        when(authService.me(any())).thenReturn(dummyResponse);
+
+        mockMvc.perform(get("/public/auth/me")).andExpect(status().isOk());
+
+        verify(authService, times(1)).me(any());
     }
 
     @Test
     void signup_ShouldReturnBadRequest_WhenFieldIsMissing() throws Exception {
-        SignupAuthRequestDTO[] testCases = {
-            new SignupAuthRequestDTO(null, email, password),
-            new SignupAuthRequestDTO(username, null, password),
-            new SignupAuthRequestDTO(username, email, null)
+        SignupRequestDTO[] testCases = {
+            new SignupRequestDTO(null, email, password),
+            new SignupRequestDTO(username, null, password),
+            new SignupRequestDTO(username, email, null)
         };
 
-        for (SignupAuthRequestDTO requestDto : testCases) {
-            mockMvc.perform(post("/auth/signup")
+        for (SignupRequestDTO requestDto : testCases) {
+            mockMvc.perform(post("/public/auth/signup")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(requestDto)))
                     .andExpect(status().isBadRequest());
@@ -129,25 +106,15 @@ class AuthControllerTest {
 
     @Test
     void login_ShouldReturnBadRequest_WhenFieldIsMissing() throws Exception {
-        LoginAuthRequestDTO[] testCases = {
-            new LoginAuthRequestDTO(null, password), new LoginAuthRequestDTO(username, null)
-        };
+        LoginRequestDTO[] testCases = {new LoginRequestDTO(null, password), new LoginRequestDTO(username, null)};
 
-        for (LoginAuthRequestDTO requestDto : testCases) {
-            mockMvc.perform(post("/auth/login")
+        for (LoginRequestDTO requestDto : testCases) {
+            mockMvc.perform(post("/public/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(requestDto)))
                     .andExpect(status().isBadRequest());
 
-            verify(authService, times(0)).login(any(LoginAuthRequestDTO.class), any(HttpServletResponse.class));
+            verify(authService, times(0)).login(any(), any(), any());
         }
-    }
-
-    @Test
-    void refresh_ShouldReturnBadRequest_WhenCookieMissing() throws Exception {
-        mockMvc.perform(get("/auth/refresh")) // no cookie
-                .andExpect(status().isBadRequest());
-
-        verify(authService, times(0)).refresh(any(), any(HttpServletResponse.class));
     }
 }

@@ -1,0 +1,18 @@
+.not-found-404 {
+    font-size: 12em;
+    margin: 0;
+}
+
+.not-found-link {
+    font-size: 1.5em;
+    color: #7e7e80;
+    margin: 0;
+}
+
+.not-found-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+}

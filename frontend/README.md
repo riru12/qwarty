@@ -9,9 +9,7 @@ Currently, two official plugins are available:
 
 ## React Compiler
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
 ## Expanding the ESLint configuration
 
@@ -30,18 +28,18 @@ export default defineConfig([
             // Alternatively, use this for stricter rules
             tseslint.configs.strictTypeChecked,
             // Optionally, add this for stylistic rules
-            tseslint.configs.stylisticTypeChecked
+            tseslint.configs.stylisticTypeChecked,
 
             // Other configs...
         ],
         languageOptions: {
             parserOptions: {
                 project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-                tsconfigRootDir: import.meta.dirname
-            }
+                tsconfigRootDir: import.meta.dirname,
+            },
             // other options...
-        }
-    }
+        },
+    },
 ]);
 ```
 
@@ -61,15 +59,15 @@ export default defineConfig([
             // Enable lint rules for React
             reactX.configs["recommended-typescript"],
             // Enable lint rules for React DOM
-            reactDom.configs.recommended
+            reactDom.configs.recommended,
         ],
         languageOptions: {
             parserOptions: {
                 project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-                tsconfigRootDir: import.meta.dirname
-            }
+                tsconfigRootDir: import.meta.dirname,
+            },
             // other options...
-        }
-    }
+        },
+    },
 ]);
 ```

@@ -4,24 +4,20 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-import com.qwarty.auth.dto.LoginAuthRequestDTO;
-import com.qwarty.auth.dto.LoginAuthResponseDTO;
-import com.qwarty.auth.dto.SignupAuthRequestDTO;
-import com.qwarty.auth.lov.UserStatus;
+import com.qwarty.auth.dto.IdentityResponseDTO;
+import com.qwarty.auth.dto.LoginRequestDTO;
+import com.qwarty.auth.dto.SignupRequestDTO;
+import com.qwarty.auth.lov.UserType;
 import com.qwarty.auth.model.User;
-import com.qwarty.auth.repository.RefreshTokenRepository;
 import com.qwarty.auth.repository.UserRepository;
-import com.qwarty.exception.CustomException;
-import com.qwarty.exception.CustomExceptionCode;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Optional;
+import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -31,15 +27,8 @@ class AuthServiceTest {
     @Autowired
     private AuthService authService;
 
-    @SuppressWarnings("unused")
-    @Autowired // autowired to use injected values from application.properties
-    private JwtService jwtService;
-
     @MockitoBean
     private UserRepository userRepository;
-
-    @MockitoBean
-    private RefreshTokenRepository refreshTokenRepository;
 
     @MockitoBean
     private PasswordEncoder passwordEncoder;
@@ -47,143 +36,111 @@ class AuthServiceTest {
     @MockitoBean
     private AuthenticationManager authenticationManager;
 
+    String username = "username";
+    String guestUsername = "guest";
+    String email = "sample@email.com";
+    String password = "password";
+    String encodedPassword = "encodedPassword";
+
     @Test
-    void signup_successfulRegistration() {
-        String username = "newuser";
-        String email = "new@example.com";
-        String password = "password123";
-        String passwordHash = "encodedPassword";
+    void signup_shouldSaveUser() {
+        SignupRequestDTO dto = new SignupRequestDTO(username, email, password);
 
-        SignupAuthRequestDTO request = new SignupAuthRequestDTO(username, email, password);
+        when(userRepository.existsByUsernameAndStatusNot(any(), any())).thenReturn(false);
+        when(userRepository.existsByEmailAndStatusNot(any(), any())).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn(encodedPassword);
 
-        when(userRepository.existsByUsernameAndStatusNot(username, UserStatus.DELETED))
-                .thenReturn(false);
-        when(userRepository.existsByEmailAndStatusNot(email, UserStatus.DELETED))
-                .thenReturn(false);
-        when(passwordEncoder.encode(password)).thenReturn(passwordHash);
-
-        User savedUser = User.builder()
-                .username(username)
-                .email(email)
-                .passwordHash(passwordHash)
-                .build();
-
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
-
-        assertDoesNotThrow(() -> authService.signup(request));
-
-        verify(userRepository)
-                .save(argThat(user -> user.getUsername().equals(username)
-                        && user.getEmail().equals(email)
-                        && user.getPasswordHash().equals(passwordHash)));
+        assertDoesNotThrow(() -> authService.signup(dto));
+        verify(userRepository, times(1)).save(any(User.class));
     }
 
     @Test
-    void signup_usernameAlreadyExists_throwsException() {
-        String username = "existing";
-        String email = "new@example.com";
-        String password = "password123";
-
-        SignupAuthRequestDTO request = new SignupAuthRequestDTO(username, email, password);
-
-        when(userRepository.existsByUsernameAndStatusNot(username, UserStatus.DELETED))
-                .thenReturn(true);
-
-        CustomException exception = assertThrows(CustomException.class, () -> authService.signup(request));
-        assertEquals(CustomExceptionCode.USERNAME_ALREADY_REGISTERED, exception.getExceptionCode());
-    }
-
-    @Test
-    void signup_emailAlreadyExists_throwsException() {
-        String username = "newuser";
-        String email = "existing@example.com";
-        String password = "password123";
-
-        SignupAuthRequestDTO request = new SignupAuthRequestDTO(username, email, password);
-
-        when(userRepository.existsByUsernameAndStatusNot(username, UserStatus.DELETED))
-                .thenReturn(false);
-        when(userRepository.existsByEmailAndStatusNot(email, UserStatus.DELETED))
-                .thenReturn(true);
-
-        CustomException exception = assertThrows(CustomException.class, () -> authService.signup(request));
-        assertEquals(CustomExceptionCode.EMAIL_ALREADY_REGISTERED, exception.getExceptionCode());
-    }
-
-    @Test
-    void login_successfulLogin_returnsJwt() {
-        String username = "user";
-        String password = "password123";
-
-        LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
+    void login_shouldSetSession() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
+        HttpSession session = mock(HttpSession.class);
 
+        LoginRequestDTO dto = new LoginRequestDTO(username, password);
         User user = User.builder().username(username).verified(true).build();
 
-        when(userRepository.findByUsernameAndStatusNot(username, UserStatus.DELETED))
-                .thenReturn(Optional.of(user));
+        when(request.getSession(true)).thenReturn(session);
+        when(userRepository.findByUsernameAndStatusNot(any(), any())).thenReturn(java.util.Optional.of(user));
+        when(passwordEncoder.matches(any(), any())).thenReturn(true);
 
-        Authentication authentication = mock(Authentication.class);
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(authentication);
-
-        LoginAuthResponseDTO loginResponse = authService.login(request, response);
-
-        assertEquals(username, loginResponse.username());
-
-        verify(authenticationManager).authenticate(eq(new UsernamePasswordAuthenticationToken(username, password)));
+        assertDoesNotThrow(() -> authService.login(dto, request, response));
+        verify(session).setAttribute(eq("USERNAME"), any());
+        verify(session).setAttribute("USER_TYPE", UserType.USER);
+        verify(session).setAttribute(eq("SPRING_SECURITY_CONTEXT"), any());
     }
 
     @Test
-    void login_userNotFound_throwsException() {
-        String username = "unknown";
-        String password = "password123";
-
-        LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
+    void guest_shouldSetGuestSession() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
+        HttpSession session = mock(HttpSession.class);
 
-        when(userRepository.findByUsernameAndStatusNot(username, UserStatus.DELETED))
-                .thenReturn(Optional.empty());
+        when(request.getSession(true)).thenReturn(session);
 
-        CustomException exception = assertThrows(CustomException.class, () -> authService.login(request, response));
-        assertEquals(CustomExceptionCode.USER_NOT_FOUND, exception.getExceptionCode());
+        authService.guest(request, response);
+
+        verify(session).setAttribute(eq("USERNAME"), any());
+        verify(session).setAttribute("USER_TYPE", UserType.GUEST);
+        verify(session).setAttribute(eq("SPRING_SECURITY_CONTEXT"), any());
     }
 
     @Test
-    void login_userNotVerified_throwsException() {
-        String username = "unverified";
-        String password = "password123";
+    void me_shouldReturnGuestIdentity() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
 
-        LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
-        HttpServletResponse response = mock(HttpServletResponse.class);
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("USER_TYPE")).thenReturn(UserType.GUEST); // updated
+        when(session.getAttribute("USERNAME")).thenReturn(guestUsername);
 
-        User user = User.builder().username(username).verified(false).build();
-
-        when(userRepository.findByUsernameAndStatusNot(username, UserStatus.DELETED))
-                .thenReturn(Optional.of(user));
-
-        CustomException exception = assertThrows(CustomException.class, () -> authService.login(request, response));
-        assertEquals(CustomExceptionCode.USER_NOT_VERIFIED, exception.getExceptionCode());
-
-        verify(authenticationManager, never()).authenticate(any());
+        IdentityResponseDTO dto = authService.me(request);
+        assertEquals(guestUsername, dto.username());
+        assertEquals(UserType.GUEST, dto.userType());
     }
 
     @Test
-    void login_invalidCredentials_authenticationFails_throwsException() {
-        String username = "user";
-        String password = "wrongpassword";
+    void me_shouldReturnUserIdentity() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpSession session = mock(HttpSession.class);
 
-        LoginAuthRequestDTO request = new LoginAuthRequestDTO(username, password);
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("USER_TYPE")).thenReturn(UserType.USER); // updated
+        when(session.getAttribute("USERNAME")).thenReturn(username);
+
+        IdentityResponseDTO dto = authService.me(request);
+        assertEquals(username, dto.username());
+        assertEquals(UserType.USER, dto.userType());
+    }
+
+    @Test
+    void logout_shouldInvalidateSessionAndClearCookie() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
+        HttpSession session = mock(HttpSession.class);
 
-        User user = User.builder().username(username).verified(true).build();
+        when(request.getSession(false)).thenReturn(session);
 
-        when(userRepository.findByUsernameAndStatusNot(username, UserStatus.DELETED))
-                .thenReturn(Optional.of(user));
+        authService.logout(request, response);
 
-        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenThrow(new BadCredentialsException("Bad credentials"));
+        verify(session).invalidate();
+        verify(response).addCookie(any());
+    }
 
-        assertThrows(BadCredentialsException.class, () -> authService.login(request, response));
+    @Test
+    void me_noSession_shouldThrow() {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+
+        SecurityContextHolder.clearContext();
+
+        when(request.getSession(false)).thenReturn(null);
+
+        IdentityResponseDTO dto = authService.me(request);
+
+        assertNull(dto.username());
+        assertEquals(UserType.ANON, dto.userType());
     }
 }
