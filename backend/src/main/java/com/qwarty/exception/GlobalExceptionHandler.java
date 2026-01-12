@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -16,11 +16,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     private final ExceptionHttpStatusMapper exceptionHttpStatusMapper;
     private final MessageSource messageSource;
 
@@ -101,7 +101,7 @@ public class GlobalExceptionHandler {
      * See: https://www.rfc-editor.org/rfc/rfc9457.html
      */
     private ProblemDetail buildProblemDetail(Exception exception, HttpStatus status, String title, String detail) {
-        logger.warn("Exception occurred: {} - {}", exception.getClass().getSimpleName(), exception.getMessage());
+        log.warn("Exception occurred: {} - {}", exception.getClass().getSimpleName(), exception.getMessage());
         ProblemDetail problemDetail = ProblemDetail.forStatus(status);
         problemDetail.setTitle(title);
         problemDetail.setDetail(detail);
@@ -114,7 +114,7 @@ public class GlobalExceptionHandler {
      */
     private ProblemDetail buildMultiErrorProblemDetail(
             Exception exception, HttpStatus status, String title, List<Map<String, String>> errors) {
-        logger.warn("Exception occurred: {} - {}", exception.getClass().getSimpleName(), exception.getMessage());
+        log.warn("Exception occurred: {} - {}", exception.getClass().getSimpleName(), exception.getMessage());
         ProblemDetail problemDetail = ProblemDetail.forStatus(status);
         problemDetail.setTitle(title);
         problemDetail.setProperty("errors", errors);

@@ -39,6 +39,8 @@ public class AuthService {
 
     private final int USER_SESSION_MAX_AGE = 7 * 24 * 60 * 60;
     private final int GUEST_SESSION_MAX_AGE = -1;
+    private static final String[] ADJECTIVES = {"Speedy", "Sluggish", "Chill"};
+    private static final String[] NOUNS = {"Turtle", "Rabbit", "Capybara"};
 
     /**
      * Registers a user after verifying that an existing account with the same username or email
@@ -98,10 +100,6 @@ public class AuthService {
     /**
      * Guest session creation
      */
-    private static final String[] ADJECTIVES = {"Speedy", "Sluggish", "Chill"};
-
-    private static final String[] NOUNS = {"Turtle", "Rabbit", "Capybara"};
-
     public void guest(HttpServletRequest request, HttpServletResponse response) {
         String guestName = generateGuestName();
 
