@@ -4,6 +4,8 @@ import java.security.Principal;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+import com.qwarty.game.dto.WebSocketMessageDTO;
+import com.qwarty.game.lov.MessageType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,16 +18,16 @@ public class GameBroadcaster {
     private final String GAME_DESTINATION = "/topic/room/%s";
     private final String USER_DESTINATION = "/queue/room/%s";
 
-    public void broadcastToUser(String roomId, Principal principal) {
+    public <T> void broadcastToUser(String roomId, Principal principal, MessageType type, T payload) {
         String destination = String.format(USER_DESTINATION, roomId);
-        
-        // messagingTemplate.convertAndSendToUser(principal.getName(), destination, null);
+        WebSocketMessageDTO<T> message = WebSocketMessageDTO.of(type, payload);
+        messagingTemplate.convertAndSendToUser(principal.getName(), destination, message);
     }
 
-    public void broadcastToRoom(String roomId) {
+    public <T> void broadcastToRoom(String roomId, MessageType type, T payload) {
         String destination = String.format(GAME_DESTINATION, roomId);
-
-        // messagingTemplate.convertAndSend(destination, null);
+        WebSocketMessageDTO<T> message = WebSocketMessageDTO.of(type, payload);
+        messagingTemplate.convertAndSend(destination, message);
     }
 
 }

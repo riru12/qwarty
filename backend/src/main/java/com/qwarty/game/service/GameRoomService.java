@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.qwarty.game.broadcaster.GameBroadcaster;
 import com.qwarty.game.dto.GameStateDTO;
 import com.qwarty.game.dto.RoomIdDTO;
+import com.qwarty.game.lov.MessageType;
 import com.qwarty.game.model.GameRoom;
 import com.qwarty.game.model.GameState;
 
@@ -19,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class GameRoomService {
 
     private final Map<String, GameRoom> rooms = new ConcurrentHashMap<>();
-    private final GameBroadcaster gameBroadcaster;
+    private final GameBroadcaster broadcaster;
 
     /**
      * Returns DTO containing roomId
@@ -56,6 +57,7 @@ public class GameRoomService {
          */
         if (room.addPlayer(username)) {
             room.getSession().addPlayer(username);
+            broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATE, room.getSession().getState());
             return true;
         }
         return false;
