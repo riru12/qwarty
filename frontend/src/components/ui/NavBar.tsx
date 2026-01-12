@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@hooks/useAuth";
+import { useApiClient } from "@hooks/useApiClient";
 import { Link } from "@tanstack/react-router";
-import { apiClient } from "@utils/ApiClient";
 import { LogoutEndpoint } from "@interfaces/endpoints";
 import "@config/i18n";
 import "./NavBar.css";
@@ -9,12 +9,13 @@ import "./NavBar.css";
 export const NavBar = () => {
     const { t } = useTranslation(["global"]);
     const { getAuthState, updateAuthState } = useAuth();
+    const { call } = useApiClient();
 
     const auth = getAuthState();
 
     const handleLogout = async () => {
         updateAuthState({ clear: true });
-        await apiClient.call(LogoutEndpoint);
+        await call(LogoutEndpoint);
     };
 
     return (

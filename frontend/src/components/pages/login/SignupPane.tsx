@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
-import { apiClient } from "@utils/ApiClient";
+import { useApiClient } from "@hooks/useApiClient";
 import { Input, PasswordInput, Button } from "@components/ui";
 import { SignupEndpoint } from "@interfaces/endpoints/SignupEndpoint";
 import "./SignupPane.css";
@@ -17,6 +17,7 @@ type SignupFormState = {
 
 export function SignupPane() {
     const { t } = useTranslation(["login"]);
+    const { call } = useApiClient();
     const [form, setForm] = useState<SignupFormState>({
         username: "",
         email: "",
@@ -26,13 +27,14 @@ export function SignupPane() {
     });
     const [errors, setErrors] = useState<Partial<SignupFormState>>({});
 
+    // TODO: Add toast on success and error
     const signupMutation = useMutation({
         mutationFn: async () => {
-            return apiClient.call(SignupEndpoint, {
+            return call(SignupEndpoint, { payload: {
                 username: form.username,
                 email: form.email,
                 password: form.password,
-            });
+            }});
         },
         onSuccess: () => {
             alert(t("signup_success") || "Sign up successful! You can now log in.");

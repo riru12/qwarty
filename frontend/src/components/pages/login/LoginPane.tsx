@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { apiClient } from "@utils/ApiClient";
+import { useApiClient } from "@hooks/useApiClient";
 import { useAuth } from "@hooks/useAuth";
 import { LoginEndpoint } from "@interfaces/endpoints";
 import { Input, PasswordInput, Button } from "@components/ui";
@@ -19,10 +19,12 @@ export function LoginPane() {
     const { updateAuthState } = useAuth();
     const navigate = useNavigate();
     const [form, setForm] = useState<LoginFormState>({ username: "", password: "" });
+    const { call } = useApiClient();
 
+    // TODO: Add toast on error
     const loginMutation = useMutation({
         mutationFn: async () => {
-            return apiClient.call(LoginEndpoint, form);
+            return call(LoginEndpoint, { payload: form });
         },
         onSuccess: async () => {
             try {
