@@ -1,19 +1,38 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSocket } from "@hooks/useSocket";
+import type { GameState } from "@interfaces/game";
 import type { GameStateDTO } from "@interfaces/dto";
 import type { Client, StompSubscription } from "@stomp/stompjs";
-
+import { Racer } from "./Racer";
 
 export const LiveRoom = ({ roomId, roomData }: { roomId: string, roomData: GameStateDTO }) => {
     const { client } = useSocket();
+    const [ currGameState, setCurrGameState ] = useState<GameState>(roomData.state);
 
     /**
-     * Subscribe to the room's topic and handle join and leave events received
+     * Subscribe to user-specific messages
+     */
+    const subscribeToUser = (stompClient: Client): StompSubscription => {
+        return stompClient.subscribe(`/user/queue/room/${roomId}`, (message) => {
+            console.error("Room Error:", message.body);
+        });
+    };
+
+    /**
+     * Subscribe to the room's topic to receive room-wide messages
      */
     const subscribeToRoom = (stompClient: Client): StompSubscription => {
         return stompClient.subscribe(`/topic/room/${roomId}`, (message) => {
             const event = JSON.parse(message.body);
-            console.log(event);
+            console.log(event.payload);
+            switch (event.messageType) {
+                case "GAME_STATE":
+                    setCurrGameState(event.payload);
+                    break;
+                default:
+                    console.warn("Message type not recognized");    // TODO: change i18n
+                    break;
+            }
         });
     };
 
@@ -21,7 +40,7 @@ export const LiveRoom = ({ roomId, roomData }: { roomId: string, roomData: GameS
         if (!client || !client.connected) return;
         
         // 1. establish subscriptions
-        // const subErrors = subscribeToErrors(client);
+        const subUser = subscribeToUser(client);
         const subRoom = subscribeToRoom(client);
 
         // 2. announce to other players that you joined
@@ -34,12 +53,12 @@ export const LiveRoom = ({ roomId, roomData }: { roomId: string, roomData: GameS
             if (client.connected) { // announce to other players that you are leaving
                 client.publish({ destination: `/app/game.leave/${roomId}` });
             }
-            // subErrors.unsubscribe();
+            subUser.unsubscribe();
             subRoom.unsubscribe();
         };
     }, [client, client?.connected]);
 
     return (
-        <div> test </div>
+        <Racer gameState={currGameState} />
     )
 }

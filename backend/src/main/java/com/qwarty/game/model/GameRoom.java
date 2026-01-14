@@ -16,7 +16,7 @@ import lombok.Setter;
 @RequiredArgsConstructor
 public class GameRoom {
 
-    private static final int MAX_PLAYERS = 2;
+    private static final int MAX_PLAYERS = 6;
 
     private final String roomId;
     private final Set<String> players = new HashSet<>();
