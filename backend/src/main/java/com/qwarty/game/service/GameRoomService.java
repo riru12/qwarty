@@ -7,8 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 
 import com.qwarty.game.broadcaster.GameBroadcaster;
-import com.qwarty.game.dto.GameStateDTO;
+import com.qwarty.game.dto.RoomInfoDTO;
 import com.qwarty.game.dto.RoomIdDTO;
+import com.qwarty.game.lov.GameStatus;
 import com.qwarty.game.lov.MessageType;
 import com.qwarty.game.model.GameRoom;
 import com.qwarty.game.model.GameState;
@@ -39,10 +40,11 @@ public class GameRoomService {
      * 
      * Called primarily from {@link #GameRoomRestController#info(String)}
      */
-    public GameStateDTO getGameRoomState(String roomId) {
+    public RoomInfoDTO getGameRoomInfo(String roomId) {
         GameRoom room = rooms.get(roomId);
         GameState state = room.getSession().getState();
-        return new GameStateDTO(state);
+        GameStatus status = room.getSession().getStatus();
+        return new RoomInfoDTO(status, state);
     }
     
     public boolean joinRoom(String roomId, String username) {

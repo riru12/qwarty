@@ -20,7 +20,7 @@ export const Room = () => {
      * As a side effect, the user is granted a guest token (if they do not have one)
      * due to calling with guest fallback.
      */
-    const { data: roomData, isSuccess } = useQuery({
+    const { data: roomInfo, isSuccess } = useQuery({
         queryKey: ["roomState", roomId],
         queryFn: async () => callWithGuestFallback(RoomStateEndpoint, { pathParams: { roomId } }),
         enabled: !!roomId,
@@ -31,7 +31,7 @@ export const Room = () => {
 
     return (
         <SocketProvider url={`${WS_BASE_URL}/api/ws`}>
-            <LiveRoom roomId={roomId} roomData={roomData}/>
+            <LiveRoom roomId={roomId} roomInfo={roomInfo}/>
         </SocketProvider>
     );
 }

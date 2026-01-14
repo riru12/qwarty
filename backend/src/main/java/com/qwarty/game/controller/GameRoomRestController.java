@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.qwarty.game.dto.GameStateDTO;
+import com.qwarty.game.dto.RoomInfoDTO;
 import com.qwarty.game.dto.RoomIdDTO;
 import com.qwarty.game.service.GameRoomService;
 
@@ -33,8 +33,8 @@ public class GameRoomRestController {
      * Gets the current GameState of a given room and returns it in a DTO
      */
     @GetMapping("/{roomId}")
-    public ResponseEntity<GameStateDTO> state(@PathVariable String roomId) {
-        GameStateDTO roomDetailsDto = gameRoomService.getGameRoomState(roomId);
+    public ResponseEntity<RoomInfoDTO> info(@PathVariable String roomId) {
+        RoomInfoDTO roomDetailsDto = gameRoomService.getGameRoomInfo(roomId);
         return ResponseEntity.ok(roomDetailsDto);
     }
 

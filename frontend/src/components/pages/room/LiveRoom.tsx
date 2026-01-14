@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useSocket } from "@hooks/useSocket";
-import type { GameState } from "@interfaces/game";
-import type { GameStateDTO } from "@interfaces/dto";
+import type { GameState, GameStatus } from "@interfaces/game";
+import type { RoomInfoDTO } from "@interfaces/dto";
 import type { Client, StompSubscription } from "@stomp/stompjs";
 import { Racer } from "./Racer";
 
-export const LiveRoom = ({ roomId, roomData }: { roomId: string, roomData: GameStateDTO }) => {
+export const LiveRoom = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomInfoDTO }) => {
     const { client } = useSocket();
-    const [ currGameState, setCurrGameState ] = useState<GameState>(roomData.state);
+    const [ currGameStatus, setCurrGameStatus ] = useState<GameStatus>(roomInfo.status);
+    const [ currGameState, setCurrGameState ] = useState<GameState>(roomInfo.state);
 
     /**
      * Subscribe to user-specific messages
@@ -59,6 +60,6 @@ export const LiveRoom = ({ roomId, roomData }: { roomId: string, roomData: GameS
     }, [client, client?.connected]);
 
     return (
-        <Racer gameState={currGameState} />
+        <Racer gameStatus={currGameStatus} gameState={currGameState} />
     )
 }

@@ -17,7 +17,7 @@ public class GameRoomWebSocketController {
     private final GameRoomService gameRoomService;
 
     @MessageMapping("/game.join/{roomId}")
-    public void gameJoin(@DestinationVariable String roomId, Principal principal) {
+    public void joinRoom(@DestinationVariable String roomId, Principal principal) {
         gameRoomService.joinRoom(roomId, principal.getName());
     }
 
@@ -25,5 +25,6 @@ public class GameRoomWebSocketController {
     public void leaveRoom(@DestinationVariable String roomId, Principal principal) {
         gameRoomService.leaveRoom(roomId, principal.getName());
     }
+    
 
 }
