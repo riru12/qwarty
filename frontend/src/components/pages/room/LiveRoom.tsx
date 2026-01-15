@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSocket } from "@hooks/useSocket";
-import type { GameState, GameStatus } from "@interfaces/game";
+import type { GameStatus, PlayerProgress } from "@interfaces/game";
 import type { RoomInfoDTO } from "@interfaces/dto";
 import type { Client, StompSubscription } from "@stomp/stompjs";
 import { Racer } from "./Racer";
@@ -8,7 +8,8 @@ import { Racer } from "./Racer";
 export const LiveRoom = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomInfoDTO }) => {
     const { client } = useSocket();
     const [ currGameStatus, setCurrGameStatus ] = useState<GameStatus>(roomInfo.status);
-    const [ currGameState, setCurrGameState ] = useState<GameState>(roomInfo.state);
+    const [ currPlayerProgressMap, setCurrPlayerProgressMap ] = useState<Record<string, PlayerProgress>>(roomInfo.playerProgressMap);
+    const [ textPrompt ] = useState<string>(roomInfo.textPrompt);
 
     /**
      * Subscribe to user-specific messages
@@ -27,8 +28,8 @@ export const LiveRoom = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomI
             const event = JSON.parse(message.body);
             console.log(event.payload);
             switch (event.messageType) {
-                case "GAME_STATE":
-                    setCurrGameState(event.payload);
+                case "PLAYER_PROGRESS_MAP_STATE":
+                    setCurrPlayerProgressMap(event.payload);
                     break;
                 default:
                     console.warn("Message type not recognized");    // TODO: change i18n
@@ -60,6 +61,6 @@ export const LiveRoom = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomI
     }, [client, client?.connected]);
 
     return (
-        <Racer gameStatus={currGameStatus} gameState={currGameState} />
+        <Racer gameStatus={currGameStatus} textPrompt={textPrompt} playerProgressMap={currPlayerProgressMap} />
     )
 }

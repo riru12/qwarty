@@ -1,6 +1,7 @@
-import type { GameState, GameStatus } from "@interfaces/game";
+import type { GameStatus, PlayerProgress } from "@interfaces/game";
 
 export interface RoomInfoDTO {
-    status: GameStatus,
-    state: GameState
+    status: GameStatus;
+    textPrompt: string;
+    playerProgressMap: Record<string, PlayerProgress>;
 }

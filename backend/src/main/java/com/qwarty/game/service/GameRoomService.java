@@ -6,12 +6,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
-// import com.qwarty.game.broadcaster.GameBroadcaster;
+import com.qwarty.game.broadcaster.GameBroadcaster;
 import com.qwarty.game.dto.RoomInfoDTO;
 import com.qwarty.game.dto.WebSocketInputDTO;
 import com.qwarty.game.dto.RoomIdDTO;
 import com.qwarty.game.lov.GameStatus;
-// import com.qwarty.game.lov.MessageType;
+import com.qwarty.game.lov.MessageType;
 import com.qwarty.game.model.GameRoom;
 import com.qwarty.game.model.PlayerProgress;
 
@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class GameRoomService {
 
     private final Map<String, GameRoom> rooms = new ConcurrentHashMap<>();
-    // private final GameBroadcaster broadcaster;
+    private final GameBroadcaster broadcaster;
 
     /**
      * Returns DTO containing roomId
@@ -63,7 +63,7 @@ public class GameRoomService {
          */
         if (room.addPlayer(username)) {
             room.getSession().addPlayer(username);
-            // broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATE, room.getSession().getState());
+            broadcaster.broadcastToRoom(roomId, MessageType.PLAYER_PROGRESS_MAP_STATE, room.getSession().getPlayerProgressMap());
             return true;
         }
         return false;

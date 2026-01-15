@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { RacerProgress } from "./RacerProgress"
-import type { GameState, GameStatus } from "@interfaces/game"
+import type { GameStatus, PlayerProgress } from "@interfaces/game"
 
-export const Racer = ({ gameStatus, gameState }: { gameStatus: GameStatus, gameState: GameState }) => {
-    const targetText = gameState.textPrompt;
+export const Racer = ({ gameStatus, textPrompt, playerProgressMap }: { gameStatus: GameStatus, textPrompt: string, playerProgressMap: Record<string, PlayerProgress> }) => {
+    const targetText = textPrompt;
     const [typed, setTyped] = useState("");
 
     useEffect(() => {
@@ -55,9 +55,19 @@ export const Racer = ({ gameStatus, gameState }: { gameStatus: GameStatus, gameS
     return (
         <>  
             <div>Status: {gameStatus}</div>
-            <p>{gameState.textPrompt}</p>
+            <p>{textPrompt}</p>
             <p>{typed}</p>
-            <RacerProgress textPrompt={gameState.textPrompt} playerProgress={gameState.playerProgress} />
+            
+            {Object.entries(playerProgressMap).map(
+                ([playerName, playerProgress]) => (
+                    <RacerProgress
+                        key={playerName}
+                        textPrompt={textPrompt}
+                        playerName={playerName}
+                        playerProgress={playerProgress}
+                    />
+                )
+            )}
         </>
     )
 }
