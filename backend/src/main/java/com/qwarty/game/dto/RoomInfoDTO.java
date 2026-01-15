@@ -1,8 +1,10 @@
 package com.qwarty.game.dto;
 
-import com.qwarty.game.lov.GameStatus;
-import com.qwarty.game.model.GameState;
+import java.util.Map;
 
-public record RoomInfoDTO(GameStatus status, GameState state) {
+import com.qwarty.game.lov.GameStatus;
+import com.qwarty.game.model.PlayerProgress;
+
+public record RoomInfoDTO(GameStatus status, String textPrompt, Map<String, PlayerProgress> playerProgressMap) {
 
 }

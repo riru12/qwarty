@@ -6,13 +6,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
-import com.qwarty.game.broadcaster.GameBroadcaster;
+// import com.qwarty.game.broadcaster.GameBroadcaster;
 import com.qwarty.game.dto.RoomInfoDTO;
+import com.qwarty.game.dto.WebSocketInputDTO;
 import com.qwarty.game.dto.RoomIdDTO;
 import com.qwarty.game.lov.GameStatus;
-import com.qwarty.game.lov.MessageType;
+// import com.qwarty.game.lov.MessageType;
 import com.qwarty.game.model.GameRoom;
-import com.qwarty.game.model.GameState;
+import com.qwarty.game.model.PlayerProgress;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class GameRoomService {
 
     private final Map<String, GameRoom> rooms = new ConcurrentHashMap<>();
-    private final GameBroadcaster broadcaster;
+    // private final GameBroadcaster broadcaster;
 
     /**
      * Returns DTO containing roomId
@@ -42,9 +43,12 @@ public class GameRoomService {
      */
     public RoomInfoDTO getGameRoomInfo(String roomId) {
         GameRoom room = rooms.get(roomId);
-        GameState state = room.getSession().getState();
+
         GameStatus status = room.getSession().getStatus();
-        return new RoomInfoDTO(status, state);
+        String textPrompt = room.getSession().getTextPrompt();
+        Map<String, PlayerProgress> playerProgressMap = room.getSession().getPlayerProgressMap();
+
+        return new RoomInfoDTO(status, textPrompt, playerProgressMap);
     }
     
     public boolean joinRoom(String roomId, String username) {
@@ -59,7 +63,7 @@ public class GameRoomService {
          */
         if (room.addPlayer(username)) {
             room.getSession().addPlayer(username);
-            broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATE, room.getSession().getState());
+            // broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATE, room.getSession().getState());
             return true;
         }
         return false;
@@ -77,6 +81,11 @@ public class GameRoomService {
 
     public boolean deleteRoom(String roomId) {
         return rooms.remove(roomId) != null;
+    }
+
+    public void handleGameInput(String roomId, String username, WebSocketInputDTO input) {
+        GameRoom room = rooms.get(roomId);
+        room.getSession().handleInput(username, input);
     }
 
 }
