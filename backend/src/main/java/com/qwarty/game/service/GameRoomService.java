@@ -6,14 +6,13 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Service;
 
-import com.qwarty.game.broadcaster.GameBroadcaster;
 import com.qwarty.game.dto.RoomInfoDTO;
-import com.qwarty.game.dto.WebSocketInputDTO;
 import com.qwarty.game.dto.RoomIdDTO;
 import com.qwarty.game.lov.GameStatus;
-import com.qwarty.game.lov.MessageType;
 import com.qwarty.game.model.GameRoom;
-import com.qwarty.game.model.PlayerProgress;
+import com.qwarty.game.model.GameState;
+import com.qwarty.game.session.GameSession;
+import com.qwarty.game.session.GameSessionFactory;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class GameRoomService {
 
     private final Map<String, GameRoom> rooms = new ConcurrentHashMap<>();
-    private final GameBroadcaster broadcaster;
+    private final GameSessionFactory gameSessionFactory;
 
     /**
      * Returns DTO containing roomId
@@ -32,6 +31,9 @@ public class GameRoomService {
     public RoomIdDTO createRoom() {
         String roomId = UUID.randomUUID().toString();
         GameRoom room = new GameRoom(roomId);
+        GameSession session = gameSessionFactory.create(roomId);
+
+        room.setSession(session);
         rooms.put(roomId, room);
         return new RoomIdDTO(roomId);
     }
@@ -45,10 +47,9 @@ public class GameRoomService {
         GameRoom room = rooms.get(roomId);
 
         GameStatus status = room.getSession().getStatus();
-        String textPrompt = room.getSession().getTextPrompt();
-        Map<String, PlayerProgress> playerProgressMap = room.getSession().getPlayerProgressMap();
+        GameState state = room.getSession().getState();
 
-        return new RoomInfoDTO(status, textPrompt, playerProgressMap);
+        return new RoomInfoDTO(status, state);
     }
     
     public boolean joinRoom(String roomId, String username) {
@@ -63,7 +64,7 @@ public class GameRoomService {
          */
         if (room.addPlayer(username)) {
             room.getSession().addPlayer(username);
-            broadcaster.broadcastToRoom(roomId, MessageType.PLAYER_PROGRESS_MAP_STATE, room.getSession().getPlayerProgressMap());
+            room.getSession().startGame();
             return true;
         }
         return false;
@@ -83,9 +84,9 @@ public class GameRoomService {
         return rooms.remove(roomId) != null;
     }
 
-    public void handleGameInput(String roomId, String username, WebSocketInputDTO input) {
-        GameRoom room = rooms.get(roomId);
-        room.getSession().handleInput(username, input);
-    }
+    // public void handleGameInput(String roomId, String username, WebSocketInputDTO input) {
+    //     GameRoom room = rooms.get(roomId);
+    //     // room.getSession().handleInput(username, input);
+    // }
 
 }

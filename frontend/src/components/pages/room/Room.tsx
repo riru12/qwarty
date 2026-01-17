@@ -4,7 +4,7 @@ import { useApiClient } from "@hooks/useApiClient";
 import { SocketProvider } from "@contexts/SocketContext";
 import { RoomRoute } from "@routes/routes";
 import { RoomStateEndpoint } from "@interfaces/endpoints";
-import { LiveRoom } from "./LiveRoom";
+import { Stacker } from "./Stacker";
 
 const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const WS_BASE_URL = BASE_URL.replace(/^http/, "ws");
@@ -31,7 +31,7 @@ export const Room = () => {
 
     return (
         <SocketProvider url={`${WS_BASE_URL}/api/ws`}>
-            <LiveRoom roomId={roomId} roomInfo={roomInfo}/>
+            <Stacker roomId={roomId} roomInfo={roomInfo}/>
         </SocketProvider>
     );
 }

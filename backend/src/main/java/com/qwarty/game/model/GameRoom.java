@@ -16,13 +16,12 @@ import lombok.Setter;
 @RequiredArgsConstructor
 public class GameRoom {
 
-    private static final int MAX_PLAYERS = 6;
+    private static final int MAX_PLAYERS = 2;
 
     private final String roomId;
     private final Set<String> players = new HashSet<>();
-    private GameSession session = new GameSession();
-    private Instant timestamp = Instant.now();
-
+    private GameSession session;
+    private Instant created = Instant.now();
     
     public synchronized boolean addPlayer(String playerId) {
         if (players.size() >= MAX_PLAYERS) {

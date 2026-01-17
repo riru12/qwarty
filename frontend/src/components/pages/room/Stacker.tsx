@@ -1,15 +1,26 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "@hooks/useAuth";
 import { useSocket } from "@hooks/useSocket";
-import type { GameStatus, PlayerProgress } from "@interfaces/game";
+import type { GameState, GameStatus } from "@interfaces/game";
 import type { RoomInfoDTO } from "@interfaces/dto";
 import type { Client, StompSubscription } from "@stomp/stompjs";
-import { Racer } from "./Racer";
+// import { Stacker } from "./Stacker";
+import { PlayerStack } from "./PlayerStack";
 
-export const LiveRoom = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomInfoDTO }) => {
+export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomInfoDTO }) => {
     const { client } = useSocket();
+    const { getAuthState } = useAuth();
     const [ currGameStatus, setCurrGameStatus ] = useState<GameStatus>(roomInfo.status);
-    const [ currPlayerProgressMap, setCurrPlayerProgressMap ] = useState<Record<string, PlayerProgress>>(roomInfo.playerProgressMap);
-    const [ textPrompt ] = useState<string>(roomInfo.textPrompt);
+    const [ currGameState, setCurrGameState ] = useState<GameState>(roomInfo.state);
+
+    /**
+     * Data to identify player 1 and 2, and player and opponent stacks
+     */
+    const playerName = getAuthState().username;
+    const isPlayer1 = currGameState.player1 === playerName;
+    const opponentName = isPlayer1 ? currGameState.player2 : currGameState.player1;
+    const playerStack = isPlayer1 ? currGameState.player1Stack : currGameState.player2Stack;
+    const opponentStack = isPlayer1 ? currGameState.player2Stack : currGameState.player1Stack;
 
     /**
      * Subscribe to user-specific messages
@@ -28,11 +39,13 @@ export const LiveRoom = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomI
             const event = JSON.parse(message.body);
             console.log(event.payload);
             switch (event.messageType) {
-                case "PLAYER_PROGRESS_MAP_STATE":
-                    setCurrPlayerProgressMap(event.payload);
+                case "GAME_STATE":
+                    setCurrGameState(event.payload);
+                    break;
+                case "GAME_STATUS":
+                    setCurrGameStatus(event.payload);
                     break;
                 default:
-                    console.warn("Message type not recognized");    // TODO: change i18n
                     break;
             }
         });
@@ -61,6 +74,18 @@ export const LiveRoom = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomI
     }, [client, client?.connected]);
 
     return (
-        <Racer gameStatus={currGameStatus} textPrompt={textPrompt} playerProgressMap={currPlayerProgressMap} />
+         <div>
+            <div>game status: {currGameStatus}</div>
+
+            <div>
+                <strong>{getAuthState().username}</strong>
+                <PlayerStack playerStack={playerStack} />
+            </div>
+
+            <div>
+                <strong>{opponentName}</strong>
+                <PlayerStack playerStack={opponentStack} />
+            </div>
+        </div>
     )
 }
