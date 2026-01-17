@@ -109,6 +109,9 @@ public class GameSession {
         if (input == null || input.word() == null || input.word().isBlank()) {
             return false;
         }
+        if (!username.equals(state.getPlayer1()) && !username.equals(state.getPlayer2())) {
+            return false;
+        }
         
         boolean isPlayer1 = username.equals(state.getPlayer1());
         Deque<String> playerStack = isPlayer1 ? state.getPlayer1Stack() : state.getPlayer2Stack();
@@ -118,8 +121,7 @@ public class GameSession {
         if (!input.word().equalsIgnoreCase(expectedWord)) {
             return false;
         }
-        playerStack.removeFirst();
-        opponentStack.addLast(input.word());
+        opponentStack.addLast(playerStack.removeFirst());
         updated = Instant.now();
         broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATE, state);
         return true;
