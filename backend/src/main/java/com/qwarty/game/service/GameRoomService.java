@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
 
 import com.qwarty.game.dto.RoomInfoDTO;
+import com.qwarty.game.dto.GameInputDTO;
 import com.qwarty.game.dto.RoomIdDTO;
 import com.qwarty.game.lov.GameStatus;
 import com.qwarty.game.model.GameRoom;
@@ -84,9 +85,9 @@ public class GameRoomService {
         return rooms.remove(roomId) != null;
     }
 
-    // public void handleGameInput(String roomId, String username, WebSocketInputDTO input) {
-    //     GameRoom room = rooms.get(roomId);
-    //     // room.getSession().handleInput(username, input);
-    // }
+    public void handleGameInput(String roomId, String username, GameInputDTO input) {
+        GameRoom room = rooms.get(roomId);
+        room.getSession().handleInput(username, input);
+    }
 
 }

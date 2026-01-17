@@ -1,11 +1,13 @@
 package com.qwarty.game.session;
 
 import java.time.Instant;
+import java.util.Deque;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import com.qwarty.game.broadcaster.GameBroadcaster;
+import com.qwarty.game.dto.GameInputDTO;
 import com.qwarty.game.generator.WordGenerator;
 import com.qwarty.game.lov.GameStatus;
 import com.qwarty.game.lov.MessageType;
@@ -61,7 +63,7 @@ public class GameSession {
 
         broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATE, state);
         broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATUS, status);
-        
+
         startTicking();
         return true;
     }
@@ -99,5 +101,28 @@ public class GameSession {
             tickTask = null;
         }
     }
+    
+    public synchronized boolean handleInput(String username, GameInputDTO input) {
+        if (status != GameStatus.IN_PROGRESS) {
+            return false;
+        }
+        if (input == null || input.word() == null || input.word().isBlank()) {
+            return false;
+        }
+        
+        boolean isPlayer1 = username.equals(state.getPlayer1());
+        Deque<String> playerStack = isPlayer1 ? state.getPlayer1Stack() : state.getPlayer2Stack();
+        Deque<String> opponentStack = isPlayer1 ? state.getPlayer2Stack() : state.getPlayer1Stack();
+
+        String expectedWord = playerStack.peekFirst();
+        if (!input.word().equalsIgnoreCase(expectedWord)) {
+            return false;
+        }
+        playerStack.removeFirst();
+        opponentStack.addLast(input.word());
+        updated = Instant.now();
+        broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATE, state);
+        return true;
+    } 
 
 }

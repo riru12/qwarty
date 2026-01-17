@@ -6,7 +6,7 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 
-// import com.qwarty.game.dto.WebSocketInputDTO;
+import com.qwarty.game.dto.GameInputDTO;
 import com.qwarty.game.service.GameRoomService;
 
 import lombok.RequiredArgsConstructor;
@@ -27,9 +27,9 @@ public class GameRoomWebSocketController {
         gameRoomService.leaveRoom(roomId, principal.getName());
     }
     
-    // @MessageMapping("/game.input/{roomId}")
-    //  public void gameInput(@DestinationVariable String roomId, Principal principal, WebSocketInputDTO input) {
-    //     gameRoomService.handleGameInput(roomId, principal.getName(), input);
-    // }
+    @MessageMapping("/game.input/{roomId}")
+     public void gameInput(@DestinationVariable String roomId, Principal principal, GameInputDTO input) {
+        gameRoomService.handleGameInput(roomId, principal.getName(), input);
+    }
 
 }

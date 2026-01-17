@@ -12,9 +12,10 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
     const { getAuthState } = useAuth();
     const [ currGameStatus, setCurrGameStatus ] = useState<GameStatus>(roomInfo.status);
     const [ currGameState, setCurrGameState ] = useState<GameState>(roomInfo.state);
+    const [inputWord, setInputWord] = useState("");
 
     /**
-     * Data to identify player 1 and 2, and player and opponent stacks
+     * Identify player and stacks
      */
     const playerName = getAuthState().username;
     const isPlayer1 = currGameState.player1 === playerName;
@@ -73,6 +74,20 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
         };
     }, [client, client?.connected]);
 
+    const sendWord = () => {
+        if (!client || !client.connected) return;
+
+        const trimmed = inputWord.trim();
+        if (!trimmed) return;
+
+        client.publish({
+            destination: `/app/game.input/${roomId}`,
+            body: JSON.stringify({ word: trimmed }), // matches GameInputDTO
+        });
+
+        setInputWord(""); // clear after send
+    };
+
     return (
          <div>
             <div>game status: {currGameStatus}</div>
@@ -85,6 +100,19 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
             <div>
                 <strong>{opponentName}</strong>
                 <PlayerStack playerStack={opponentStack} />
+            </div>
+
+            <div>
+                <input
+                    type="text"
+                    value={inputWord}
+                    onChange={(e) => setInputWord(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") sendWord();
+                    }}
+                    placeholder="Type a word..."
+                />
+                <button onClick={sendWord}>Send</button>
             </div>
         </div>
     )
