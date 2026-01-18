@@ -11,6 +11,6 @@ import lombok.Setter;
 public class GameState {
     private String player1;
     private String player2;
-    private Deque<String> player1Stack = new ArrayDeque<>();
-    private Deque<String> player2Stack = new ArrayDeque<>();
+    private Deque<Word> player1Stack = new ArrayDeque<>();
+    private Deque<Word> player2Stack = new ArrayDeque<>();
 }

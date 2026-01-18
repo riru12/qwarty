@@ -1,6 +1,8 @@
+import type { Word } from "./Word";
+
 export interface GameState {
     player1: string | null;
     player2: string | null;
-    player1Stack: string[];
-    player2Stack: string[];
+    player1Stack: Word[];
+    player2Stack: Word[];
 }

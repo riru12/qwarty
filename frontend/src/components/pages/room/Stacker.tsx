@@ -12,7 +12,7 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
     const { getAuthState } = useAuth();
     const [ currGameStatus, setCurrGameStatus ] = useState<GameStatus>(roomInfo.status);
     const [ currGameState, setCurrGameState ] = useState<GameState>(roomInfo.state);
-    const [typedWord, setTypedWord] = useState("");
+    const [ typedWord, setTypedWord ] = useState("");
 
     /**
      * Identify player and stacks
@@ -135,19 +135,6 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
                 <strong>{opponentName}</strong>
                 <PlayerStack playerStack={opponentStack} />
             </div>
-
-            {/* <div>
-                <input
-                    type="text"
-                    value={typedWord}
-                    onChange={(e) => setTypedWord(e.target.value)}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter") sendWord();
-                    }}
-                    placeholder="Type a word..."
-                />
-                <button onClick={sendWord}>Send</button>
-            </div> */}
         </div>
     )
 }

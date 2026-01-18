@@ -8,6 +8,8 @@ import com.qwarty.game.generator.WordGenerator;
 import com.qwarty.game.lov.GameStatus;
 import com.qwarty.game.lov.MessageType;
 import com.qwarty.game.model.GameState;
+import com.qwarty.game.model.Word;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -72,8 +74,8 @@ public class GameSession {
         state.getPlayer2Stack().clear();
 
         for (int i = 0; i < 5; i++) {
-            state.getPlayer1Stack().addLast(WordGenerator.randomWord());
-            state.getPlayer2Stack().addLast(WordGenerator.randomWord());
+            state.getPlayer1Stack().addLast(new Word(WordGenerator.randomWord(), true));
+            state.getPlayer2Stack().addLast(new Word(WordGenerator.randomWord(), true));
         }
     }
     
@@ -90,21 +92,25 @@ public class GameSession {
         
         // Identify player and stacks
         boolean isPlayer1 = username.equals(state.getPlayer1());
-        Deque<String> playerStack = isPlayer1 ? state.getPlayer1Stack() : state.getPlayer2Stack();
-        Deque<String> opponentStack = isPlayer1 ? state.getPlayer2Stack() : state.getPlayer1Stack();
+        Deque<Word> playerStack = isPlayer1 ? state.getPlayer1Stack() : state.getPlayer2Stack();
+        Deque<Word> opponentStack = isPlayer1 ? state.getPlayer2Stack() : state.getPlayer1Stack();
 
         // Verify correctness of word input
-        String expectedWord = playerStack.peekFirst();
-        if (!input.word().equalsIgnoreCase(expectedWord)) {
+        Word activeWord = playerStack.peekFirst();
+        if (!input.word().equalsIgnoreCase(activeWord.getText())) {
             return false;
         }
         
         // Transfer word to opponent stack
-        opponentStack.addLast(playerStack.removeFirst());
+        Word typedWord = playerStack.removeFirst();
+        if (typedWord.isFresh()) {
+            typedWord.setFresh(false);
+            opponentStack.addLast(typedWord);
+        }
 
         // If playerStack size is reduced to 1, refill an extra word
         if (playerStack.size() == 1) {
-            playerStack.addLast(WordGenerator.randomWord());
+            playerStack.addLast(new Word(WordGenerator.randomWord(), true));
         }
 
         updated = Instant.now();
