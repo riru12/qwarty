@@ -2,8 +2,6 @@ package com.qwarty.game.session;
 
 import java.time.Instant;
 import java.util.Deque;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import com.qwarty.game.broadcaster.GameBroadcaster;
 import com.qwarty.game.dto.GameInputDTO;
 import com.qwarty.game.generator.WordGenerator;
@@ -21,10 +19,6 @@ public class GameSession {
 
     private final String roomId;
     private final GameBroadcaster broadcaster;
-
-    // Used for ticks (sending state updates per tick)
-    private final ScheduledExecutorService scheduler;
-    private ScheduledFuture<?> tickTask;
     
     private GameStatus status = GameStatus.WAITING;
     private GameState state = new GameState();
