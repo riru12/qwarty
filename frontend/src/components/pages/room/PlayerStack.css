@@ -1,0 +1,9 @@
+.stack-container {
+    display: flex;
+    gap: 0.5em;
+    flex-direction: column-reverse;
+    background-color: black;
+    width: fit-content;
+    padding: 1em;
+    border: 1px solid white;
+}

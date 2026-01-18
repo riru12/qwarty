@@ -17,6 +17,8 @@ import lombok.Setter;
 @RequiredArgsConstructor
 public class GameSession {
 
+    private static final int MAX_STACK_SIZE = 15;
+
     private final String roomId;
     private final GameBroadcaster broadcaster;
     
@@ -57,6 +59,12 @@ public class GameSession {
         broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATUS, status);
 
         return true;
+    }
+
+    private void endGame(String winner) {
+        status = GameStatus.FINISHED;
+
+        broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATUS, status);
     }
 
     private void initializeStacks() {
@@ -101,6 +109,10 @@ public class GameSession {
 
         updated = Instant.now();
         broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATE, state);
+        
+        if (opponentStack.size() >= MAX_STACK_SIZE) {
+            endGame(username);
+        }
         return true;
     }
 

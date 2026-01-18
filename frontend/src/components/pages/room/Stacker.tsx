@@ -12,7 +12,7 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
     const { getAuthState } = useAuth();
     const [ currGameStatus, setCurrGameStatus ] = useState<GameStatus>(roomInfo.status);
     const [ currGameState, setCurrGameState ] = useState<GameState>(roomInfo.state);
-    const [inputWord, setInputWord] = useState("");
+    const [typedWord, setTypedWord] = useState("");
 
     /**
      * Identify player and stacks
@@ -77,15 +77,15 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
     const sendWord = () => {
         if (!client || !client.connected) return;
 
-        const trimmed = inputWord.trim();
+        const trimmed = typedWord.trim();
         if (!trimmed) return;
 
         client.publish({
             destination: `/app/game.input/${roomId}`,
-            body: JSON.stringify({ word: trimmed }), // matches GameInputDTO
+            body: JSON.stringify({ word: trimmed }),    // TODO: change this to a DTO interface
         });
 
-        setInputWord(""); // clear after send
+        setTypedWord(""); // clear after send
     };
 
     return (
@@ -93,8 +93,8 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
             <div>game status: {currGameStatus}</div>
 
             <div>
-                <strong>{getAuthState().username}</strong>
-                <PlayerStack playerStack={playerStack} />
+                <strong>{playerName}</strong>
+                <PlayerStack playerStack={playerStack} typed={typedWord} />
             </div>
 
             <div>
@@ -105,8 +105,8 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
             <div>
                 <input
                     type="text"
-                    value={inputWord}
-                    onChange={(e) => setInputWord(e.target.value)}
+                    value={typedWord}
+                    onChange={(e) => setTypedWord(e.target.value)}
                     onKeyDown={(e) => {
                         if (e.key === "Enter") sendWord();
                     }}
