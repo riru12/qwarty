@@ -1,0 +1,11 @@
+.play-area {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+}
+
+.play-area-container {
+    display: flex;
+    
+}

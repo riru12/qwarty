@@ -1,9 +1,12 @@
 .stack-container {
     display: flex;
+    flex-grow: 1;
     gap: 0.5em;
     flex-direction: column-reverse;
     background-color: black;
-    width: fit-content;
+    width: 100%;
+    box-sizing: border-box;
     padding: 1em;
     border: 1px solid white;
+    min-height: calc(15 * (2rem + 1em) + 14 * 0.5em + 2em);
 }

@@ -4,8 +4,9 @@ import { useSocket } from "@hooks/useSocket";
 import type { GameState, GameStatus } from "@interfaces/game";
 import type { RoomInfoDTO } from "@interfaces/dto";
 import type { Client, StompSubscription } from "@stomp/stompjs";
-// import { Stacker } from "./Stacker";
 import { PlayerStack } from "./PlayerStack";
+import { PlayerInfo } from "./PlayerInfo";
+import "./Stacker.css";
 
 export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomInfoDTO }) => {
     const { client } = useSocket();
@@ -123,17 +124,17 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
     }, [typedWord]);
 
     return (
-         <div>
+         <div className="play-area-container">
             <div>game status: {currGameStatus}</div>
 
-            <div>
-                <strong>{playerName}</strong>
+            <div className="play-area">
                 <PlayerStack playerStack={playerStack} typed={typedWord} />
+                <PlayerInfo username={playerName} />
             </div>
 
-            <div>
-                <strong>{opponentName}</strong>
+            <div className="play-area">
                 <PlayerStack playerStack={opponentStack} />
+                <PlayerInfo username={opponentName} />
             </div>
         </div>
     )
