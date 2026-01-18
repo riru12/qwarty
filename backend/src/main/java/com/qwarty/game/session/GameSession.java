@@ -4,8 +4,6 @@ import java.time.Instant;
 import java.util.Deque;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
-
 import com.qwarty.game.broadcaster.GameBroadcaster;
 import com.qwarty.game.dto.GameInputDTO;
 import com.qwarty.game.generator.WordGenerator;
@@ -64,7 +62,6 @@ public class GameSession {
         broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATE, state);
         broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATUS, status);
 
-        startTicking();
         return true;
     }
 
@@ -75,30 +72,6 @@ public class GameSession {
         for (int i = 0; i < 5; i++) {
             state.getPlayer1Stack().addLast(WordGenerator.randomWord());
             state.getPlayer2Stack().addLast(WordGenerator.randomWord());
-        }
-    }
-
-
-    private void startTicking() {
-        if (tickTask != null && !tickTask.isCancelled()) {
-            return;
-        }
-
-        tickTask = scheduler.scheduleAtFixedRate(this::tick, 0, 1, TimeUnit.SECONDS);
-    }
-
-    private void tick() {
-        if (status != GameStatus.IN_PROGRESS) {
-            stopTicking();
-            return;
-        }
-        broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATE, state);
-    }
-
-    public void stopTicking() {
-        if (tickTask != null) {
-            tickTask.cancel(false);
-            tickTask = null;
         }
     }
     
@@ -113,18 +86,28 @@ public class GameSession {
             return false;
         }
         
+        // Identify player and stacks
         boolean isPlayer1 = username.equals(state.getPlayer1());
         Deque<String> playerStack = isPlayer1 ? state.getPlayer1Stack() : state.getPlayer2Stack();
         Deque<String> opponentStack = isPlayer1 ? state.getPlayer2Stack() : state.getPlayer1Stack();
 
+        // Verify correctness of word input
         String expectedWord = playerStack.peekFirst();
         if (!input.word().equalsIgnoreCase(expectedWord)) {
             return false;
         }
+        
+        // Transfer word to opponent stack
         opponentStack.addLast(playerStack.removeFirst());
+
+        // If playerStack size is reduced to 1, refill an extra word
+        if (playerStack.size() == 1) {
+            playerStack.addLast(WordGenerator.randomWord());
+        }
+
         updated = Instant.now();
         broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATE, state);
         return true;
-    } 
+    }
 
 }
