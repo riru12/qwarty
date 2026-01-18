@@ -88,6 +88,40 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
         setTypedWord(""); // clear after send
     };
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Ignore if user is typing in an actual input/textarea
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+                return;
+            }
+
+            // Handle Enter to submit
+            if (e.key === "Enter") {
+                e.preventDefault();
+                sendWord();
+                return;
+            }
+
+            // Handle Backspace
+            if (e.key === "Backspace") {
+                e.preventDefault();
+                setTypedWord(prev => prev.slice(0, -1));
+                return;
+            }
+
+            // Handle regular character input
+            if (e.key.length === 1) {
+                // Only accept letters/alphanumeric
+                if (/^[a-zA-Z]$/.test(e.key)) {
+                    setTypedWord(prev => prev + e.key);
+                }
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [typedWord]);
+
     return (
          <div>
             <div>game status: {currGameStatus}</div>
@@ -102,7 +136,7 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
                 <PlayerStack playerStack={opponentStack} />
             </div>
 
-            <div>
+            {/* <div>
                 <input
                     type="text"
                     value={typedWord}
@@ -113,7 +147,7 @@ export const Stacker = ({ roomId, roomInfo }: { roomId: string, roomInfo: RoomIn
                     placeholder="Type a word..."
                 />
                 <button onClick={sendWord}>Send</button>
-            </div>
+            </div> */}
         </div>
     )
 }
