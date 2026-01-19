@@ -60,11 +60,10 @@ public class GameRoomService {
         }
 
         /**
-         * 1. Add player into the room
-         * 2. Initialize player's progress in the room's GameSession
+         * 1. Add player into the game
+         * 2. Attempt to start game
          */
-        if (room.addPlayer(username)) {
-            room.getSession().addPlayer(username);
+        if (room.getSession().addPlayer(username)) {
             room.getSession().startGame();
             return true;
         }
@@ -73,11 +72,14 @@ public class GameRoomService {
 
     public void leaveRoom(String roomId, String username) {
         GameRoom room = rooms.get(roomId);
-        if (room != null) {
-            room.removePlayer(username);
-            if (room.isEmpty()) {
-                rooms.remove(roomId);
-            }
+
+        if (room == null) {
+            return;
+        }
+        
+        room.getSession().handleDisconnect(username);
+        if (room.getSession().isAbandoned()) {
+            deleteRoom(roomId);
         }
     }
 

@@ -26,10 +26,17 @@ public class GameSession {
     
     private GameStatus status = GameStatus.WAITING;
     private GameState state = new GameState();
+
+    private boolean player1Connected = false;
+    private boolean player2Connected = false;
+
     private Instant updated = Instant.now();
 
     /**
-     * Adds a player to GameState, first checking the p1 slot before the p2 slot
+     * Adds a player to GameState
+     * 
+     * This first checks the player1 slot and then the player2 slot. Once a player
+     * has been added to the session's state, they cannot be removed any longer.
      */
     public synchronized boolean addPlayer(String username) {
         if (state.getPlayer1() != null && state.getPlayer2() != null) {
@@ -38,13 +45,35 @@ public class GameSession {
 
         if (state.getPlayer1() == null) {
             state.setPlayer1(username);
+            player1Connected = true;
         } else if (state.getPlayer2() == null) {
             state.setPlayer2(username);
+            player2Connected = true;
         }
 
         // after adding a player, announce to room subscribers the change in state
         broadcaster.broadcastToRoom(roomId, MessageType.GAME_STATE, state);
         return true;
+    }
+
+    /**
+     * Set disconnected player connection flag to false
+     */
+    public synchronized void handleDisconnect(String username) {
+        if (!username.equals(state.getPlayer1()) && !username.equals(state.getPlayer2())) {
+            return;
+        }
+
+        boolean isPlayer1 = username.equals(state.getPlayer1());
+        if (isPlayer1) {
+            player1Connected = false;
+        } else {
+            player2Connected = false;
+        }
+    }
+
+    public boolean isAbandoned() {
+        return !player1Connected && !player2Connected;
     }
 
     /**
